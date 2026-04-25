@@ -1,4 +1,4 @@
-# LTD-OS v0.3.8
+# LTD-OS v0.3.10
 
 Personal knowledge + workflow OS for research, investing, content creation, and coding projects. Built around Claude Code + 8 agents + Obsidian vault on Windows + WSL2.
 
@@ -23,7 +23,22 @@ Inspired by [longtundiary's LTD OS](https://www.youtube.com/watch?v=2AAxQhv7644)
 ltd-os/
 ├── .claude/
 │   ├── CLAUDE.md                  # project memory + all rules
-│   ├── agents/                    # 8 sub-agents
+│   ├── agents/                    # 15 sub-agents
+│   │   ├── planner.md
+│   │   ├── researcher.md
+│   │   ├── writer.md
+│   │   ├── coder.md
+│   │   ├── executor.md
+│   │   ├── reviewer.md
+│   │   ├── analyst.md
+│   │   ├── devils_advocate.md
+│   │   ├── optimist.md            # /council proposer
+│   │   ├── pragmatist.md          # /council proposer
+│   │   ├── skeptic.md             # /council proposer
+│   │   ├── synthesizer.md         # /council combiner
+│   │   ├── engineer.md            # /council expertise lens (default)
+│   │   ├── strategist.md          # /council expertise lens
+│   │   └── financial_risk.md      # /council expertise lens
 │   │   ├── planner.md             # routes, reads memory, handoff-aware
 │   │   ├── researcher.md          # vault-first, 5-search cap
 │   │   ├── writer.md              # 4 formats, voice from vault
@@ -33,8 +48,9 @@ ltd-os/
 │   │   ├── analyst.md             # cost + perf (manual via /analyst)
 │   │   └── devils_advocate.md     # steelman (manual via /challenge)
 │   ├── writing-formats/           # thread/longform/hook/newsletter
-│   └── commands/                  # 9 slash commands
+│   └── commands/                  # 10 slash commands
 │       ├── onboard.md             # one-time setup interview
+│       ├── council.md             # multi-agent debate
 │       ├── import-notebooklm.md
 │       ├── stock-research.md
 │       ├── challenge.md
@@ -53,7 +69,9 @@ ltd-os/
 │   │   ├── ANALYST_LOG.md
 │   │   ├── OUTCOMES.md            # decision outcomes (cross-AI learning)
 │   │   ├── WORKFLOWS.md           # patterns for any AI tool
+│   │   ├── COUNCIL_LOG.md         # /council session index
 │   │   └── ARCHIVE.md             # NOT loaded default
+│   ├── _council/                  # /council debate sessions
 │   ├── _templates/                # 8 templates
 │   ├── _assets/                   # images, PDFs (embedded)
 │   │   ├── stocks/
@@ -124,6 +142,7 @@ You don't write code. You give intent. Planner picks specialist, they work, revi
 ## Manual workflows (opt-in)
 
 - `/onboard` — one-time interview to fill PREFERENCES.md (run after install)
+- `/council <topic> [--expertise=<lens>]` — multi-agent debate (3 mindset proposers + expertise lens) for high-stakes decisions
 - `/challenge <note>` — devils_advocate steelmans your decision
 - `/analyst` — cost + performance review with approval-gated suggestions
 - `/handoff` — save session state before context fills
@@ -211,6 +230,21 @@ Add only when real pain appears. See `docs/AGENT_ARCHITECTURE.md` → "Evolution
 ---
 
 ## Version
+
+v0.3.10 — 2026-04-25
+- `/council` enhanced with **expertise lens** (Phase 3.5)
+- 3 expertise agents: `engineer` (default), `strategist`, `financial_risk`
+- Auto-pick lens based on topic keywords; override with `--expertise=<lens>`
+- Synthesizer integrates expertise findings into decision matrix
+- Removed Mode A/B distinction — single workflow, lens is the variable
+
+v0.3.9 — 2026-04-25
+- **Multi-agent debate**: `/council [A|B] <topic>` command + 4 new agents (optimist, pragmatist, skeptic, synthesizer)
+- 5-phase workflow: brief → 3 proposals → cross-critique → synthesis → devil's advocate
+- Output = decision matrix + open questions, NEVER auto-decides
+- `vault/_council/` folder for session artifacts
+- `vault/_memory/COUNCIL_LOG.md` for tracking decisions over time
+- AI council uses vault context (PREFERENCES, DECISIONS, OUTCOMES) — not generic advice
 
 v0.3.8 — 2026-04-25
 - `vault/_assets/` for images/PDFs/audio with subfolder structure

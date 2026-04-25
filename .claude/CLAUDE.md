@@ -27,7 +27,7 @@ Before doing any task, planner must:
 - `vault/40_projects/` — high-level project notes (code lives in `code/`)
 - `vault/_assets/` — images, PDFs, audio (embedded in notes)
 - `vault/90_archive/` — condensed originals, weekly reviews, challenges, failures, security log
-- `vault/_memory/` — PROJECTS, DECISIONS, PREFERENCES, OUTCOMES, WORKFLOWS (always loaded) + COST_LOG, ARCHIVE, ANALYST_LOG
+- `vault/_memory/` — PROJECTS, DECISIONS, PREFERENCES, OUTCOMES, WORKFLOWS, COUNCIL_LOG (always loaded) + COST_LOG, ARCHIVE, ANALYST_LOG
 - `vault/_templates/` — 8 Obsidian templates
 - `code/python/` — Python projects
 - `code/web/` — web projects
@@ -55,6 +55,7 @@ user prompt → planner → specialist (researcher/writer/coder/executor)
 ## Manual workflows (opt-in)
 
 - `/onboard` → one-time interview to fill PREFERENCES.md (run after install)
+- `/council <topic> [--expertise=<lens>]` → multi-agent debate (3 proposers + expertise lens) for high-stakes decisions
 - `/challenge <file>` → devils_advocate steelmans a decision
 - `/analyst [quick]` → analyst reports cost + suggests improvements (needs approval)
 - `/handoff` → save session state before context fills
