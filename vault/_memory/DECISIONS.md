@@ -14,6 +14,10 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ---
 
+## Onboarding
+
+- 2026-04-25 — Onboarding complete, PREFERENCES.md filled (approved 2026-04-25)
+
 ## Architecture / system
 
 - 2026-04-25 — v0.3.8: เพิ่ม vault/_assets/ folder (5 subfolders) + .gitignore template สำหรับ binary exclusion (commented out)
