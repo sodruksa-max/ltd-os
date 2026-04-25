@@ -1,0 +1,88 @@
+# ============================================
+# LTD-OS .gitignore
+# block ALL secrets, env files, credentials
+# ============================================
+
+# --- Secrets (NEVER commit) ---
+.secrets/
+.secrets/**
+*.env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*credentials*
+*secret*
+*token*
+!**/secret-rotation-guide.md
+config/secrets.*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / Web ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+.next/
+.nuxt/
+out/
+.cache/
+
+# --- Obsidian (keep config but not workspace state) ---
+vault/.obsidian/workspace*.json
+vault/.obsidian/cache
+vault/.trash/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# --- Claude Code internal ---
+.claude/cache/
+.claude/sessions/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Large binary assets (UNCOMMENT to exclude assets from git) ---
+# Uncomment these lines if vault/_assets/ exceeds 500MB or you hit git size limits.
+# See vault/_assets/README.md for git policy details.
+#
+# vault/_assets/**/*.png
+# vault/_assets/**/*.jpg
+# vault/_assets/**/*.jpeg
+# vault/_assets/**/*.gif
+# vault/_assets/**/*.webp
+# vault/_assets/**/*.mp4
+# vault/_assets/**/*.mov
+# vault/_assets/**/*.mp3
+# vault/_assets/**/*.wav
+# vault/_assets/**/*.pdf
+# !vault/_assets/**/.gitkeep
+# !vault/_assets/README.md
