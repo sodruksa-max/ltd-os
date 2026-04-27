@@ -1,0 +1,285 @@
+---
+description: US pre-market brief with live data — futures, VIX, 10Y, oil, Asia close, scenario playbook, risk framework, trade setups (educational). Use only on days planning to trade US markets.
+---
+
+# /pre-market
+
+Produce a verified pre-market brief for US trading. All numbers must come from live searches — never use recalled data without re-verifying.
+
+## Language
+
+**เขียน brief เป็นภาษาไทยทั้งหมด** — ยกเว้น:
+- ชื่อ ticker / index (S&P 500, VIX, XLE ฯลฯ) — ใช้ภาษาอังกฤษตามเดิม
+- ตัวเลขและหน่วย ($, %, bps) — ใช้ตัวเลขอังกฤษตามเดิม
+- DISCLAIMER ในส่วน Trade Setups — ใช้ภาษาอังกฤษทั้งหมด (ข้อกำหนดทางกฎหมาย)
+- source URLs — ใช้ภาษาอังกฤษตามเดิม
+
+## When invoked
+
+- Manually via `/pre-market` in Claude Code
+- Use only on days planning to trade US markets (heavier than /daily-brief)
+
+## Distinction from /daily-brief
+
+| | /daily-brief | /pre-market |
+|---|---|---|
+| Frequency | Every day | Trading days only |
+| Data source | Vault-only | Live web fetch |
+| Weight | Lean (≤400 words) | Full brief (~800 words) |
+| Purpose | Task focus | Market readiness |
+
+---
+
+## Steps
+
+### 0. Get correct weekday (ALWAYS first)
+
+Run this bash command before writing anything — never guess the day of week:
+
+```bash
+date '+%A %Y-%m-%d'
+```
+
+Map English → Thai: Monday=วันจันทร์, Tuesday=วันอังคาร, Wednesday=วันพุธ, Thursday=วันพฤหัสบดี, Friday=วันศุกร์
+
+Use the output for the brief header: `# Pre-Market Brief — YYYY-MM-DD (วัน__)`
+
+### 1. Fetch all live data in parallel
+
+Fire these searches simultaneously — never sequentially to save time:
+
+**Search queries (run all at once):**
+- `S&P 500 Nasdaq Dow futures pre-market [TODAY'S DATE] live`
+- `VIX volatility index [TODAY'S DATE] current`
+- `US 10 year treasury yield [TODAY'S DATE]`
+- `WTI Brent crude oil price [TODAY'S DATE]`
+- `Asia markets Nikkei Hang Seng Kospi close [TODAY'S DATE]`
+- `overnight news market catalyst [TODAY'S DATE] earnings Fed`
+- `Polymarket prediction markets stocks S&P 500 [TODAY'S DATE] sentiment odds`
+
+**WebFetch (attempt live pages):**
+- `https://finance.yahoo.com/markets/stocks/live/` — extract futures, VIX, key numbers
+- Note: CNBC pre-markets returns 403 — skip, use search instead
+
+**Sources to prioritize (in order of trust for live data):**
+1. Yahoo Finance live article (most current intraday)
+2. CNBC live updates article
+3. Bloomberg Markets
+4. Trading Economics (good for yields, VIX history)
+5. Benzinga / Polymarket (sentiment only)
+
+### 2. Verify and flag conflicts
+
+For every data point, note the source. If two sources give different numbers for the same metric:
+
+- Mark with **⚠️ CONFLICT**
+- Show both values and sources
+- State the likely reason (timestamp difference, contract month, data lag)
+- Do NOT average or pick one — show both and let user decide
+
+Metrics that commonly conflict:
+- Brent crude (spot vs front-month futures)
+- VIX (prior close vs pre-market reading)
+- Futures % change (different timestamps)
+
+If a number cannot be verified from any live source today, write: `[unverified — last confirmed: DATE, VALUE]`
+
+### 3. Generate brief
+
+---
+
+```markdown
+# Pre-Market Brief — YYYY-MM-DD (วัน)
+*ดึงข้อมูลสดทุกตัวเลข ระบุ source ทุกจุด ขัดแย้งระหว่าง source แสดงชัดเจน*
+
+## Futures
+
+| Index | ระดับ | เปลี่ยนแปลง | Source |
+|---|---|---|---|
+| S&P 500 (ES=F) | | | |
+| Nasdaq-100 (NQ=F) | | | |
+| Dow Jones (YM=F) | | | |
+| Russell 2000 (RTY=F) | | | |
+
+## ตัวชี้วัด Macro
+
+| ตัวชี้วัด | ค่า | หมายเหตุ | Source |
+|---|---|---|---|
+| VIX | | เทียบ prior close: | |
+| 10Y Yield | | trend: | |
+| WTI | | | |
+| Brent | | ⚠️ ถ้า conflict | |
+| Gold | | | |
+| DXY (USD) | | ถ้ามีข้อมูล | |
+
+## ⚠️ ข้อมูลขัดแย้งที่พบ
+(ระบุทุกจุด — ถ้าไม่มี: "ไม่พบข้อมูลขัดแย้งระหว่าง source")
+
+## ตลาดเอเชีย (ปิดแล้ว)
+| ตลาด | เปลี่ยนแปลง | ระดับ | หมายเหตุ |
+|---|---|---|---|
+| Nikkei 225 | | | |
+| KOSPI | | | |
+| Hang Seng | | | |
+| CSI 300 | | | |
+| ASX 200 | | | |
+
+## Catalyst คืนที่ผ่านมา
+- สรุป 3-5 ประเด็นหลักที่ขับเคลื่อนตลาดคืนนี้
+- ต้องมีเสมอ: geopolitical, Fed/macro, earnings ที่ประกาศล่วงหน้า
+
+## Polymarket Sentiment (อ้างอิงเท่านั้น)
+| ตลาด / คำถาม | Odds ปัจจุบัน | เปลี่ยนจากวาน | หมายเหตุ |
+|---|---|---|---|
+| S&P 500 จะปิดสูงกว่าวานนี้? | | | |
+| Fed จะลดดอกเบี้ยในการประชุมถัดไป? | | | |
+| [ประเด็น geopolitical / earnings ที่เกี่ยวข้อง] | | | |
+
+*Polymarket = crowd sentiment proxy เท่านั้น — ไม่ใช่การพยากรณ์ที่แม่นยำ ใช้เป็น sanity check กับ base scenario*  
+*ถ้าหา Polymarket data ไม่ได้: ระบุ `[unverified]` และ skip section นี้*
+
+## Earnings วันนี้
+ระบุ ticker พร้อม EPS คาด vs ปีก่อน — โน้ตหุ้นที่เคลื่อนไหวก่อนตลาดเปิด
+
+## ปฏิทินสัปดาห์นี้
+กิจกรรมสำคัญ (FOMC, CPI, earnings หลัก) — ไม่เกิน 5 bullet
+
+---
+
+## Scenario Playbook
+
+สามสถานการณ์สำหรับวันนี้ — ไม่ใช่การพยากรณ์ แต่เป็นกรอบเตรียมรับมือ
+
+### กรณี Bullish
+- **Trigger:** [อะไรต้องเกิดขึ้นให้ scenario นี้เป็นจริง]
+- **Sectors ที่ได้ประโยชน์:**
+- **Sectors ที่เสียประโยชน์:**
+- **ตัวชี้วัดที่ต้องดู:** [2-3 ตัว พร้อมระดับที่สำคัญ]
+
+### กรณี Base (น่าจะเป็นไปได้สุด)
+- **Trigger:** [สภาวะปัจจุบันดำเนินต่อไป]
+- **Sectors ที่ได้ประโยชน์:**
+- **Sectors ที่เสียประโยชน์:**
+- **ตัวชี้วัดที่ต้องดู:**
+
+### กรณี Bearish
+- **Trigger:** [อะไรทำให้สมมติฐานปัจจุบันพัง]
+- **Sectors ที่ได้ประโยชน์:** (defensives, hedges)
+- **Sectors ที่เสียประโยชน์:**
+- **ตัวชี้วัดที่ต้องดู:**
+
+---
+
+## กรอบความเสี่ยง (Risk Framework)
+
+### ความเสี่ยงสูงสุด 3 อันดับวันนี้ + Correlation Breakdown (probability × impact)
+
+| อันดับ | ความเสี่ยง | โอกาสเกิด | ผลกระทบ | เครื่องมือป้องกัน (อ้างอิงเท่านั้น) |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| ⚠️ | **Correlation breakdown** — oil↑ + Fed hawkish + earnings miss พร้อมกัน | ต่ำ แต่ tail risk | **สูงมาก** — defensive ไม่ช่วย | ถือ cash เท่านั้น; ลด position size ทุกประเภท |
+
+> **หมายเหตุ Row ⚠️:** ในสถานการณ์ correlation breakdown ทุก asset class ร่วงพร้อมกัน (stocks + bonds + gold + defensives) เครื่องมือป้องกันปกติไม่ work — cash คือ hedge เดียวที่เชื่อถือได้
+
+**เครื่องมือป้องกันความเสี่ยงทั่วไป** (อ้างอิงเท่านั้น — ไม่ใช่คำแนะนำให้ซื้อ):
+- VIX สูง / tail risk: VIX calls, UVXY
+- Yield พุ่ง: TLT puts, financials long
+- Oil shock: XLE long, airlines/transports short
+- USD แข็ง: EEM short, gold watch
+- Broad selloff: หมุนเข้า defensive (XLU, XLV, XLP), ถือ cash
+
+**Reminder เรื่องขนาด position:**
+- VIX > 20: ลดขนาด position, ขยาย stop
+- วัน event risk (FOMC, CPI, Mag7 earnings): พิจารณาลดขนาดก่อน แล้วรอ reaction
+- VIX < 15: ระวัง complacency — อย่า over-leverage ตอนตลาดนิ่ง
+
+---
+
+## Trade Setups (เพื่อการศึกษาเท่านั้น)
+
+> **DISCLAIMER: The setups below are educational frameworks based on publicly available technical and fundamental data. They are NOT financial advice, NOT personalized recommendations, and NOT a solicitation to buy or sell any security. All trading involves risk of loss. Do your own research and consult a licensed advisor before making any investment decision.**
+
+Setup ทุกอันใช้ logic แบบ IF-THEN — การเข้า position ขึ้นอยู่กับ trigger ไม่ใช่แน่นอนเสมอ
+
+**กฎบังคับก่อนเขียน setup:**
+
+1. **Forward-looking only** — ตรวจสอบว่า "ถ้า" condition ยังไม่เกิด ณ ตอนที่เขียน ถ้าเกิดแล้ว → skip setup นั้น เขียน setup ใหม่แทน
+2. **Time horizon consistency** — ระยะเวลาใน body ต้องตรงกับ header:
+   - Header = `Day` → body พูดถึงแค่ "วันนี้" เท่านั้น ห้ามพูด "สัปดาห์นี้"
+   - Header = `Swing` → body พูดถึง "2-10 วัน" หรือ "สัปดาห์" ได้
+   - Header = `Position` → body พูดถึง "หลายสัปดาห์/เดือน" ได้
+
+### Setup 1 — [Ticker / Sector] | ระยะเวลา: [Day / Swing / Position]
+
+**เหตุผล:** [หนึ่งประโยคอธิบายว่าทำไม setup นี้ถึงน่าสนใจ — technical + fundamental สอดคล้องกันอย่างไร]
+
+- **ถ้า:** [เงื่อนไขเข้า — ระดับราคา, catalyst ยืนยัน, สัญญาณ volume]
+- **แล้ว:** [ทิศทางที่คาดและช่วงเคลื่อนไหว]
+- **ล้มเลิกถ้า:** [ระดับหรือเหตุการณ์ที่ทำให้ setup นี้ไม่ valid]
+- **ระยะเวลา:** [Day trade (วันเดียว) / Swing (2-10 วัน) / Position (หลายสัปดาห์)]
+- **Catalyst สนับสนุน:** [เหตุการณ์ fundamental ที่หนุนหรือคุกคาม setup นี้]
+
+### Setup 2 — [Ticker / Sector] | ระยะเวลา: [Day / Swing / Position]
+
+- **ถ้า:**
+- **แล้ว:**
+- **ล้มเลิกถ้า:**
+- **ระยะเวลา:**
+- **Catalyst สนับสนุน:**
+
+### Setup 3 — [Ticker / Sector] | ระยะเวลา: [Day / Swing / Position]
+
+- **ถ้า:**
+- **แล้ว:**
+- **ล้มเลิกถ้า:**
+- **ระยะเวลา:**
+- **Catalyst สนับสนุน:**
+
+---
+*Sources: [ระบุทุก source พร้อม URL]*
+```
+
+---
+
+### 4. Save
+
+- Save to: `vault/20_investment/_journal/YYYY-MM-DD-premarket.md`
+- If file already exists from earlier today: overwrite (user may have run /pre-market twice)
+- Show full brief in chat
+
+### 5. Reporting
+
+End with:
+```
+Brief saved to: vault/20_investment/_journal/YYYY-MM-DD-premarket.md
+Searches used: X | WebFetch attempts: Y | Conflicts found: Z
+Unverified data points: [list or "none"]
+```
+
+---
+
+## Constraints
+
+- **Every number needs a source** — no exceptions. If unverifiable, say so.
+- **Conflicts must be shown** — never silently pick one number over another.
+- **Setups are IF-THEN, never "buy X"** — always conditional, always with invalidation.
+- **Disclaimer must appear** before Trade Setups section verbatim — do not shorten.
+- **No invented scenarios** — scenarios must be grounded in today's actual catalysts.
+- **Token budget:** ~5K tokens for full task (heavier than /daily-brief by design)
+- **Search cap:** 8 searches max — prioritize parallel execution
+
+## Anti-patterns
+
+- ❌ "Based on my knowledge, the VIX is around..." — all numbers must be fetched today
+- ❌ Picking one oil price when sources conflict — show both
+- ❌ "You should buy X" — always IF-THEN, never imperative
+- ❌ Omitting the DISCLAIMER before Trade Setups
+- ❌ Running searches sequentially — always parallel
+- ❌ Scenarios that don't tie to today's actual catalysts
+- ❌ Trade setups without invalidation levels
+- ❌ Guessing the weekday — always run `date` bash command first
+- ❌ Setup "ถ้า" condition that has already been met — replace with a genuinely forward-looking setup
+- ❌ Writing "สัปดาห์นี้" inside a setup labeled `Day` — time horizon must be consistent
+- ❌ Omitting the correlation breakdown row (⚠️) from Risk Framework table
