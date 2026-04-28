@@ -298,6 +298,112 @@ Searches used: X | WebFetch attempts: Y | Conflicts found: Z
 Unverified data points: [list or "none"]
 ```
 
+### 6. Decision Tree (opt-in)
+
+After reporting, ask the user:
+
+> **สร้าง decision tree ต่อเลยไหม? (y/n)** [default: y]
+
+**ถ้า n:** จบ command — แค่ report path ของ brief ที่ save ไว้
+
+**ถ้า y (หรือ user ไม่ตอบ / กด Enter):**
+
+1. **ตรวจสอบไฟล์ก่อน:** ถ้า `vault/20_investment/_journal/YYYY-MM-DD-decision-tree.md` มีอยู่แล้ว → แจ้ง user:
+   > ⚠️ พบไฟล์ `YYYY-MM-DD-decision-tree.md` อยู่แล้ว — จะ overwrite หรือไม่? (y/n)
+   ถ้า user ตอบ n → จบโดยไม่แตะไฟล์นั้น
+
+2. **สร้าง decision tree** โดยใช้ข้อมูลจาก brief ที่เพิ่งสร้าง (อ้างอิง Most Likely Scenario, Setups, Catalysts):
+
+```markdown
+# Pre-Trade Decision Tree — YYYY-MM-DD (วัน)
+*อ้างอิงจาก [[YYYY-MM-DD-premarket]] | สร้างต่อจาก brief | ใช้ประกอบการตัดสินใจเท่านั้น ไม่ใช่คำแนะนำลงทุน*
+
+---
+
+> **Context วันนี้:** [VIX | S&P futures | Brent | events หลัก — ดึงจาก brief]
+> **Most Likely Scenario: [Bullish/Base/Bearish]** — [เหตุผล 1 ประโยคจาก Most Likely Scenario ใน brief]
+> **Risk Level:** [สรุป 1 ประโยค]
+
+---
+
+## Today's Plan ([Most Likely Scenario])
+
+*5 actions สำหรับวันนี้ ถ้า scenario ยังเป็น [Most Likely]*
+
+| # | Action |
+|---|---|
+| **1** | **[Setup 1 Ticker] — [เข้า/รอ/skip]:** [เงื่อนไขและ action จาก Setup 1 ใน brief] |
+| **2** | **[Setup 2 Ticker] — [เข้า/รอ/skip]:** [เงื่อนไขและ action จาก Setup 2 ใน brief] |
+| **3** | **[Setup 3 Ticker] — [เข้า/รอ/skip]:** [เงื่อนไขและ action จาก Setup 3 ใน brief] |
+| **4** | **Cash buffer [ระดับ]%:** [เหตุผล] |
+| **5** | **Time-of-day:** ไม่เข้า new position หลัง 3:00pm ET; หลีกเลี่ยง 11:30am–1:30pm ET (lunch lull) |
+
+---
+
+## Contingency Plans
+
+### ถ้า flip → Bullish
+**Triggers ที่ต้องเกิด (อย่างน้อย 2 ใน 3):**
+- [trigger 1 — อิงจาก Bullish scenario ใน brief]
+- [trigger 2]
+- [trigger 3]
+
+**ปรับ action:**
+- [การเปลี่ยน Setup 1/2/3 ถ้า Bullish]
+- Cash buffer ≥ [ระดับ]%
+
+### ถ้า flip → Bearish
+**Triggers ที่ต้องเกิด (อย่างน้อย 1 ใน 3):**
+- [trigger 1 — อิงจาก Bearish scenario ใน brief]
+- [trigger 2]
+- [trigger 3]
+
+**ปรับ action:**
+- [การเปลี่ยน Setup 1/2/3 ถ้า Bearish]
+- Cash buffer ≥ [ระดับ]%
+
+---
+
+## Pre-Commit Rules
+*rules เหล่านี้ยอมรับล่วงหน้า — ถ้าเงื่อนไขเกิดขึ้น ให้ทำตามโดยไม่ต้องคิดใหม่*
+
+**Circuit Breakers (ปิด position ก่อน):**
+- `if VIX > 22` → close all positions, ถือ cash 100% ไม่มีข้อยกเว้น
+- `if S&P 500 หลุด [support level จาก brief] intraday` → ลด total exposure 50% ทันที
+- `if S&P + TLT + GLD ร่วงพร้อมกัน > 1% ใน 30 นาที` → exit ทุก position, cash 100% — correlation breakdown
+
+**Setup Invalidation (ยกเลิก setup ทันที):**
+- [invalidation condition จาก Setup 1 ใน brief]
+- [invalidation condition จาก Setup 2 ใน brief]
+- [invalidation condition จาก Setup 3 ใน brief]
+
+**Earnings Signal:**
+- [ถ้ามี earnings barometer วันนี้ เช่น KO+UPS miss → ลด position X%]
+
+**Profit-Taking Rules:**
+- [Setup 1 profit-take rule — อิงจาก Setup 1]
+- [Setup 2 profit-take rule — อิงจาก Setup 2]
+- [Setup 3 profit-take rule — อิงจาก Setup 3]
+
+**Time-of-Day Rules:**
+- `ห้ามเข้า new position หลัง 3:00pm ET`
+- `11:30am–1:30pm ET (lunch lull)` → ไม่ใช่ entry time
+
+**Event Day Protocol:**
+- [ถ้ามี FOMC/CPI/earnings ใหญ่ระหว่างสัปดาห์ — ระบุ condition จาก brief]
+
+---
+
+> **DISCLAIMER: ตารางนี้เป็น educational framework เพื่อการวางแผนความคิดเท่านั้น ไม่ใช่คำแนะนำลงทุน ทุกการตัดสินใจขึ้นอยู่กับผู้อ่านแต่เพียงผู้เดียว การลงทุนมีความเสี่ยง**
+```
+
+3. **Save** to `vault/20_investment/_journal/YYYY-MM-DD-decision-tree.md`
+
+4. **Report:**
+```
+Decision tree saved to: vault/20_investment/_journal/YYYY-MM-DD-decision-tree.md
+```
+
 ---
 
 ## Constraints
