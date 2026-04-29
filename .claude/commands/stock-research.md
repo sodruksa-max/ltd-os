@@ -10,57 +10,103 @@ Invoke researcher agent to gather info on a ticker, fill in `stock-research.md` 
 - `/stock-research NVDA`
 - `/stock-research TSM — focus on foundry competition`
 
+## Language rule
+
+**ตอบเป็นภาษาเดียวกับที่ user พิมพ์** — Thai เมื่อ user พิมพ์ Thai, English เมื่อ English. Technical terms (ticker, EPS, P/E, FCF ฯลฯ) ใช้ภาษาอังกฤษเสมอ. เนื้อหาในไฟล์ที่ save ให้ใช้ภาษาเดียวกับที่ตอบ user.
+
 ## Steps
 
-1. **Parse ticker** from user input (required). Parse angle/focus if provided (optional).
+### 1. Parse input
 
-2. **Check existing vault note** first:
-   ```bash
-   ls vault/20_investment/ | grep -i <TICKER>
-   ```
-   - If exists: ask user "Note exists at <path>. Update it, or create new dated version?"
-   - If not: proceed to new note
+- **Ticker** (required): ตัวพิมพ์ใหญ่ เช่น `ONDS`, `NVDA`
+- **Focus angle** (optional): ถ้ามี เช่น `— focus on foundry competition` → ใช้แคบ scope ของ researcher ในขั้น 3 (ไม่ใช่แค่ parse แล้วทิ้ง)
 
-3. **Invoke researcher** with scope:
-   - Company basics (business model, revenue segments, geo)
-   - Latest 10-K / 10-Q highlights (search "<TICKER> 10-K")
-   - Latest earnings call (search "<TICKER> earnings call transcript")
-   - Competitive position (named competitors + moat)
-   - Bear case (search "<TICKER> bear case" — steelman)
-   - Current valuation (P/E, EV/EBITDA, vs. history)
-   
-   Budget: 5 web searches max, 10 vault reads max.
+### 2. ตรวจ vault ก่อน
 
-4. **Fill template** `vault/_templates/stock-research.md`:
-   - Save to: `vault/20_investment/<TICKER>-YYYY-MM-DD.md`
-   - Populate ALL sections with researcher's findings
-   - Leave "Thesis" section for user to write themselves — this is THEIR investment call, not Claude's
-   - Mark any section where info is missing with `❓ verify`
+**2a. ตรวจ note เดิมของ ticker:**
+```bash
+ls vault/20_investment/ | grep -i <TICKER>
+```
+- ถ้ามี: ถาม user "มี note อยู่แล้วที่ `<path>` — อัปเดต หรือสร้าง version ใหม่?"
+- ถ้าไม่มี: ดำเนินต่อ
 
-5. **Report back**:
-   ```
-   Stock research saved: vault/20_investment/<TICKER>-YYYY-MM-DD.md
-   
-   Filled sections:
-   ✓ Business, Numbers, Competitive position, Bull case, Bear case
-   ❓ Needs verification: <list>
-   ❗ Left for you to fill: Thesis, Decision log, Position sizing
-   
-   Before you act on this:
-   → Write your thesis in the Thesis section
-   → Run: /challenge vault/20_investment/<TICKER>-YYYY-MM-DD.md
-   
-   Researcher used: N searches, M vault reads
-   ```
+**2b. ตรวจ sector/macro notes ที่เกี่ยวข้อง:**
+```bash
+grep -ri "<TICKER>\|<SECTOR_KEYWORD>" vault/10_research/ vault/20_investment/ --include="*.md" -l
+```
+ถ้าพบ → โหลดเป็น context ก่อนวิจัย (อย่า re-research สิ่งที่มีอยู่แล้ว)
+
+### 3. Invoke researcher
+
+**Budget: 5 web searches max, 10 vault reads max**
+
+**ถ้ามี focus angle** → จำกัด searches ให้อยู่ใน focus นั้น (เช่น focus foundry = ค้นเรื่อง foundry competition เป็นหลัก ไม่ต้องลงลึก segment อื่น)
+
+**Search scope หลัก (ปรับตาม focus ถ้ามี):**
+
+| หัวข้อ | Query ตัวอย่าง |
+|---|---|
+| ธุรกิจ + segment | `<TICKER> business model revenue segments 2025` |
+| 10-K / 10-Q | `<TICKER> 10-K annual report latest` |
+| Earnings call | `<TICKER> earnings call transcript latest` |
+| Bear case + short thesis | `<TICKER> bear case short thesis risks` |
+| Valuation + peers | `<TICKER> valuation P/E EV/EBITDA sector peers` |
+
+**ข้อมูลที่ต้องดึงมา (ครบทุกข้อ หรือใส่ ❓ verify):**
+
+- Company basics: business model, revenue segments, geography
+- ตัวเลขการเงิน: revenue TTM, growth YoY, gross margin, FCF, net debt, P/E, EV/EBITDA
+- **Valuation vs. peers:** เทียบกับ sector median + historical range 3 ปี (อย่าแค่รายงานตัวเลขเปล่า)
+- **Next earnings date:** วันประกาศผลรอบถัดไป + consensus EPS estimate ถ้ามี
+- **Short interest:** % of float ที่ short + เทียบกับ average (สัญญาณ squeeze หรือ smart money)
+- **Insider ownership + dilution history:** % insider holding, การซื้อ/ขายหุ้นของ insider ล่าสุด, จำนวนหุ้นที่ออกใหม่ใน 2-3 ปีที่ผ่านมา
+- **Management quality:** CEO background, track record ในบริษัทนี้ หรือบริษัทก่อนหน้า, red flags (เช่น ลาออกบ่อย, restatement)
+- Competitive position + moat
+- Bull case (3 ข้อ)
+- Bear case / steelman (3 ข้อ — steelman ไม่ใช่ strawman)
+- Key catalysts 6-12 เดือน
+
+### 4. Fill template
+
+- Template: `vault/_templates/stock-research.md`
+- Save to: `vault/20_investment/<TICKER>-YYYY-MM-DD.md`
+- กรอกทุก section ด้วยข้อมูลจาก researcher
+- **ห้ามเขียน Thesis ให้ user** — เว้นไว้ว่างๆ พร้อม note ว่าเป็นของ user
+- ใส่ `❓ verify` ทุกที่ที่ไม่มีข้อมูลยืนยัน
+
+### 5. Report back
+
+```
+บันทึกแล้ว: vault/20_investment/<TICKER>-YYYY-MM-DD.md
+
+ส่วนที่กรอกแล้ว:
+✓ <list ของ section ที่กรอก>
+❓ ต้องตรวจสอบเพิ่ม: <list>
+❗ เหลือให้คุณกรอกเอง: Thesis, Decision log, Position sizing
+
+ความน่าเชื่อถือของ research: <High / Medium / Low>
+— High = ข้อมูลสำคัญครบ sources ตรงกัน
+— Medium = ข้อมูลหลักครบ แต่มี ❓ หลายจุด
+— Low = หาข้อมูลได้จำกัด (micro-cap / ข่าวน้อย / แหล่งขัดแย้งกัน)
+
+ก่อนตัดสินใจ:
+→ เขียน Thesis ในไฟล์ก่อน
+→ รัน: /challenge vault/20_investment/<TICKER>-YYYY-MM-DD.md
+
+Researcher ใช้: N searches, M vault reads
+```
+
+---
 
 ## Constraints
 
-- **Do NOT write the thesis for the user** — that's the point, they decide
-- **Do NOT recommend buy/sell** — present info, user decides
-- **Flag uncertainty** — if P/E from different sources disagree, say so
-- **Don't invent numbers** — if researcher couldn't find a metric, leave `❓` instead of guessing
-- **One ticker per invocation** — multi-ticker comparison is a different command
+- **ห้ามเขียน thesis ให้ user** — การตัดสินใจลงทุนเป็นของ user เท่านั้น
+- **ห้ามแนะนำ buy/sell** — นำเสนอข้อมูล user ตัดสินใจเอง
+- **Flag ความขัดแย้ง** — ถ้า P/E หรือตัวเลขอื่นจาก sources ต่างกัน ให้แสดงทั้งสองค่าและ flag ⚠️ CONFLICT
+- **ห้ามสร้างตัวเลข** — ถ้าหาไม่ได้ใส่ `❓` ไม่ใช่เดา
+- **One ticker per invocation** — เปรียบเทียบหลาย ticker ใช้คำสั่งอื่น
+- **ภาษา:** ตาม language rule ด้านบน
 
 ## When user asks follow-up questions
 
-After initial research, questions like "what about margins?" → use existing note as context first (read it), add section if needed, save. Don't re-research from scratch.
+หลัง research แล้ว ถ้า user ถามเพิ่ม เช่น "margin เป็นยังไง?" → อ่าน note ที่มีอยู่ก่อน → เพิ่ม section ถ้าจำเป็น → save. ห้าม re-research ทั้งหมดใหม่
