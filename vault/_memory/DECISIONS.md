@@ -44,6 +44,9 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ## Workflow
 
+- 2026-04-28 — self-review bias mitigation: เดือนละครั้งอ่าน /post-market review ตาเปล่า (ไม่ผ่าน Claude) เพื่อ verify logic ไม่ rationalize
+- 2026-04-28 — paper trade 2 สัปดาห์ก่อน scale up: ทุก setup ที่ build ต้อง paper trade ก่อน slippage + emotion + execution lag = blind spots
+- 2026-04-28 — command iteration freeze หลัง v5: ห้ามแก้ /pre-market 1-2 สัปดาห์ — validate ที่ /weekly-learnings (~4 พ.ค.) ก่อน iterate ต่อ
 - 2026-04-28 — /pre-market confidence cap (v5): event risk count → ceiling: 0-1 = ดุลพินิจปกติ, 2 = cap medium, 3+ = cap low — multi-event days = uncertainty compounds, source: 04-28 over-confident verdict
 - 2026-04-28 — decision tree merge เข้า /pre-market (v4): 2 prompts/วัน = friction; tree ต้อง derive จาก brief เสมอ → atomic operation
 - 2026-04-28 — /post-market แยกจาก /pre-market: รวม = ปรับ prediction ตอนเขียน review = bias; แยก = honest calibration
