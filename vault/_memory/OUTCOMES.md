@@ -57,6 +57,12 @@ Each entry follows this structure:
 
 (empty — entries will appear as you live with decisions long enough to see results)
 
+---
+
+## Trading Calibration Log
+
+*One-line per trading day — appended by /post-market*
+
 2026-04-28 — Predicted: Base (medium), Actual: Bearish (-0.49%), Match: Partial, Calibration: over-confident, Top lesson: ลด confidence เป็น low เมื่อ event risk ≥ 2 ตัวพร้อมกัน (FOMC + Mag7 earnings + Iran)
 
 <!-- Example entry (delete when adding real ones):
