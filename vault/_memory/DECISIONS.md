@@ -44,6 +44,12 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ## Workflow
 
+- 2026-04-28 — /pre-market confidence cap (v5): event risk count → ceiling: 0-1 = ดุลพินิจปกติ, 2 = cap medium, 3+ = cap low — multi-event days = uncertainty compounds, source: 04-28 over-confident verdict
+- 2026-04-28 — decision tree merge เข้า /pre-market (v4): 2 prompts/วัน = friction; tree ต้อง derive จาก brief เสมอ → atomic operation
+- 2026-04-28 — /post-market แยกจาก /pre-market: รวม = ปรับ prediction ตอนเขียน review = bias; แยก = honest calibration
+- 2026-04-28 — council recommendation อยู่ใน /post-market เท่านั้น (ไม่ใช่ /pre-market): post มี reality evidence → specific; pre ไม่มี evidence → generic
+- 2026-04-28 — Most Likely Scenario บังคับเลือก 1 ห้าม "ไม่แน่ใจ": hedge = no value; "อะไรจะทำให้ผิด" section รับหน้าที่หลีกเลี่ยง false certainty แทน
+- 2026-04-28 — /pre-market แยกจาก /daily-brief: daily-brief = vault-only ทุกวัน light; pre-market = live data fetch เฉพาะวัน trade US heavy; รวม = overload วันที่ไม่ trade
 - 2026-04-25 — NotebookLM ย่อย PDF ยาว → copy → /import-notebooklm (manual)
 - 2026-04-25 — Git commit ผ่าน safe-commit.sh เท่านั้น (ไม่ commit ตรง)
 - 2026-04-25 — Conventional commits (feat/fix/docs/refactor/chore)
