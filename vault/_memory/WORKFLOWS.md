@@ -176,6 +176,49 @@ Each workflow:
 - รัน /post-market แล้วข้ามไป /pre-market ทันทีโดยไม่อ่าน lessons
 **Last refined**: 2026-04-28
 
+**Command modification rules**:
+- ห้ามแก้ command ทุกวัน — แก้เมื่อ pattern ซ้ำ ≥ 3 ครั้งเท่านั้น
+- Encode lesson เป็น rule generalizable ไม่ใช่ fix เฉพาะกรณี
+- หลังแก้ → commit + version bump (v6, v7…)
+
+**Confidence calibration (mandatory ใน /pre-market)**:
+- นับ event risks: FOMC/Powell, Mag7 earnings week, Major geopolitical unresolved, CPI/PCE/NFP, Major Fed speakers
+- 0-1 events → ดุลพินิจ | 2 events → cap medium | 3+ events → cap low
+
+**Trade setup discipline**:
+- Forward-looking เท่านั้น — if-then ไม่ใช่ already-true
+- Time-stop ทุก setup (Day = exact ET time, Swing = days)
+- Profit-taking rules กำหนดก่อนเข้า — ไม่ใช่หลังกำไร
+- ห้าม entry หลัง 3pm ET; lunch lull 11:30–13:30 ET = no entry
+
+**Pre-commit rules 5 ประเภท**:
+1. Circuit breakers — ปิด position ทันที
+2. Setup invalidation — thesis ตาย
+3. Profit-taking — lock gains
+4. Time-of-day — เวลาห้าม trade
+5. Earnings/news triggers
+
+**Source verification**:
+- ทุกตัวเลขต้องมี source attribution
+- Conflict ระหว่าง sources → flag ชัด, choose ด้วย methodology
+- ห้าม fabricate — ใช้ `[unverified]` ถ้าหาไม่ได้
+- Live data > cached > forecast model
+
+**Weekly review**:
+- `/weekly-learnings` → aggregate 5 reviews → หา pattern ที่ data แข็งพอ
+- ถ้าเห็น improvement candidate → encode เข้า command
+- ห้าม tweak จาก single data point
+
+**Session continuity**:
+- ก่อนปิด Claude Code session → `/handoff`
+- Uncommitted files → commit หรือ revert ก่อนปิด — ห้าม orphan changes ข้ามวัน
+
+**Claude.ai vs Claude Code roles**:
+- Claude Code = workhorse (90% ของงาน)
+- Claude.ai = consultant สำหรับ second opinion
+- เริ่มแชท Claude.ai ใหม่ → paste handoff + relevant context (Claude.ai ไม่จำ)
+- หลัง consultation → archive lessons กลับลง vault
+
 ---
 
 ## Adding a new workflow
