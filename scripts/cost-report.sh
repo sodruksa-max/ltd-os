@@ -2,7 +2,7 @@
 # cost-report.sh — estimate Claude API costs from Claude Code usage
 # Usage: cost-report.sh [--period day|week|month] [--format text|json]
 
-set -euo pipefail
+set -eo pipefail
 
 PERIOD="${2:-week}"
 FORMAT="text"

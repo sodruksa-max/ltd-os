@@ -28,3 +28,7 @@ updated: weekly
 - NotebookLM: free tier (used 8 times)
 - Status: ✓ on track
 -->
+
+## 2026-04-27 — week report
+- Total: $0.00 (0 tokens)
+- Input: $0.00, Output: $0.00
