@@ -26,7 +26,7 @@ After outcome observable (2-8 weeks), add note:
 
 ## Sessions
 
-(empty — populates as you use /council)
+- 2026-04-25 — ควรเริ่ม project trading-foundations แบบไหนดี — lens: financial_risk — status: open → [[_council/2026-04-25-trading-foundations-start/DECISION]]
 
 ---
 
