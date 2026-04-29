@@ -149,6 +149,20 @@ Save to `vault/20_investment/_journal/<date>-review.md`:
 
 ---
 
+## Council Recommendation
+
+*(สร้างเฉพาะเมื่อมี pattern ที่ต้อง debate จริง — ห้าม recommend council ทุกวัน)*
+
+ถ้ามี pattern จาก lessons/blind spots ที่ต้อง debate:
+- **หัวข้อ:** [เฉพาะเจาะจง ไม่ generic — เช่น "ควรใช้ adjusted หรือ GAAP EPS เป็น trigger criterion?" ไม่ใช่ "ลอง council ดู"]
+- **Evidence จาก review นี้:** [อ้างอิงตัวเลข/เหตุการณ์จาก review วันนี้โดยตรง]
+- **Suggested lens:** [engineer / financial_risk / strategist — เลือกตามลักษณะปัญหา]
+- **Command:** `/council <topic> --expertise=<lens>`
+
+ถ้าไม่มี decision ใหญ่ที่ต้อง debate → เขียน "ไม่มี council recommendation วันนี้" แล้วจบ ห้าม fabricate หัวข้อ
+
+---
+
 ## Lessons for Next Brief
 
 [2-3 actionable improvements สำหรับ brief วันพรุ่งนี้]

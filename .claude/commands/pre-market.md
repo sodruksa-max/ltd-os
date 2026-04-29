@@ -406,6 +406,17 @@ After reporting, ask the user:
 
 ---
 
+## Decision Confidence Check
+
+*ทำก่อนปิด decision tree — ทุก checkbox ที่ check ต้องมี action เฉพาะ ห้าม vague*
+
+- [ ] Today's Plan ชัดเจนทุก action → ไม่ต้อง council
+- [ ] มี dilemma ระหว่าง setups (ไม่รู้จะเลือก Setup ไหน) → `/council <ระบุ dilemma เฉพาะ>`
+- [ ] Position size รู้สึกผิดปกติ (ใหญ่เกิน VIX level / เล็กจน meaningless) → `/council --expertise=financial_risk`
+- [ ] Setup ขัดกับ Most Likely Scenario (เช่น Long tech ทั้งที่ Most Likely = Bearish) → `/council ทำไม mismatch ระหว่าง [setup] กับ [scenario]`
+
+---
+
 > **DISCLAIMER: ตารางนี้เป็น educational framework เพื่อการวางแผนความคิดเท่านั้น ไม่ใช่คำแนะนำลงทุน ทุกการตัดสินใจขึ้นอยู่กับผู้อ่านแต่เพียงผู้เดียว การลงทุนมีความเสี่ยง**
 ```
 
