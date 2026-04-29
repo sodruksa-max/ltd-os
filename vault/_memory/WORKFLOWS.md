@@ -158,6 +158,24 @@ Each workflow:
 - Inventing learnings (quiet weeks happen — say so)
 **Last refined**: 2026-04-25
 
+### Pre/Post Market daily cycle (US trading days)
+
+**When to use**: วันที่วางแผน trade US markets (ไม่ใช่ทุกวัน)
+**Steps**:
+1. `07:00–08:00 TH` — `/post-market <yesterday>` อ่าน "Lessons for next brief"
+2. ตัดสินใจแก้ command หรือไม่ → ดู DECISIONS.md rule: ห้ามแก้ /pre-market 1-2 สัปดาห์หลัง v5 เว้นแต่ lesson ชัดเจนจาก pattern 3+ ครั้ง
+3. `/pre-market` วันใหม่ (สร้าง brief + decision tree รวมใน step เดียว)
+4. ทำ Decision Confidence Check checklist ใน decision tree
+5. ถ้า checkbox ติด → `/council <topic เฉพาะ>` ก่อนตลาดเปิด
+6. `20:30 TH` — ตลาด US เปิด — trade ตาม pre-commit rules เท่านั้น ไม่ improvise
+**Done when**: เข้า position (หรือตัดสินใจไม่เข้า) ตาม pre-commit rules ที่เขียนไว้ใน decision tree
+**Common pitfalls**:
+- แก้ command หลัง post-market ทุกวัน = tweaking on noise (ดู DECISIONS.md: command freeze rule)
+- ข้าม Decision Confidence Check = เข้า position โดยไม่รู้ว่ามี dilemma ค้างอยู่
+- Improvise ระหว่างตลาดเปิด แทนที่จะ follow pre-commit rules
+- รัน /post-market แล้วข้ามไป /pre-market ทันทีโดยไม่อ่าน lessons
+**Last refined**: 2026-04-28
+
 ---
 
 ## Adding a new workflow
