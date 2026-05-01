@@ -23,8 +23,30 @@ Read:
 - Last 5 commits (`git log --oneline -5`) — recent activity
 - `vault/_memory/COST_LOG.md` — latest week's spend (if exists)
 
+**Trading-aware context** (read if files exist — don't error if missing):
+- `vault/20_investment/_journal/YYYY-MM-DD-premarket.md` (today) — exists?
+- `vault/20_investment/_journal/YYYY-MM-DD-review.md` (today) — exists?
+- Latest `vault/20_investment/screener-performance-*.md` — any "pending" entries that now have data? (D+N date ≤ today)
+- `vault/_memory/OUTCOMES.md` Trading Calibration Log — count reviews since last `[weekly-calibration ...]` line
+
 **Do NOT** fetch external data (news, market). That's Phase 2.
 **Do NOT** re-read vault/10_research/ or large sections — stay lean.
+
+### 1b. Derive suggested focus signals
+
+Use the context above to build a **signal list** before writing the brief. Evaluate each:
+
+| Signal | Condition | Suggested action |
+|---|---|---|
+| Premarket missing | Today is Mon-Fri AND no premarket file | "รัน /pre-market ก่อนตลาดเปิด" |
+| Review missing | Today is Mon-Fri AND no review file (after 16:00 ET) | "รัน /post-market หลังตลาดปิด" |
+| Screener returns ready | screener-performance has "pending" rows where D+N date ≤ today | "รัน screener-performance.py — ผล D+N พร้อมแล้ว" |
+| Calibration due | ≥ 5 reviews since last weekly-calibration | "รัน /weekly-calibration — มี N reviews สะสม" |
+| Inbox stale | Items > 7 days old | "Sort inbox — มี X items ค้าง" |
+| Commits stale | No commits > 3 days | "ไม่มี commit 3+ วัน — มีงานค้างไหม?" |
+| Weekly market due | New week started AND no weekly-market file for this week | "รัน /weekly-market สัปดาห์ใหม่แล้ว" |
+
+Pick the **top 2-3 signals** with clearest evidence. If no signals → "ไม่มีงานค้าง — เริ่ม session ใหม่ได้เลย"
 
 ### 2. Generate brief
 
@@ -38,10 +60,10 @@ Format (keep short, ≤ 400 words):
 - 
 
 ## Today's suggested focus
-(based on active projects + yesterday's state)
-1. 
-2. 
-3. 
+(grounded in actual vault state — only list what has evidence)
+1. [action] — [one-line reason from signal]
+2. [action] — [one-line reason from signal]
+3. [action] — [one-line reason from signal, or omit if < 3 signals]
 
 ## Inbox attention needed
 - <count> items (<X> stale > 7d)
