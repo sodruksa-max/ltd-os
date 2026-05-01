@@ -64,6 +64,7 @@ user prompt → planner → specialist (researcher/writer/coder/executor)
 - `/daily-brief` → morning briefing from vault context (manual, or via cron)
 - `/import-notebooklm` → paste NotebookLM summary, save to vault
 - `/stock-research <TICKER>` → chain researcher + stock template
+- `/weekly-calibration [N]` → self-improving layer: อ่าน N วันของ review → หา pattern → เสนอ update กฎ (user approve ก่อนทุกครั้ง)
 
 ## Token economics policy
 
@@ -139,6 +140,19 @@ Writer/executor must check before writing. Reviewer enforces at commit.
 - Don't modify agent prompts or CLAUDE.md without user approval in chat
 - Don't auto-invoke `analyst` or `devils_advocate` — user invokes
 - Don't load `vault/90_archive/` or `vault/_memory/ARCHIVE.md` unless user asks
+
+## NO MAGIC — ห้ามเดา
+
+- ห้ามสมมติ vault path, file structure, หรือ service ที่ไม่เคย verify ก่อน — ถ้าไม่รู้ว่าไฟล์อยู่ไหน ให้ Glob/Grep หาก่อน
+- ถ้าต้องสมมติเพื่อดำเนินต่อ → บอกว่า "ผมสมมติว่า X" ก่อนทำทุกครั้ง
+- ห้ามอ้างตัวเลข, ข้อมูล, หรือ source ที่ไม่ได้ verify — ถ้าไม่แน่ใจให้บอก `[unverified]` ไม่ใช่เดาแล้วพูดเหมือนมั่นใจ
+
+## SCOPE DRIFT — ห้ามขยาย scope โดยไม่ถาม
+
+- "แก้ X" = แก้แค่ X เท่านั้น ห้าม refactor รอบข้างโดยไม่ถาม
+- "เพิ่ม Y" = เพิ่มแค่ Y ห้าม redesign structure ที่อยู่ข้างๆ
+- ถ้าระหว่างทำเห็นว่า "น่าจะปรับตรงนี้ด้วย" → หยุด แจ้ง user ก่อน ไม่ทำเอง
+- "Just one more improvement" ต้องถามก่อนเสมอ
 
 ## When things feel wrong
 
