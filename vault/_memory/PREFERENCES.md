@@ -98,6 +98,7 @@ Trading focus:
 - leverage, options, crypto leverage, all-in
 - averaging down losers
 - revenge trading หลังขาดทุน
+- ใช้ confidence medium หรือ high เมื่อ event risk ≥2 ตัวพร้อมกัน (FOMC + earnings + macro release + geopolitical) → max = low เสมอ *(approved 2026-05-02)*
 
 Phase progression:
 - Month 1-6: paper trading เท่านั้น — track ทุก trade ใน vault/20_investment/_journal/

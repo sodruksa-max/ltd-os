@@ -64,6 +64,15 @@ Each entry follows this structure:
 *One-line per trading day — appended by /post-market*
 
 2026-04-28 — Predicted: Base (medium), Actual: Bearish (-0.49%), Match: Partial, Calibration: over-confident, Top lesson: ลด confidence เป็น low เมื่อ event risk ≥ 2 ตัวพร้อมกัน (FOMC + Mag7 earnings + Iran)
+2026-04-29 — Predicted: Base (low), Actual: Base (-0.04%), Match: Yes, Calibration: well-calibrated, Top lesson: Earnings beat ≠ stock up — AMZN +70% EPS beat → AH -3% เพราะ AI capex $200B overhang; เพิ่ม "what's priced in" check ใน QQQ setup
+2026-04-30 — Predicted: Base (low), Actual: Bullish (+1.02%), Match: No, Calibration: wrong direction (appropriate uncertainty), Top lesson: PCE 4.5% triggered QQQ invalidation rule แต่ตลาดขึ้น +1% — month-end window dressing + AAPL beat override macro; revisit PCE hard invalidation criterion
+[weekly-calibration 2026-05-02] 3 reviews analyzed — proposals: 3 approved, 0 skipped — top pattern: EPS beat ≠ stock up (Apr 28 UPS + Apr 29 Mag7); confidence threshold tightened (2+ events → cap low)
+
+## Weekly Market Log
+
+*One-line per week — appended by /weekly-market*
+
+2026-W18 — Regime: Risk-On (Mild), S&P ~+1.07% (Mon-Fri, 7,173→7,250), Best sector: XLE (+3.19% — Iran geopolitical premium), Worst: XLK [unverified], Key event: FOMC 4 dissenting votes + Trump Iran naval blockade + Mag7 sell-the-news; April best month since 2020
 
 <!-- Example entry (delete when adding real ones):
 

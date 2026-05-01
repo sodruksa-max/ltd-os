@@ -183,13 +183,16 @@ Each workflow:
 
 **Confidence calibration (mandatory ใน /pre-market)**:
 - นับ event risks: FOMC/Powell, Mag7 earnings week, Major geopolitical unresolved, CPI/PCE/NFP, Major Fed speakers
-- 0-1 events → ดุลพินิจ | 2 events → cap medium | 3+ events → cap low
+- 0-1 events → ดุลพินิจ | 2+ events → cap low (ห้ามใช้ medium หรือ high)
+- *Updated 2026-05-02: threshold เข้มขึ้นจาก "2 events → medium" → "2+ events → low" — evidence: Apr 28 over-confident ใน FOMC + Mag7 + Iran พร้อมกัน*
 
 **Trade setup discipline**:
 - Forward-looking เท่านั้น — if-then ไม่ใช่ already-true
 - Time-stop ทุก setup (Day = exact ET time, Swing = days)
 - Profit-taking rules กำหนดก่อนเข้า — ไม่ใช่หลังกำไร
 - ห้าม entry หลัง 3pm ET; lunch lull 11:30–13:30 ET = no entry
+- **Earnings EPS criterion**: ทุก setup trigger ต้องระบุ GAAP หรือ adjusted ชัดเจน — ใช้ GAAP เป็น primary; ถ้า adjusted ต่างจาก GAAP ≥5% → flag divergence ใน setup ก่อน execute *(evidence: Apr 28 UPS GAAP miss vs adj beat — trigger ambiguous)*
+- **QQQ/Mag7 setup trigger**: ≥3/4 Mag7 beat GAAP EPS AND ≥2/4 AH reaction เป็นบวก → full size; ถ้า AH ยังไม่มีข้อมูลหรือ AH split (<2/4 บวก) → size ครึ่งหรือรอ open วันถัดไปก่อน *(evidence: Apr 29 4/4 GAAP beat แต่ 3/4 AH ลง เพราะ AI capex overhang)*
 
 **Pre-commit rules 5 ประเภท**:
 1. Circuit breakers — ปิด position ทันที
