@@ -1,0 +1,165 @@
+---
+description: Self-improving layer — reads all post-market reviews, finds recurring patterns, proposes updates to trading rules and brief approach. User approves every change before saving.
+---
+
+# /weekly-calibration
+
+อ่าน review สะสม → หา pattern → เสนอ update กฎและ brief → คุณ approve ก่อน save ทุกครั้ง
+
+## Usage
+
+```
+/weekly-calibration [N]
+```
+
+- `N` = จำนวนวันย้อนหลัง (default: 7)
+- ตัวอย่าง: `/weekly-calibration 14` = ดู 2 สัปดาห์ย้อนหลัง
+
+---
+
+## Steps
+
+### 1. Load source files (read-only ทั้งหมด)
+
+อ่านไฟล์เหล่านี้ — **ห้ามแก้ไขในขั้นตอนนี้:**
+
+```
+vault/20_investment/_journal/*-review.md    (N วันย้อนหลัง)
+vault/_memory/OUTCOMES.md                   (Trading Calibration Log)
+vault/_memory/PREFERENCES.md               (กฎปัจจุบัน)
+```
+
+ถ้าไม่พบ review ไฟล์เลย → หยุดและแจ้ง:
+> ❌ ไม่พบ review ไฟล์ — รัน `/post-market` ก่อนอย่างน้อย 1 วัน
+
+### 2. Extract raw data จากทุก review
+
+สำหรับแต่ละ review ไฟล์ที่พบ ดึง:
+
+- **Date + Scenario:** Predicted vs Actual + Match (Yes/Partial/No)
+- **Calibration verdict:** well-calibrated / over-confident / under-confident
+- **Setups:** แต่ละ setup — trigger เกิด?, ทิศทาง, ผล (win/loss/pending)
+- **Blind spots:** แต่ละ item ใน "What Was Missed"
+- **Lessons:** แต่ละ lesson ใน "Lessons for Next Brief"
+
+### 3. Analyze patterns
+
+วิเคราะห์ข้อมูลทั้งหมดและหา pattern ใน 5 มิติ:
+
+**3a. Calibration trend**
+- สัดส่วน well-calibrated / over-confident / under-confident
+- มี bias ซ้ำไหม (เช่น over-confident ทุกครั้งที่มี earnings)
+
+**3b. Blind spot patterns**
+- blind spot ไหนโผล่ซ้ำ ≥ 2 ครั้ง
+- หมวดไหนพลาดบ่อย (geopolitical / macro surprise / earnings reaction / Fed)
+
+**3c. Setup performance**
+- แต่ละ setup type (XLE, TLT, QQQ ฯลฯ) — win rate จากข้อมูลที่มี
+- setup ไหน trigger แต่ผลแย่ vs ไม่ trigger แต่ถ้าเข้าน่าจะดี
+
+**3d. Lesson adoption**
+- lesson จาก review ก่อนหน้า → ถูกนำไปใช้ใน brief ถัดไปหรือเปล่า
+- lesson ไหนโผล่ซ้ำโดยไม่ได้ถูก implement
+
+**3e. Prediction accuracy**
+- scenario accuracy โดยรวม (% ที่ match)
+- confidence calibration — low confidence + ถูก vs high confidence + ผิด
+
+### 4. Generate proposals
+
+สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
+
+แต่ละ proposal ต้องมี:
+- **ประเภท:** `PREFERENCES.md` / `brief approach` / `decision tree rule`
+- **การเปลี่ยนแปลง:** เดิมคืออะไร → ใหม่เป็นอะไร
+- **Evidence:** อ้างอิง review วันไหน + blind spot/lesson ไหนที่สนับสนุน
+- **Impact:** ถ้าใช้กฎนี้ในข้อมูลที่ผ่านมาจะเปลี่ยนผลอะไรได้บ้าง
+
+ถ้าไม่พบ pattern ที่ชัดพอ → เขียน:
+> "ข้อมูลยังไม่เพียงพอสำหรับ proposal ที่น่าเชื่อถือ — ต้องการ review เพิ่มอีก X วัน"
+
+### 5. Present proposals + ขอ approve
+
+แสดงผลในรูปแบบนี้:
+
+```
+Weekly Calibration — YYYY-MM-DD
+Reviews analyzed: N ไฟล์ (YYYY-MM-DD ถึง YYYY-MM-DD)
+
+═══════════════════════════════════════
+PATTERN SUMMARY
+═══════════════════════════════════════
+
+Calibration: X% well-calibrated, X% over-confident, X% under-confident
+Scenario accuracy: X/N correct (X%)
+Top recurring blind spot: [หมวด]
+Top unimplemented lesson: [lesson]
+
+═══════════════════════════════════════
+PROPOSALS (N รายการ)
+═══════════════════════════════════════
+
+[1] PREFERENCES.md — Trading Rules
+  เดิม: [ข้อความเดิม หรือ "ไม่มีกฎนี้"]
+  ใหม่: [ข้อความใหม่]
+  Evidence: review วันที่ X และ Y — blind spot "[ชื่อ]" โผล่ 2 ครั้ง
+  Impact: ถ้าใช้กฎนี้ใน 2 วันที่ผ่านมา จะหลีกเลี่ยง [ผล] ได้
+
+[2] Brief approach — เพิ่ม catalyst category
+  เดิม: ไม่มี "Presidential Action Risk" ใน Risk Framework
+  ใหม่: เพิ่ม "Presidential Action Risk" เป็น standalone row ใน Risk Table
+  Evidence: review 2026-04-29 — Trump naval blockade ทำ oil +7% โดยไม่ได้อยู่ใน brief
+  Impact: มี alert ล่วงหน้าสำหรับ executive announcement ที่อาจ move market
+
+...
+```
+
+จากนั้นถามแต่ละ proposal:
+> **Proposal [N]: approve? (y/n/แก้ไข)**
+
+- `y` → บันทึกรอ save
+- `n` → ข้ามไป proposal ถัดไป
+- `แก้ไข` → รอรับข้อความใหม่จาก user แล้วใช้แทน
+
+### 6. Apply approved proposals
+
+หลัง user approve ทุกรายการแล้ว — **ยังไม่ save** — แสดง summary:
+
+```
+Approved: X รายการ
+Skipped: X รายการ
+
+การเปลี่ยนแปลงที่จะ apply:
+- PREFERENCES.md: [รายการ]
+- Brief approach: [รายการ] (จะบันทึกเป็น note ใน vault/_memory/WORKFLOWS.md)
+
+บันทึกทั้งหมดเลยไหม? (y/n)
+```
+
+ถ้า y → apply ทุก change พร้อมกัน
+ถ้า n → ทิ้งทุกอย่าง ไม่แก้ไขไฟล์ใด
+
+### 7. Append calibration entry
+
+Append 1 บรรทัดใต้ `## Trading Calibration Log` ใน `vault/_memory/OUTCOMES.md`:
+
+```
+[weekly-calibration YYYY-MM-DD] N reviews analyzed — proposals: X approved, X skipped — top pattern: [pattern]
+```
+
+---
+
+## Constraints
+
+- **ห้าม auto-apply** — ทุก change ต้องผ่าน user approve ก่อนเสมอ
+- **ห้าม propose จาก data จุดเดียว** — ต้องมี pattern ≥ 2 reviews
+- **ห้ามแก้ CLAUDE.md** — แก้ได้แค่ PREFERENCES.md และ WORKFLOWS.md
+- **ถ้าข้อมูลน้อยกว่า 3 reviews** → แจ้งว่า pattern ยังไม่น่าเชื่อถือ แต่รันต่อได้ถ้า user ยืนยัน
+
+## Anti-patterns
+
+- ❌ Propose การเปลี่ยนแปลงที่ขัดกับ hard rules ใน PREFERENCES.md (leverage, crypto leverage ฯลฯ)
+- ❌ Fabricate pattern — ถ้าไม่เห็นซ้ำจาก evidence จริงๆ ห้ามเสนอ
+- ❌ Save โดยไม่ถาม — แม้ผ่าน approve แล้ว ยังต้องถาม final confirm
+- ❌ เปลี่ยน position sizing หรือ risk rules โดยไม่มี statistical evidence ชัดเจน

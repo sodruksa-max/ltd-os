@@ -1,10 +1,12 @@
 ---
-description: Post-market review — compare /pre-market predictions vs reality. Run each morning (Thailand time) after US market close. Requires pre-existing premarket brief + decision tree for the target date.
+description: Post-market review — compare /pre-market predictions vs reality, or review-only if no premarket file exists. Run each morning (Thailand time) after US market close.
 ---
 
 # /post-market
 
-Review market outcomes against pre-market predictions. Produces a calibration record, setup outcomes, and lessons for next brief.
+Review market outcomes. Two modes:
+- **Full mode** — มี premarket brief: compare predictions vs reality, calibration score, setup outcomes
+- **Review-only mode** — ไม่มี premarket brief: บันทึก market data + key observations เท่านั้น (ข้ามส่วน calibration)
 
 ## Usage
 
@@ -31,18 +33,20 @@ Use the result as `<date>`. Confirm in first line: `Target date: YYYY-MM-DD`
 
 ### 2. Read pre-market files (read-only)
 
-Read both files — **ห้ามแก้ไขทั้งสองไฟล์นี้ไม่ว่ากรณีใด:**
+ลองอ่าน — **ห้ามแก้ไขทั้งสองไฟล์นี้ไม่ว่ากรณีใด:**
 
 - `vault/20_investment/_journal/<date>-premarket.md`
 - `vault/20_investment/_journal/<date>-decision-tree.md`
 
-ถ้าไม่พบ `<date>-premarket.md` → หยุดและแจ้ง user:
-> ❌ ไม่พบ `<date>-premarket.md` — ไม่สามารถทำ post-market review ได้
+**ถ้าไม่พบ `<date>-premarket.md`** → switch เป็น **review-only mode** แจ้ง user:
+> ℹ️ ไม่พบ `<date>-premarket.md` — รันใน **review-only mode** (ข้าม calibration, setup outcomes, และ prediction comparison)
 
-ถ้าไม่พบ `<date>-decision-tree.md` → ดำเนินต่อได้ แต่แจ้ง user:
+แล้วดำเนินต่อไปยัง Step 3 (ข้าม Step 4 ส่วน prediction comparison — ดูหมายเหตุใน Step 4)
+
+**ถ้าไม่พบ `<date>-decision-tree.md`** (และมี premarket) → ดำเนินต่อได้ แต่แจ้ง user:
 > ⚠️ ไม่พบ `<date>-decision-tree.md` — Pre-Commit Rules section จะเป็น [unverified] ทั้งหมด
 
-Extract จาก brief:
+**ถ้าพบ premarket.md** (full mode) — extract:
 - **Most Likely Scenario:** Bullish / Base / Bearish + confidence level
 - **Setups 1/2/3:** ticker, direction, trigger conditions, invalidation
 - **Polymarket odds** (ถ้ามีใน brief)
@@ -83,19 +87,21 @@ Fire these searches **in parallel**:
 
 ### 4. Determine Actual Scenario
 
-ใช้ผลจริงของ S&P 500 เพื่อตัดสิน (quantitative threshold):
+ใช้ผลจริงของ S&P 500 เพื่อตัดสิน (quantitative threshold) — ทำทั้ง 2 mode:
 - S&P 500 close > +0.3% → **Bullish**
 - S&P 500 close -0.3% ถึง +0.3% → **Base**
 - S&P 500 close < -0.3% → **Bearish**
 
-จากนั้นตรวจ **narrative alignment** (ใช้ใน Match classification):
+**Full mode เท่านั้น** — ตรวจ **narrative alignment** (ใช้ใน Match classification):
 - Sectors ที่ brief คาด outperform → ขึ้นจริงหรือเปล่า?
 - VIX อยู่ใน range ที่ brief คาดหรือเปล่า?
 
-**Match classification:**
+**Match classification (full mode เท่านั้น):**
 - **Yes** = threshold ตรงกับที่ predict
 - **Partial** = threshold บอก X ≠ predicted แต่ (1) S&P ข้าม boundary ≤ 0.3pp AND (2) narrative ถูก — sectors/VIX behaved as predicted
 - **No** = threshold ผิด + narrative ก็ผิดด้วย
+
+**Review-only mode:** ข้าม Match classification — บันทึก Actual Scenario เท่านั้น
 
 ### 5. Check overwrite
 
@@ -105,7 +111,13 @@ Fire these searches **in parallel**:
 
 ### 6. Generate review file
 
-Save to `vault/20_investment/_journal/<date>-review.md`:
+Save to `vault/20_investment/_journal/<date>-review.md`.
+
+ใช้ template ตาม mode:
+
+---
+
+#### FULL MODE template (มี premarket brief)
 
 ```markdown
 # Post-Market Review — YYYY-MM-DD (วัน)
@@ -213,25 +225,102 @@ Save to `vault/20_investment/_journal/<date>-review.md`:
 *Sources: [ระบุทุก source พร้อม URL]*
 ```
 
+---
+
+#### REVIEW-ONLY MODE template (ไม่มี premarket brief)
+
+```markdown
+# Post-Market Review — YYYY-MM-DD (วัน) [review-only]
+*Market data log — ไม่มี premarket brief วันนี้ | สร้างหลังตลาดปิด | ไม่ใช่คำแนะนำลงทุน*
+
+---
+
+## Actual Scenario
+
+- **S&P 500 closed:** [+/-X.XX%] → **[Bullish / Base / Bearish]**
+- **สรุป:** [1-2 ประโยค — driver หลักของวัน]
+
+---
+
+## Key Observations
+
+[3-5 observations ที่น่าจดบันทึก — sector rotation, outlier movers, macro event ที่เกิด]
+1. [observation + ผลกระทบ]
+2. [observation + ผลกระทบ]
+3. [observation หรือ "ไม่มี observation เพิ่มเติม"]
+
+---
+
+## Council Recommendation
+
+*(สร้างเฉพาะเมื่อมี pattern ที่ต้อง debate จริง — ห้าม recommend council ทุกวัน)*
+
+ถ้ามี pattern จาก observations ที่ต้อง debate:
+- **หัวข้อ:** [เฉพาะเจาะจง]
+- **Evidence จาก review นี้:** [อ้างอิงตัวเลข/เหตุการณ์จาก review วันนี้]
+- **Suggested lens:** [engineer / financial_risk / strategist]
+- **Command:** `/council <topic> --expertise=<lens>`
+
+ถ้าไม่มี → เขียน "ไม่มี council recommendation วันนี้"
+
+---
+
+## Market Data (verified)
+
+| Metric | Close | % Change | Source |
+|---|---|---|---|
+| S&P 500 | | | |
+| Nasdaq-100 | | | |
+| Dow Jones | | | |
+| VIX (close / intraday high) | / | | |
+| XLE | | | |
+| XLK | | | |
+| XLP | | | |
+| XLU | | | |
+| XLY | | | |
+| GLD | | | |
+| TLT | | | |
+| Brent crude | | | |
+| WTI crude | | | |
+
+*Sources: [ระบุทุก source พร้อม URL]*
+```
+
+---
+
 ### 7. Append to OUTCOMES.md
 
-Append 1 line ใต้ section `## Trading Calibration Log` ใน `vault/_memory/OUTCOMES.md`:
+Append 1 line ใต้ section `## Trading Calibration Log` ใน `vault/_memory/OUTCOMES.md`.
 
+ถ้า section `## Trading Calibration Log` ยังไม่มี → append section header ก่อน แล้วค่อย append entry
+
+**Full mode:**
 ```
 <date> — Predicted: <X> (<confidence>), Actual: <Y>, Match: <Yes/Partial/No>, Calibration: <well-calibrated/over-confident/under-confident>, Top lesson: <Z>
 ```
 
-ถ้า section `## Trading Calibration Log` ยังไม่มี → append section header ก่อน แล้วค่อย append entry
+**Review-only mode:**
+```
+<date> [review-only] — Actual: <Y> (S&P <+/-X%>), No premarket brief, Key observation: <Z>
+```
 
 ### 8. Print verdict + personal note prompt
 
 แสดงให้ user:
 
+**Full mode:**
 ```
 Post-market review saved: vault/20_investment/_journal/<date>-review.md
 
 Verdict: [1-2 ประโยคสรุป calibration]
 Example: "Base scenario ถูก (S&P -0.6%) แต่ confidence medium เกินไปเมื่อเทียบกับ VIX ที่สูง — next time ลด confidence เป็น low ถ้า VIX > 19"
+```
+
+**Review-only mode:**
+```
+Post-market review saved: vault/20_investment/_journal/<date>-review.md [review-only]
+
+Summary: [1-2 ประโยค — วันนี้ตลาดเป็นยังไง, driver หลัก]
 ```
 
 จากนั้นถาม:
@@ -257,7 +346,8 @@ Example: "Base scenario ถูก (S&P -0.6%) แต่ confidence medium เก
 - ❌ แก้ไข premarket.md หรือ decision-tree.md ไม่ว่ากรณีใด
 - ❌ Fabricate P/L — ถ้าราคาจริงไม่ได้ = [unverified]
 - ❌ ตัดสิน Actual scenario ด้วย "รู้สึก" — ใช้ S&P 500 % change ตาม threshold ที่กำหนดเสมอ
-- ❌ ข้าม Blind Spots section — ต้องระบุเสมอ แม้จะบอกว่า "ไม่พบ blind spot"
-- ❌ Skip OUTCOMES.md append — ทุก review ต้อง append ทุกครั้ง
+- ❌ ข้าม Blind Spots section (full mode) — ต้องระบุเสมอ แม้จะบอกว่า "ไม่พบ blind spot"
+- ❌ Skip OUTCOMES.md append — ทุก review ต้อง append ทุกครั้ง (ทั้ง 2 mode)
 - ❌ Overwrite review file โดยไม่ warn — ต้องถามก่อนเสมอ
 - ❌ ประเมิน calibration เป็น "well-calibrated" ถ้าทิศทางผิด — direction wrong = ไม่สามารถ well-calibrated ได้
+- ❌ หยุด (abort) เมื่อไม่พบ premarket.md — ต้อง switch เป็น review-only mode แทน ไม่ใช่หยุด
