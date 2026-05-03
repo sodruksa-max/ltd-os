@@ -209,7 +209,7 @@ def print_table(results, top=None, reversal_mode=False):
         print()
         print("R-Score = 5d_return * clamp(VolRatio,0.5,3) * 2x_bonus_if_MA50_crossed")
         print("MA50X: X=just crossed above MA50 (key reversal signal) | - =already above or below")
-        print("OVER = 20d return >70% — likely late stage, skip for 'ต้นรอบ'")
+        print("OVER = 20d return >70% -- likely late stage (overextended), already filtered out")
     else:
         print(f"{'#':<3} {'Ticker':<8} {'Price':>8} {'20d Ret':>8} {'RS/SPY':>8} {'VolRatio':>9} {'MA50':>5} {'Score':>8}  Filter")
         print("-" * 85)
