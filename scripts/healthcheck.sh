@@ -68,7 +68,9 @@ for script in \
   "scripts/bootstrap.sh" \
   "scripts/cost-report.sh" \
   "scripts/weekly-review.sh" \
-  "scripts/alpaca-paper.py"
+  "scripts/alpaca-paper.py" \
+  "scripts/screener.py" \
+  "scripts/auto-buy.py"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"

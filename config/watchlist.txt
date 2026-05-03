@@ -1,0 +1,36 @@
+# Watchlist — tickers for screener to evaluate
+# One ticker per line. Lines starting with # are comments.
+# Edit freely — screener uses this list as its universe.
+
+# === Mega cap tech (liquid, tight spreads) ===
+AAPL
+MSFT
+NVDA
+META
+GOOGL
+AMZN
+AMD
+
+# === Growth / momentum ===
+TSLA
+NFLX
+CRWD
+SNOW
+SHOP
+APP
+AXON
+
+# === Small/mid cap momentum ===
+SMCI
+CAVA
+CELH
+IBKR
+ELF
+
+# === Sector ETFs (for sector rotation plays) ===
+XLK
+XLE
+XLF
+XLV
+XLC
+ARKK
