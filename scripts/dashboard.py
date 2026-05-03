@@ -18,7 +18,8 @@ import streamlit as st
 ROOT = Path(__file__).parent.parent
 PYTHON = str(ROOT / "code" / "python" / ".venv" / "Scripts" / "python")
 SCREENER = str(ROOT / "scripts" / "screener.py")
-AUTOBUY = str(ROOT / "scripts" / "auto-buy.py")
+AUTOBUY  = str(ROOT / "scripts" / "auto-buy.py")
+EOD      = str(ROOT / "scripts" / "eod-report.py")
 
 
 # -- Env loader --------------------------------------------------------------
@@ -259,7 +260,7 @@ def render_colored_table(rows, columns, junk_key="junk_level"):
 # ============================================================================
 # TABS
 # ============================================================================
-tab1, tab2, tab3 = st.tabs(["🔍 Screener (คัดหุ้น)", "🤖 Bot (ซื้อหุ้น)", "📊 Positions (พอร์ต)"])
+tab1, tab2, tab3, tab4 = st.tabs(["🔍 Screener (คัดหุ้น)", "🤖 Bot (ซื้อหุ้น)", "📊 Positions (พอร์ต)", "📋 EOD Report"])
 
 
 # ---------------------------------------------------------------------------
@@ -540,3 +541,35 @@ with tab3:
 
         except Exception as e:
             st.error("เชื่อมต่อ Alpaca ไม่ได้: " + str(e))
+
+
+# ---------------------------------------------------------------------------
+# TAB 4 - EOD Report
+# ---------------------------------------------------------------------------
+with tab4:
+    st.subheader("EOD Report — สรุปปิดตลาด")
+    st.caption("รันหลังตลาด US ปิด (05:00 น. ไทย) — ดู P&L paper + real positions ทั้งหมด")
+
+    if st.button("📋 รัน EOD Report", type="primary"):
+        with st.spinner("กำลังดึงข้อมูล positions..."):
+            stdout, stderr, rc = run_subprocess([PYTHON, EOD], timeout=60)
+
+        if rc != 0:
+            st.error("EOD report ล้มเหลว (exit " + str(rc) + ")")
+            if stderr:
+                st.code(stderr, language="text")
+        else:
+            st.success("EOD Report — " + date.today().strftime("%Y-%m-%d"))
+            st.markdown(stdout)
+
+            # --- Save to vault daily note ---
+            try:
+                now = datetime.now().strftime("%H:%M")
+                _append_to_daily_note("## EOD Report — " + now + "\n\n" + stdout)
+                st.info("บันทึกลง vault/daily/" + date.today().strftime("%Y-%m-%d") + ".md แล้ว")
+            except Exception as e:
+                st.warning("บันทึก vault ไม่สำเร็จ: " + str(e))
+
+        if stderr:
+            with st.expander("Log"):
+                st.code(stderr, language="text")
