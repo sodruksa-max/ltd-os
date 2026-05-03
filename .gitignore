@@ -94,6 +94,9 @@ vault/.smart-env/
 # --- Claude Code local settings (per-machine) ---
 .claude/settings.local.json
 
+# --- Auto-generated reports (regenerated on each script run) ---
+vault/20_investment/portfolio-real.md
+
 # --- Obsidian (strict — ignore all, allow only essentials) ---
 vault/.obsidian/*
 !vault/.obsidian/app.json

@@ -64,7 +64,10 @@ for script in \
   "scripts/context-check.sh" \
   "scripts/healthcheck.sh" \
   "scripts/safe-commit.sh" \
-  "scripts/daily-brief.sh"
+  "scripts/daily-brief.sh" \
+  "scripts/bootstrap.sh" \
+  "scripts/cost-report.sh" \
+  "scripts/weekly-review.sh"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"
