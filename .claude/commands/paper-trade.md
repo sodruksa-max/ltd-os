@@ -1,148 +1,130 @@
 ---
-description: Log a new paper trade entry — creates trade file in real-trades/, tracked by /eod
+description: Place a paper trade via Alpaca paper trading account — real order simulation, auto-tracked by /eod
 ---
 
 # /paper-trade
 
-Create a paper trade log entry. Tracked by `/eod` exactly like real trades.
+Place a paper trade order through Alpaca's paper trading account. Auto-tracked — no manual log needed.
+
+## Prerequisites
+
+Paper account must have balance > $0. If $0, fund it first:
+1. Go to alpaca.markets → login
+2. Switch to "Paper Trading" mode (top-right)
+3. Click "Reset Account" → set balance (e.g. $100,000)
+4. Come back and run `/paper-trade`
+
+Check status: `code/python/.venv/Scripts/python scripts/alpaca-paper.py account`
 
 ## Usage
 
 ```
-/paper-trade TICKER [DIRECTION]
+/paper-trade TICKER DIRECTION SHARES [at PRICE]
 ```
 
-- `TICKER` — stock symbol (e.g. NVDA, SPY, AAPL)
-- `DIRECTION` — long (default) or short
+Examples:
+- `/paper-trade NVDA long 5` — buy 5 NVDA at market
+- `/paper-trade NVDA long 5 at 900` — buy 5 NVDA limit $900
+- `/paper-trade SPY short 3` — short 3 SPY at market
 
 ## Steps
 
-### 1. Ask for trade details
+### 1. Parse intent
 
-If not provided in the command args, ask the user:
+Extract from user input:
+- `ticker` — stock symbol (uppercase)
+- `direction` — long (buy) / short (sell short)
+- `shares` — number of shares
+- `price` — optional limit price (if user said "at $X" or "limit $X")
+- `stop` — optional stop price (if user said "stop $X")
+
+### 2. Show preview + ask for stop/target
+
+Before placing:
 
 ```
-Ticker: [from args or ask]
-Direction: long / short [default: long]
-Entry price (USD): ?
-Shares: ?
-Stop loss (USD): ?
-Target (USD): ?
-Setup source: [e.g. "2026-05-03-premarket Setup 1" or leave blank]
+Paper trade preview:
+  TICKER   : NVDA
+  Direction: Long (BUY)
+  Shares   : 5
+  Order    : Market [or Limit @ $900]
+
+  Risk parameters (optional but recommended):
+  Stop loss target  : $? (type a price or skip)
+  Profit target     : $? (type a price or skip)
 ```
 
-Calculate and show before writing:
-- **Risk per share** = |entry - stop|
-- **R-multiple at target** = (target - entry) / |entry - stop|  [long] or (entry - target) / |entry - stop| [short]
-- **Total risk** = risk per share × shares
-- If R-multiple < 1.5 → warn: "R:R ต่ำกว่า 1.5 — ยังคุ้มที่จะเข้าไหม?"
-- If total risk > 5% of 100K (= $5,000 / THB equivalent) → warn: "Risk เกิน 5% ของ trading capital"
+If user provides stop/target, calculate and show:
+- Risk per share = |entry approx - stop|
+- R-multiple at target = (target - entry) / risk_per_share
+- If R < 1.5 → warn: "R:R ต่ำกว่า 1.5 — ยืนยันไหม?"
 
-Ask: "ยืนยันสร้าง paper trade? (y/n)"
+Ask: "ยืนยันส่ง order? (y/n)"
 
-### 2. Create trade file
+### 3. Place order
 
-File path: `vault/20_investment/_journal/real-trades/YYYY-MM-DD-TICKER-DIRECTION-paper.md`
+**Buy (long):**
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py buy TICKER SHARES [--limit PRICE] [--stop STOP]
+```
 
-Use this template:
+**Sell/Short:**
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py sell TICKER SHARES [--limit PRICE]
+```
 
-```markdown
----
-ticker: TICKER
-direction: DIRECTION
-status: open
-type: paper
-date_open: YYYY-MM-DD
-date_close: ~
-entry_usd: ENTRY
-shares: SHARES
-fees_usd: 0
-stop_usd: STOP
-target_usd: TARGET
-exit_usd: ~
-exit_fees_usd: ~
-result: ~
-setup_source: "SETUP_SOURCE"
----
+Print the output — show Order ID and Status.
 
-# Paper Trade — TICKER (LONG/SHORT) — YYYY-MM-DD
-*Paper trade (ไม่ใช่เงินจริง) | type: paper*
+### 4. Report
 
----
+```
+Order placed: BUY 5 x NVDA [market]
+Order ID: xxxxxxxx
+Status: pending_new / filled
 
-## ข้อมูล Trade
+Run /eod to see current position and P&L.
+```
 
-| Field | Value |
-|---|---|
-| **Ticker** | TICKER |
-| **Direction** | Long / Short |
-| **Status** | Open (Paper) |
-| **Date opened** | YYYY-MM-DD |
-| **Date closed** | — |
-| **Setup source** | SETUP_SOURCE |
+If order fails → show error and suggest:
+- Check account balance: `scripts/alpaca-paper.py account`
+- Check market hours (orders queue if market closed, fill at open)
 
----
+## Other useful commands
 
-## ราคา
+Show current paper positions and P&L:
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py positions
+```
 
-| | ราคา USD | หมายเหตุ |
-|---|---|---|
-| **Entry** | $ENTRY | |
-| **Stop loss** | $STOP | -X% จาก entry |
-| **Target** | $TARGET | +X% จาก entry |
-| **Exit** | — | *กรอกตอนปิด* |
+Show recent orders:
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py orders
+```
 
----
+Show account summary:
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py account
+```
 
-## Position
+Cancel an order:
+```bash
+code/python/.venv/Scripts/python scripts/alpaca-paper.py cancel ORDER_ID
+```
 
-| | Value |
-|---|---|
-| **Shares** | SHARES หุ้น |
-| **Cost basis** | $COST (entry × shares) |
-| **Fees ซื้อ** | $0 (paper) |
+## Closing a paper position
 
----
+```
+/paper-trade close NVDA 5
+```
 
-## R:R Summary
-- Risk per share: $RISK_PER_SHARE
-- R-multiple at target: RMULTIPLE R
-- Total risk: $TOTAL_RISK
+→ runs: `scripts/alpaca-paper.py sell NVDA 5`
 
----
+Alpaca auto-records the fill price and closes the position.
+Run `/eod` to confirm position is gone.
 
 ## Notes
 
-### เหตุผลที่เข้า
-[trigger, setup, confluence — อ้างอิง premarket ถ้ามี]
-
-### เหตุผลที่ออก
-—
-
-### Lesson (1 ประโยค)
-—
-```
-
-### 3. Report
-
-```
-Paper trade logged: vault/20_investment/_journal/real-trades/YYYY-MM-DD-TICKER-DIRECTION-paper.md
-Risk: $TOTAL_RISK | R:R = RMULTIPLE:1
-Run /eod to see it in the position monitor.
-```
-
-## Closing a paper trade
-
-When user says "close paper trade TICKER":
-1. Read the trade file
-2. Ask: exit price?
-3. Calculate realized gain/loss + R-multiple achieved
-4. Update frontmatter: status → closed, date_close, exit_usd, result
-5. Append to Notes → เหตุผลที่ออก + Lesson
-
-## Constraints
-
-- `type: paper` field is mandatory — distinguishes from real trades in future analytics
-- `fees_usd: 0` always for paper trades
-- Never create a paper trade file with `type: real` or without `type:` field
-- If R:R < 1.5 or risk > 5% capital, warn but still create if user confirms
+- Orders placed after market hours queue and fill at next open
+- Market orders during extended hours may not fill — use limit orders
+- Paper fills use last trade price, not necessarily bid/ask — slight slippage difference from real
+- `/eod` shows paper positions from Alpaca automatically (no manual log needed)

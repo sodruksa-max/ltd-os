@@ -5,12 +5,9 @@ End-of-day swing position report.
 Usage:
     code/python/.venv/Scripts/python scripts/eod-report.py
 
-Reads open positions from vault/20_investment/_journal/real-trades/
-Fetches latest price from Alpaca, then shows per position:
-  - Current price vs entry
-  - Distance to stop loss (alert if within 3%)
-  - Distance to target
-  - Unrealized P&L
+Two sections:
+  1. Paper positions from Alpaca paper trading account (live, auto-tracked)
+  2. Real positions from vault/20_investment/_journal/real-trades/*.md (manual, Dime broker)
 
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 """
@@ -23,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 TRADES_DIR = ROOT / "vault/20_investment/_journal/real-trades"
-STOP_ALERT_PCT = 3.0  # alert if price within this % of stop
+STOP_ALERT_PCT = 3.0
 
 
 def load_env():
@@ -37,6 +34,84 @@ def load_env():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip())
 
+
+# ---------------------------------------------------------------------------
+# Section 1 — Alpaca paper positions
+# ---------------------------------------------------------------------------
+
+def fetch_paper_positions():
+    """Pull open positions from Alpaca paper trading account."""
+    api_key = os.environ.get("ALPACA_API_KEY")
+    secret_key = os.environ.get("ALPACA_SECRET_KEY")
+    if not api_key or not secret_key:
+        return None, "ALPACA keys not set"
+    try:
+        from alpaca.trading.client import TradingClient
+        client = TradingClient(api_key, secret_key, paper=True)
+        positions = client.get_all_positions()
+        acct = client.get_account()
+        return positions, acct, None
+    except Exception as e:
+        return None, None, str(e)
+
+
+def print_paper_section():
+    result = fetch_paper_positions()
+    if len(result) == 3:
+        positions, acct, error = result
+    else:
+        positions, error = result
+        acct = None
+
+    print("### Paper Positions (Alpaca)")
+
+    if error:
+        print(f"[unavailable: {error}]")
+        print()
+        return
+
+    if not positions:
+        portfolio = float(acct.portfolio_value or 0) if acct else 0
+        if portfolio == 0:
+            print("[Paper account balance is $0]")
+            print("Fund at: alpaca.markets -> Paper Trading -> Reset")
+        else:
+            print("No open paper positions.")
+        print()
+        return
+
+    alerts = []
+    print("| Ticker | Qty | Entry | Current | Unreal P&L | % | |")
+    print("|--------|-----|-------|---------|------------|---|---|")
+
+    total = 0.0
+    for p in positions:
+        qty = float(p.qty)
+        entry = float(p.avg_entry_price)
+        current = float(p.current_price)
+        unreal = float(p.unrealized_pl)
+        pct = float(p.unrealized_plpc) * 100
+        total += unreal
+        sign = "+" if unreal >= 0 else ""
+        flag = ""
+        # No stop/target info from Alpaca — show placeholder
+        print(
+            f"| **{p.symbol}** | {qty:.0f} | ${entry:,.2f} | ${current:,.2f} "
+            f"| {sign}${unreal:,.2f} | {sign}{pct:.1f}% | {flag} |"
+        )
+
+    sign = "+" if total >= 0 else ""
+    if acct:
+        today_pl = float(acct.equity or 0) - float(acct.last_equity or 0)
+        print(f"\n**Paper total unrealized:** {sign}${total:,.2f} | **Today P&L:** ${today_pl:+,.2f}")
+    else:
+        print(f"\n**Paper total unrealized:** {sign}${total:,.2f}")
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Section 2 — Real trades from markdown (Dime broker)
+# ---------------------------------------------------------------------------
 
 def parse_frontmatter(filepath: Path) -> dict:
     text = filepath.read_text(encoding="utf-8")
@@ -67,7 +142,6 @@ def get_prices(tickers: list[str]) -> dict[str, float]:
     api_key = os.environ.get("ALPACA_API_KEY")
     secret_key = os.environ.get("ALPACA_SECRET_KEY")
     if not api_key or not secret_key:
-        print("[warn] ALPACA keys not set -- prices unavailable")
         return {}
     try:
         from alpaca.data import StockHistoricalDataClient
@@ -78,14 +152,8 @@ def get_prices(tickers: list[str]) -> dict[str, float]:
         )
         return {t: resp[t].price for t in tickers if t in resp}
     except Exception as e:
-        print(f"[warn] Alpaca error: {e}")
+        print(f"[warn] Alpaca data error: {e}")
         return {}
-
-
-def pct(a, b):
-    if a and b:
-        return (a - b) / b * 100
-    return None
 
 
 def fmt(val, prefix="$"):
@@ -99,23 +167,27 @@ def fmt(val, prefix="$"):
     return str(val)
 
 
-def main():
-    load_env()
+def print_real_section():
+    print("### Real Positions (Dime broker — manual)")
 
     if not TRADES_DIR.exists():
-        print(f"No trades directory: {TRADES_DIR}")
+        print("No trades directory found.")
+        print()
         return
 
     open_trades = []
     for f in sorted(TRADES_DIR.glob("*.md")):
         data = parse_frontmatter(f)
+        # Skip paper trades (tracked by Alpaca) and non-open trades
         if not data or data.get("status") != "open":
             continue
-        ticker  = data.get("ticker", "?")
-        entry   = to_float(data.get("entry_usd"))
-        shares  = to_float(data.get("shares"))
-        stop    = to_float(data.get("stop_usd"))
-        target  = to_float(data.get("target_usd"))
+        if data.get("type") == "paper":
+            continue
+        ticker = data.get("ticker", "?")
+        entry = to_float(data.get("entry_usd"))
+        shares = to_float(data.get("shares"))
+        stop = to_float(data.get("stop_usd"))
+        target = to_float(data.get("target_usd"))
         direction = str(data.get("direction", "long")).lower()
         open_trades.append({
             "ticker": ticker, "entry": entry, "shares": shares,
@@ -123,39 +195,33 @@ def main():
             "file": f.name,
         })
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    print(f"## EOD Report -- {today}")
-
     if not open_trades:
-        print("No open positions.")
+        print("No open real positions.")
+        print()
         return
 
     tickers = [t["ticker"] for t in open_trades if t["entry"] and t["shares"]]
     prices = get_prices(tickers) if tickers else {}
-
     alerts = []
 
-    print("")
     print("| Ticker | Dir | Entry | Close | Stop | Target | vs Stop | vs Target | Unreal P&L | |")
     print("|--------|-----|-------|-------|------|--------|---------|-----------|------------|---|")
 
     for t in open_trades:
-        ticker  = t["ticker"]
-        entry   = t["entry"]
-        shares  = t["shares"]
-        stop    = t["stop"]
-        target  = t["target"]
+        ticker = t["ticker"]
+        entry = t["entry"]
+        shares = t["shares"]
+        stop = t["stop"]
+        target = t["target"]
         direction = t["direction"]
-        close   = prices.get(ticker)
+        close = prices.get(ticker)
 
-        # vs stop: % price must move to hit stop (positive = safe, negative = already past stop)
         if close and stop:
             vs_stop = (close - stop) / close * 100 if direction == "long" \
                       else (stop - close) / close * 100
         else:
             vs_stop = None
 
-        # vs target: % price must move to hit target
         if close and target:
             vs_target = (target - close) / close * 100 if direction == "long" \
                         else (close - target) / close * 100
@@ -179,7 +245,6 @@ def main():
             f"| {fmt(unreal)} | {flag} |"
         )
 
-    # Summary
     total_unreal = sum(
         (prices.get(t["ticker"], 0) - t["entry"]) * t["shares"]
         if t["direction"] == "long"
@@ -187,14 +252,26 @@ def main():
         for t in open_trades
         if t["entry"] and t["shares"] and prices.get(t["ticker"])
     )
-
-    print(f"\n**Open positions:** {len(open_trades)} | "
-          f"**Total unrealized:** {fmt(total_unreal if total_unreal else None)}")
+    print(f"\n**Real open positions:** {len(open_trades)} | **Total unrealized:** {fmt(total_unreal or None)}")
 
     if alerts:
         print("\n**ALERTS:**")
         for a in alerts:
             print(f"  - {a}")
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    load_env()
+    today = datetime.now().strftime("%Y-%m-%d")
+    print(f"## EOD Report -- {today}\n")
+
+    print_paper_section()
+    print_real_section()
 
 
 if __name__ == "__main__":
