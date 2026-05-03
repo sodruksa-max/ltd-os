@@ -37,7 +37,8 @@ load_env()
 
 # -- Page config -------------------------------------------------------------
 st.set_page_config(page_title="LTD Trading Bot", layout="wide")
-st.title("LTD Trading Bot")
+st.title("LTD Trading Bot 📈")
+st.caption("ระบบคัดหุ้นและซื้อหุ้นอัตโนมัติ (Alpaca Paper Account)")
 
 # -- Session state defaults --------------------------------------------------
 if "previewed" not in st.session_state:
@@ -105,24 +106,30 @@ def render_colored_table(rows, columns, junk_key="junk_level"):
 # ============================================================================
 # TABS
 # ============================================================================
-tab1, tab2, tab3 = st.tabs(["Screener", "Bot", "Positions"])
+tab1, tab2, tab3 = st.tabs(["🔍 Screener (คัดหุ้น)", "🤖 Bot (ซื้อหุ้น)", "📊 Positions (พอร์ต)"])
 
 
 # ---------------------------------------------------------------------------
 # TAB 1 - Screener
 # ---------------------------------------------------------------------------
 with tab1:
-    st.subheader("Momentum / Reversal Screener")
+    st.subheader("คัดหุ้น (Stock Screener)")
+    st.caption("ดึงข้อมูลจาก Alpaca แล้วจัดอันดับหุ้นใน watchlist ตามคะแนน")
 
     col_left, col_right = st.columns([1, 2])
     with col_left:
-        screen_mode = st.radio("Mode", ["Momentum", "Reversal"], horizontal=True)
-        top_n = st.slider("Top N", min_value=5, max_value=25, value=10, step=1)
-        run_btn = st.button("Run Screen", type="primary")
+        screen_mode = st.radio(
+            "โหมด (Mode)",
+            ["Momentum (แรงส่ง)", "Reversal (ต้นรอบ)"],
+            horizontal=True,
+        )
+        top_n = st.slider("แสดงกี่ตัว (Top N)", min_value=5, max_value=25, value=10, step=1)
+        run_btn = st.button("🔍 คัดหุ้น (Run Screen)", type="primary")
 
     if run_btn:
+        is_reversal = screen_mode.startswith("Reversal")
         cmd = [PYTHON, SCREENER, "--json", "--top", str(top_n)]
-        if screen_mode == "Reversal":
+        if is_reversal:
             cmd.append("--reversal")
 
         with st.spinner("Running screener... (may take 15-30s)"):
@@ -141,11 +148,11 @@ with tab1:
                 results = []
 
             if not results:
-                st.warning("Screener returned no results.")
+                st.warning("ไม่พบหุ้นที่ผ่านเกณฑ์")
             else:
-                st.success("Found " + str(len(results)) + " stocks in " + screen_mode + " mode")
+                st.success("พบ " + str(len(results)) + " ตัว | โหมด: " + screen_mode)
 
-                if screen_mode == "Momentum":
+                if not is_reversal:
                     display_rows = []
                     for r in results:
                         ma50_flag = "Y" if r.get("above_ma50") else "n"
@@ -196,8 +203,8 @@ with tab1:
                     )
 
                 st.caption(
-                    "Green row = PASS  |  Yellow = WARN  |  Red = FAIL  "
-                    "|  Score = RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)"
+                    "🟢 เขียว = ผ่านกรอง  |  🟡 เหลือง = ระวัง (WARN)  |  🔴 แดง = ห้ามซื้อ (FAIL)  "
+                    "|  Score = RS_vs_SPY × clamp(VolRatio, 0.5, 3.0)"
                 )
 
         if stderr:
@@ -209,48 +216,38 @@ with tab1:
 # TAB 2 - Bot
 # ---------------------------------------------------------------------------
 with tab2:
-    st.subheader("Auto-Buy Bot")
+    st.subheader("ซื้อหุ้นอัตโนมัติ (Auto-Buy Bot)")
+    st.caption("คัดหุ้นแล้วส่ง order ไป Alpaca Paper Account")
 
     budget = st.radio(
-        "Budget",
-        ["Paper ($100k)", "Real (~$1,400 / 50k THB)"],
+        "งบประมาณ (Budget)",
+        ["Paper ($100k) — ทดสอบกลยุทธ์", "Real (~$1,400 / 50k THB) — จำลอง budget จริง"],
         horizontal=True,
     )
-    if budget == "Paper ($100k)":
+    if budget.startswith("Paper"):
         size_pct = 0.05
         max_top = 4
+        st.info("Paper mode: position ละ ~$5,000 (5%) | สูงสุด 4 ตัว")
     else:
         size_pct = 0.0035
         max_top = 2
+        st.warning("Real budget mode: position ละ ~$350 (25% ของ 50k THB) | สูงสุด 2 ตัว — ยังเป็น paper เท่านั้น ไม่มีเงินจริง")
 
-    strategy = st.radio("Strategy", ["Momentum", "Reversal"], horizontal=True)
-    order_type = st.radio(
-        "Orders",
-        ["Market", "Bracket (stop -15% / target +30%)"],
+    strategy = st.radio(
+        "กลยุทธ์ (Strategy)",
+        ["Momentum (แรงส่ง — หุ้นวิ่งแรง)", "Reversal (ต้นรอบ — หุ้นเพิ่งกลับตัว)"],
         horizontal=True,
     )
-    top_picks = st.slider("Top N picks", min_value=1, max_value=max_top, value=min(2, max_top))
-
-    st.markdown(
-        "Position size: **" + str(round(size_pct * 100, 2)) + "%** of portfolio"
-        " | Max picks: **" + str(max_top) + "**"
-        " | Selected: **" + str(top_picks) + "**"
+    order_type = st.radio(
+        "ประเภท Order",
+        ["Market (ซื้อทันที)", "Bracket (ซื้อ + ตั้ง stop -15% / เป้า +30% อัตโนมัติ)"],
+        horizontal=True,
     )
-
-    if budget == "Real (~$1,400 / 50k THB)":
-        st.warning(
-            "REAL budget mode: size=0.35% maps ~$350/position onto $100k paper account. "
-            "Still uses paper=True (no real money)."
-        )
+    top_picks = st.slider("จำนวนหุ้นที่จะซื้อ (Top N picks)", min_value=1, max_value=max_top, value=min(2, max_top))
 
     def build_autobuy_cmd(dry_run=True):
-        """Build the auto-buy.py command list with the current UI settings."""
-        cmd = [
-            PYTHON, AUTOBUY,
-            "--top", str(top_picks),
-            "--size", str(size_pct),
-        ]
-        if strategy == "Reversal":
+        cmd = [PYTHON, AUTOBUY, "--top", str(top_picks), "--size", str(size_pct)]
+        if strategy.startswith("Reversal"):
             cmd.append("--reversal")
         if "Bracket" in order_type:
             cmd.append("--bracket")
@@ -261,12 +258,12 @@ with tab2:
     col_preview, col_confirm = st.columns([1, 1])
 
     with col_preview:
-        if st.button("Preview (Dry Run)", type="primary"):
+        if st.button("👁 ดูก่อน (Dry Run)", type="secondary"):
             st.session_state["previewed"] = False
             cmd = build_autobuy_cmd(dry_run=True)
             st.session_state["preview_cmd"] = cmd
 
-            with st.spinner("Running dry-run... (may take 30s)"):
+            with st.spinner("กำลังคัดหุ้นและคำนวณ... (อาจใช้เวลา 30 วิ)"):
                 stdout, stderr, rc = run_subprocess(cmd, timeout=120)
 
             st.session_state["previewed"] = True
@@ -280,29 +277,29 @@ with tab2:
         stderr = st.session_state.get("preview_stderr", "")
 
         if rc != 0:
-            st.error("Dry-run failed (exit " + str(rc) + ")")
+            st.error("เกิดข้อผิดพลาด (exit " + str(rc) + ")")
             if stderr:
                 st.code(stderr, language="text")
         else:
             st.code(stdout, language="text")
             if stderr:
-                with st.expander("Log"):
+                with st.expander("Log (รายละเอียด)"):
                     st.code(stderr, language="text")
 
         with col_confirm:
             st.markdown("###")
             if rc == 0:
-                st.warning("Review the preview above before confirming.")
-                if st.button("CONFIRM BUY", type="primary"):
+                st.warning("ตรวจสอบผล preview ด้านซ้ายก่อนกดยืนยัน")
+                if st.button("✅ ยืนยันซื้อ (CONFIRM BUY)", type="primary"):
                     cmd_live = build_autobuy_cmd(dry_run=False)
-                    with st.spinner("Placing orders..."):
+                    with st.spinner("กำลังส่ง order..."):
                         out2, err2, rc2 = run_subprocess(cmd_live, timeout=120)
                     if rc2 != 0:
-                        st.error("Live run failed (exit " + str(rc2) + ")")
+                        st.error("ส่ง order ไม่สำเร็จ (exit " + str(rc2) + ")")
                         if err2:
                             st.code(err2, language="text")
                     else:
-                        st.success("Orders submitted.")
+                        st.success("ส่ง order สำเร็จแล้ว!")
                         st.code(out2, language="text")
                     st.session_state["previewed"] = False
 
@@ -311,9 +308,10 @@ with tab2:
 # TAB 3 - Positions
 # ---------------------------------------------------------------------------
 with tab3:
-    st.subheader("Live Positions (Paper Account)")
+    st.subheader("พอร์ตปัจจุบัน (Paper Account)")
+    st.caption("ดู positions, P&L, และ buying power จาก Alpaca paper account")
 
-    if st.button("Refresh", type="primary"):
+    if st.button("🔄 รีเฟรช (Refresh)", type="primary"):
         try:
             from alpaca.trading.client import TradingClient
 
@@ -333,12 +331,12 @@ with tab3:
                 n_pos = len(positions)
 
                 m1, m2, m3 = st.columns(3)
-                m1.metric("Portfolio Value", "$" + format(portfolio_value, ",.2f"))
-                m2.metric("Buying Power", "$" + format(buying_power, ",.2f"))
-                m3.metric("Open Positions", str(n_pos))
+                m1.metric("มูลค่าพอร์ต (Portfolio)", "$" + format(portfolio_value, ",.2f"))
+                m2.metric("เงินที่ซื้อได้ (Buying Power)", "$" + format(buying_power, ",.2f"))
+                m3.metric("จำนวน Position", str(n_pos) + " / 4")
 
                 if n_pos == 0:
-                    st.info("No open positions.")
+                    st.info("ไม่มี position เปิดอยู่")
                 else:
                     rows = []
                     for p in positions:
@@ -359,7 +357,7 @@ with tab3:
                         rows,
                         ["Ticker", "Qty", "Avg Entry", "Current", "P&L $", "P&L %"],
                     )
-                    st.caption("Green = profit  |  Red = loss")
+                    st.caption("🟢 เขียว = กำไร  |  🔴 แดง = ขาดทุน")
 
         except Exception as e:
-            st.error("Alpaca connection error: " + str(e))
+            st.error("เชื่อมต่อ Alpaca ไม่ได้: " + str(e))
