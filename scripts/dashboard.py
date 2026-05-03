@@ -6,8 +6,10 @@ Usage: streamlit run scripts/dashboard.py --server.headless true
 
 import json
 import os
+import re
 import subprocess
 import sys
+from datetime import date, datetime
 from pathlib import Path
 
 import streamlit as st
@@ -34,6 +36,157 @@ def load_env():
 
 
 load_env()
+
+
+# -- Vault helpers -----------------------------------------------------------
+def _daily_note_path():
+    return ROOT / "vault" / "daily" / f"{date.today()}.md"
+
+
+def _append_to_daily_note(content: str):
+    path = _daily_note_path()
+    if not path.exists():
+        path.write_text(f"# {date.today()}\n\n", encoding="utf-8")
+    existing = path.read_text(encoding="utf-8")
+    path.write_text(existing.rstrip() + "\n\n" + content + "\n", encoding="utf-8")
+
+
+def vault_save_screener(results: list, mode: str):
+    """Append screener table to today's daily note."""
+    now = datetime.now().strftime("%H:%M")
+    is_rev = "Reversal" in mode
+    lines = [f"## Screener — {now} ({mode})\n"]
+    if is_rev:
+        lines.append("| # | Ticker | Price | 5d% | 20d% | MA50X | VolRatio | R-Score | Filter |")
+        lines.append("|---|--------|-------|-----|------|-------|----------|---------|--------|")
+        for i, r in enumerate(results, 1):
+            cross = "X" if r.get("crossed_ma50") else "-"
+            lines.append(
+                f"| {i} | {r['ticker']} | ${r['price']:,.2f}"
+                f" | {r['return_5d_pct']:+.1f}% | {r['return_20d_pct']:+.1f}%"
+                f" | {cross} | {r['vol_ratio']:.2f}x | {r.get('reversal_score', 0):.4f}"
+                f" | {r.get('junk_level', '?')} |"
+            )
+    else:
+        lines.append("| # | Ticker | Price | 20d% | RS/SPY% | VolRatio | MA50 | Score | Filter |")
+        lines.append("|---|--------|-------|------|---------|----------|------|-------|--------|")
+        for i, r in enumerate(results, 1):
+            ma = "Y" if r.get("above_ma50") else "n"
+            lines.append(
+                f"| {i} | {r['ticker']} | ${r['price']:,.2f}"
+                f" | {r['return_20d_pct']:+.1f}% | {r['rs_vs_spy_pct']:+.1f}%"
+                f" | {r['vol_ratio']:.2f}x | {ma} | {r['score']:.4f}"
+                f" | {r.get('junk_level', '?')} |"
+            )
+    _append_to_daily_note("\n".join(lines))
+
+
+def vault_save_trade(ticker: str, shares: int, price: float,
+                     stop: float | None, target: float | None, strategy: str):
+    """Create a paper trade file in real-trades/."""
+    today = date.today().strftime("%Y-%m-%d")
+    order_type = "bracket" if stop else "market"
+    fname = f"{today}-{ticker}-paper.md"
+    path = ROOT / "vault" / "20_investment" / "_journal" / "real-trades" / fname
+    cost = shares * price
+    stop_str = f"${stop:,.2f}" if stop else "~"
+    target_str = f"${target:,.2f}" if target else "~"
+    content = f"""---
+ticker: {ticker}
+direction: long
+status: open
+type: paper
+date_open: {today}
+date_close: ~
+entry_usd: {price}
+shares: {shares}
+fees_usd: 0
+stop_usd: {stop if stop else "~"}
+target_usd: {target if target else "~"}
+exit_usd: ~
+exit_fees_usd: ~
+result: ~
+setup_source: "bot-screener {strategy}"
+---
+
+# Paper Trade — {ticker} (LONG) — {today}
+*Paper account — Alpaca | strategy: {strategy} | order: {order_type}*
+
+## ราคา
+
+| | ราคา USD | หมายเหตุ |
+|---|---|---|
+| **Entry** | ${price:,.2f} | bot ซื้ออัตโนมัติ |
+| **Stop loss** | {stop_str} | -15% |
+| **Target** | {target_str} | +30% |
+| **Exit** | — | *กรอกตอนปิด* |
+
+## Position
+
+| | Value |
+|---|---|
+| **Shares** | {shares} หุ้น |
+| **Cost basis** | ${cost:,.2f} |
+
+## Notes
+
+### เหตุผลที่เข้า
+Bot คัดโดย {strategy} screener — คะแนนสูงสุดใน watchlist วันที่ {today}
+
+### เหตุผลที่ออก
+[hit target / stop hit / manual exit]
+
+### Lesson (1 ประโยค)
+[กรอกหลังปิด trade]
+"""
+    path.write_text(content, encoding="utf-8")
+    return fname
+
+
+def vault_save_positions(positions, portfolio_value: float, buying_power: float):
+    """Append portfolio snapshot to today's daily note."""
+    now = datetime.now().strftime("%H:%M")
+    lines = [
+        f"## Portfolio Snapshot — {now}\n",
+        f"Portfolio: ${portfolio_value:,.2f} | Buying Power: ${buying_power:,.2f}\n",
+    ]
+    if positions:
+        lines.append("| Ticker | Qty | Entry | Current | P&L $ | P&L % |")
+        lines.append("|--------|-----|-------|---------|-------|-------|")
+        for p in positions:
+            unreal = float(p.unrealized_pl or 0)
+            unreal_pct = float(p.unrealized_plpc or 0) * 100
+            lines.append(
+                f"| {p.symbol} | {int(float(p.qty))}"
+                f" | ${float(p.avg_entry_price):,.2f}"
+                f" | ${float(p.current_price):,.2f}"
+                f" | {unreal:+,.2f}"
+                f" | {unreal_pct:+.1f}% |"
+            )
+    else:
+        lines.append("ไม่มี position เปิดอยู่")
+    _append_to_daily_note("\n".join(lines))
+
+
+# Regex to parse BUY lines from auto-buy.py output
+_BUY_RE = re.compile(
+    r"BUY\s+(\w+)\s+--\s+(\d+)\s+sh\s+@\s+~\$([0-9,.]+)"
+    r"(?:.*?stop=\$([0-9.]+)\s*/\s*target=\$([0-9.]+))?"
+)
+
+
+def parse_buys(output: str):
+    """Return list of (ticker, shares, price, stop, target) from auto-buy output."""
+    trades = []
+    for m in _BUY_RE.finditer(output):
+        ticker = m.group(1)
+        shares = int(m.group(2))
+        price  = float(m.group(3).replace(",", ""))
+        stop   = float(m.group(4)) if m.group(4) else None
+        target = float(m.group(5)) if m.group(5) else None
+        trades.append((ticker, shares, price, stop, target))
+    return trades
+
 
 # -- Page config -------------------------------------------------------------
 st.set_page_config(page_title="LTD Trading Bot", layout="wide")
@@ -207,6 +360,13 @@ with tab1:
                     "|  Score = RS_vs_SPY × clamp(VolRatio, 0.5, 3.0)"
                 )
 
+                # --- Save to vault ---
+                try:
+                    vault_save_screener(results, screen_mode)
+                    st.success("บันทึกลง vault/daily/" + date.today().strftime("%Y-%m-%d") + ".md แล้ว")
+                except Exception as e:
+                    st.warning("บันทึก vault ไม่สำเร็จ: " + str(e))
+
         if stderr:
             with st.expander("Screener log (stderr)"):
                 st.code(stderr, language="text")
@@ -301,6 +461,18 @@ with tab2:
                     else:
                         st.success("ส่ง order สำเร็จแล้ว!")
                         st.code(out2, language="text")
+                        # --- Save trades to vault ---
+                        strat_label = "Reversal" if strategy.startswith("Reversal") else "Momentum"
+                        trades = parse_buys(out2)
+                        saved = []
+                        for (tk, sh, px, stp, tgt) in trades:
+                            try:
+                                fname = vault_save_trade(tk, sh, px, stp, tgt, strat_label)
+                                saved.append(fname)
+                            except Exception as e:
+                                st.warning("บันทึก trade " + tk + " ไม่สำเร็จ: " + str(e))
+                        if saved:
+                            st.info("บันทึก trade ลง vault แล้ว: " + ", ".join(saved))
                     st.session_state["previewed"] = False
 
 
@@ -358,6 +530,13 @@ with tab3:
                         ["Ticker", "Qty", "Avg Entry", "Current", "P&L $", "P&L %"],
                     )
                     st.caption("🟢 เขียว = กำไร  |  🔴 แดง = ขาดทุน")
+
+                # --- Save snapshot to vault ---
+                try:
+                    vault_save_positions(positions, portfolio_value, buying_power)
+                    st.success("บันทึก snapshot ลง vault/daily/" + date.today().strftime("%Y-%m-%d") + ".md แล้ว")
+                except Exception as e:
+                    st.warning("บันทึก vault ไม่สำเร็จ: " + str(e))
 
         except Exception as e:
             st.error("เชื่อมต่อ Alpaca ไม่ได้: " + str(e))
