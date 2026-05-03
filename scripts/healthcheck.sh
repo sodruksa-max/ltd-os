@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# healthcheck.sh — automated system checks for LTD-OS
+# Prints: PASS / WARN / FAIL per check
+
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+VENV="$ROOT/code/python/.venv/Scripts/python"
+SECRETS="$ROOT/.secrets/.env"
+PASS=0; WARN=0; FAIL=0
+
+p() { echo "PASS  $1"; ((PASS++)); }
+w() { echo "WARN  $1"; ((WARN++)); }
+f() { echo "FAIL  $1"; ((FAIL++)); }
+
+echo "=== LTD-OS Health Check ==="
+echo ""
+
+# ── Python venv ──────────────────────────────────────────────────────────────
+echo "-- Python"
+if [[ -f "$VENV" ]]; then
+  p "venv exists ($VENV)"
+else
+  f "venv missing — run: python -m venv code/python/.venv"
+fi
+
+for pkg in alpaca yfinance; do
+  if "$VENV" -c "import $pkg" 2>/dev/null; then
+    p "package: $pkg"
+  else
+    f "package missing: $pkg — pip install $pkg"
+  fi
+done
+
+# ── Secrets ──────────────────────────────────────────────────────────────────
+echo ""
+echo "-- Secrets"
+if [[ -f "$SECRETS" ]]; then
+  p ".secrets/.env exists"
+  for key in ALPACA_API_KEY ALPACA_SECRET_KEY; do
+    if grep -q "^${key}=" "$SECRETS" 2>/dev/null; then
+      val=$(grep "^${key}=" "$SECRETS" | cut -d= -f2)
+      if [[ -n "$val" ]]; then
+        p "$key is set"
+      else
+        f "$key is empty"
+      fi
+    else
+      f "$key missing from .env"
+    fi
+  done
+else
+  f ".secrets/.env not found — create it with ALPACA keys"
+fi
+
+# ── Scripts ───────────────────────────────────────────────────────────────────
+echo ""
+echo "-- Scripts"
+for script in \
+  "scripts/macro-snapshot.py" \
+  "scripts/sr-levels.py" \
+  "scripts/eod-report.py" \
+  "scripts/stats-real-trade.py" \
+  "scripts/context-check.sh" \
+  "scripts/healthcheck.sh" \
+  "scripts/safe-commit.sh" \
+  "scripts/daily-brief.sh"
+do
+  if [[ -f "$ROOT/$script" ]]; then
+    p "$script"
+  else
+    f "$script not found"
+  fi
+done
+
+# ── Slash commands ────────────────────────────────────────────────────────────
+echo ""
+echo "-- Slash commands"
+for cmd in \
+  "pre-market" "post-market" "daily-brief" "eod" \
+  "handoff" "context" "council" "weekly-calibration" \
+  "stock-research" "analyst" "challenge" "condense" \
+  "weekly-learnings" "weekly-market" "import-notebooklm"
+do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/$(basename $cmd)"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+# ── Vault structure ───────────────────────────────────────────────────────────
+echo ""
+echo "-- Vault"
+for dir in \
+  "vault/00_inbox" \
+  "vault/daily" \
+  "vault/10_research" \
+  "vault/20_investment/_journal" \
+  "vault/20_investment/_journal/real-trades" \
+  "vault/30_content" \
+  "vault/40_projects" \
+  "vault/_memory" \
+  "vault/_templates" \
+  "vault/90_archive"
+do
+  if [[ -d "$ROOT/$dir" ]]; then
+    p "dir: $dir"
+  else
+    f "dir missing: $dir"
+  fi
+done
+
+# ── Memory files ──────────────────────────────────────────────────────────────
+echo ""
+echo "-- Memory files"
+for mem in PROJECTS DECISIONS PREFERENCES OUTCOMES WORKFLOWS COUNCIL_LOG; do
+  fpath="$ROOT/vault/_memory/${mem}.md"
+  if [[ -f "$fpath" ]]; then
+    size=$(wc -c < "$fpath")
+    if [[ $size -gt 50 ]]; then
+      p "_memory/${mem}.md (${size} bytes)"
+    else
+      w "_memory/${mem}.md exists but nearly empty (${size} bytes)"
+    fi
+  else
+    f "_memory/${mem}.md missing"
+  fi
+done
+
+# ── Templates ─────────────────────────────────────────────────────────────────
+echo ""
+echo "-- Templates"
+for tpl in real-trade-template; do
+  if ls "$ROOT/vault/_templates/${tpl}"* 2>/dev/null | grep -q .; then
+    p "template: $tpl"
+  else
+    w "template not found: $tpl"
+  fi
+done
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+echo ""
+echo "-- Git"
+dirty=$(git -C "$ROOT" status --porcelain 2>/dev/null | grep -v "handoff.md" | wc -l | tr -d ' ')
+if [[ "$dirty" -eq 0 ]]; then
+  p "working tree clean"
+else
+  w "${dirty} uncommitted change(s) (excluding handoff.md)"
+fi
+
+stale_handoff=""
+if [[ -f "$ROOT/.claude/handoff.md" ]]; then
+  # Check if handoff is from >24h ago using file modification time
+  if find "$ROOT/.claude/handoff.md" -mmin +1440 | grep -q .; then
+    stale_handoff="yes"
+    w "handoff.md exists and is >24h old — may be stale"
+  else
+    p "handoff.md recent"
+  fi
+fi
+
+# ── Summary ───────────────────────────────────────────────────────────────────
+echo ""
+echo "=== Summary ==="
+echo "PASS: $PASS  |  WARN: $WARN  |  FAIL: $FAIL"
+if [[ $FAIL -gt 0 ]]; then
+  echo "Status: DEGRADED — fix FAIL items before next session"
+  exit 2
+elif [[ $WARN -gt 0 ]]; then
+  echo "Status: OK with warnings"
+  exit 1
+else
+  echo "Status: ALL SYSTEMS GO"
+  exit 0
+fi
