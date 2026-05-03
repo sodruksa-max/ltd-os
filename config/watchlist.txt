@@ -2,35 +2,33 @@
 # One ticker per line. Lines starting with # are comments.
 # Edit freely — screener uses this list as its universe.
 
-# === Mega cap tech (liquid, tight spreads) ===
+# === Affordable at ~$1,400 budget (under $350/share) ===
+# Can buy at least 1 share with 25% position sizing
 AAPL
-MSFT
-NVDA
-META
-GOOGL
 AMZN
-AMD
-
-# === Growth / momentum ===
-TSLA
-NFLX
-CRWD
-SNOW
+NVDA
 SHOP
+SNOW
+NFLX
+XLK
+XLC
+XLV
+XLF
+XLE
+CELH
+CAVA
+IBKR
+ARKK
+ELF
+SMCI
+
+# === Research / paper-only (over $350/share) ===
+# Good for strategy testing but too expensive for 50k THB real account
+GOOGL
+TSLA
+AMD
+MSFT
+META
 APP
 AXON
-
-# === Small/mid cap momentum ===
-SMCI
-CAVA
-CELH
-IBKR
-ELF
-
-# === Sector ETFs (for sector rotation plays) ===
-XLK
-XLE
-XLF
-XLV
-XLC
-ARKK
+CRWD
