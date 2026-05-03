@@ -182,9 +182,7 @@ def evaluate(ticker: str, closes: list, volumes: list,
     if level == "PASS":
         summary = "OK"
     else:
-        codes = [f"{c}:{d}" for l, c, d in issues]
-        summary = " | ".join(codes[:2])   # cap at 2 for table width
-        if len(codes) > 2:
-            summary += f" (+{len(codes)-2})"
+        codes = [f"[{l}] {c}: {d}" for l, c, d in issues]
+        summary = " | ".join(codes)
 
     return {"level": level, "issues": issues, "summary": summary}

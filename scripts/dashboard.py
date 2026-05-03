@@ -302,6 +302,10 @@ with tab1:
             horizontal=True,
         )
         top_n = st.slider("แสดงกี่ตัว (Top N)", min_value=5, max_value=25, value=10, step=1)
+        use_fundamentals = st.checkbox(
+            "Fundamental checks (EPS, หนี้, market cap) — ช้ากว่า ~30 วิ",
+            value=False,
+        )
         run_btn = st.button("🔍 คัดหุ้น (Run Screen)", type="primary")
 
     if run_btn:
@@ -312,9 +316,14 @@ with tab1:
             cmd = [PYTHON, SCREENER, "--json", "--top", str(top_n)]
         if is_reversal:
             cmd.append("--reversal")
+        if use_fundamentals:
+            cmd.append("--fundamentals")
 
-        with st.spinner("Running screener... (may take 15-30s)"):
-            stdout, stderr, rc = run_subprocess(cmd, timeout=120)
+        spin_msg = "Running screener... (may take 15-30s)"
+        if use_fundamentals:
+            spin_msg = "Running screener + fundamental checks... (may take ~60s)"
+        with st.spinner(spin_msg):
+            stdout, stderr, rc = run_subprocess(cmd, timeout=180)
 
         if rc != 0:
             st.error("Screener failed (exit " + str(rc) + ")")
@@ -384,9 +393,28 @@ with tab1:
                     )
 
                 st.caption(
-                    "🟢 เขียว = ผ่านกรอง  |  🟡 เหลือง = ระวัง (WARN)  |  🔴 แดง = ห้ามซื้อ (FAIL)  "
-                    "|  Score = RS_vs_SPY × clamp(VolRatio, 0.5, 3.0)"
+                    "🟢 เขียว = ผ่านกรอง  |  🟡 เหลือง = ระวัง (WARN)  |  🔴 แดง = ห้ามซื้อ (FAIL)"
                 )
+                with st.expander("คำอธิบาย flag แต่ละตัว"):
+                    st.markdown("""
+| Flag | ระดับ | ความหมาย |
+|------|-------|----------|
+| OVEREXT | WARN | ราคาวิ่งไปแล้ว >70% ใน 20 วัน — ต้นรอบเลยแล้ว |
+| PUMP? | WARN | ราคาวิ่งไปแล้ว >100% ใน 20 วัน — อาจเป็น pump-and-dump |
+| VOLATILE | WARN | daily std dev >8% — ราคากระโดดแรงมาก ควบคุมความเสี่ยงยาก |
+| LOW | WARN | ราคาอยู่ใกล้ low ในช่วง 80 วัน (<130% จาก low) — อ่อนแอ |
+| MICRO_CAP | FAIL | market cap <$50M — เสี่ยง delisting |
+| SMALL_CAP | WARN | market cap <$300M — สภาพคล่องต่ำ |
+| NEG_EPS | FAIL | EPS ติดลบทั้ง trailing และ forward — ขาดทุนต่อเนื่อง |
+| NEG_EPS_T | WARN | EPS trailing ติดลบ แต่ forward บวก — กำลังฟื้น |
+| HIGH_DEBT | FAIL | D/E ratio >500% — หนี้สูงมากเกิน |
+| DEBT | WARN | D/E ratio >300% — หนี้เยอะ |
+| NEG_OCF | WARN | operating cash flow ติดลบ — กำลังเผา cash |
+| REV_DOWN | WARN | revenue ลด >30% YoY — ธุรกิจหดตัว |
+| PUMP_CONFIRMED | FAIL | ราคาพุ่ง >150% + fundamental แย่ = ปั่นแน่ |
+| NO_DATA | WARN | ดึงข้อมูล fundamental ไม่ได้ |
+                    """)
+                    st.caption("FAIL = auto-buy ข้ามทันที | WARN = ระวัง แต่ bot ยังซื้อได้")
 
                 # --- Save to vault ---
                 try:
