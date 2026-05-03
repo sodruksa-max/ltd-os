@@ -17,8 +17,9 @@ import streamlit as st
 # -- Paths -------------------------------------------------------------------
 ROOT = Path(__file__).parent.parent
 PYTHON = str(ROOT / "code" / "python" / ".venv" / "Scripts" / "python")
-SCREENER = str(ROOT / "scripts" / "screener.py")
-AUTOBUY  = str(ROOT / "scripts" / "auto-buy.py")
+SCREENER   = str(ROOT / "scripts" / "screener.py")
+DISCOVERY  = str(ROOT / "scripts" / "discovery.py")
+AUTOBUY    = str(ROOT / "scripts" / "auto-buy.py")
 EOD      = str(ROOT / "scripts" / "eod-report.py")
 MACRO    = str(ROOT / "scripts" / "macro-snapshot.py")
 STATS    = str(ROOT / "scripts" / "stats-real-trade.py")
@@ -281,10 +282,20 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
 # ---------------------------------------------------------------------------
 with tab1:
     st.subheader("คัดหุ้น (Stock Screener)")
-    st.caption("ดึงข้อมูลจาก Alpaca แล้วจัดอันดับหุ้นใน watchlist ตามคะแนน")
 
     col_left, col_right = st.columns([1, 2])
     with col_left:
+        source = st.radio(
+            "Universe",
+            ["Watchlist (หุ้นที่ตั้งไว้)", "Discovery (หาหุ้นใหม่จาก market)"],
+            horizontal=False,
+        )
+        is_discovery = source.startswith("Discovery")
+        if is_discovery:
+            st.caption("ดึง top 50 most-active + top gainers จาก Alpaca วันนี้ — ใช้เวลา ~60 วิ")
+        else:
+            st.caption("ดึงข้อมูลจาก watchlist ที่ตั้งไว้ใน config/watchlist.txt")
+
         screen_mode = st.radio(
             "โหมด (Mode)",
             ["Momentum (แรงส่ง)", "Reversal (ต้นรอบ)"],
@@ -295,7 +306,10 @@ with tab1:
 
     if run_btn:
         is_reversal = screen_mode.startswith("Reversal")
-        cmd = [PYTHON, SCREENER, "--json", "--top", str(top_n)]
+        if is_discovery:
+            cmd = [PYTHON, DISCOVERY, "--json", "--top", str(top_n)]
+        else:
+            cmd = [PYTHON, SCREENER, "--json", "--top", str(top_n)]
         if is_reversal:
             cmd.append("--reversal")
 
@@ -380,6 +394,30 @@ with tab1:
                     st.success("บันทึกลง vault/daily/" + date.today().strftime("%Y-%m-%d") + ".md แล้ว")
                 except Exception as e:
                     st.warning("บันทึก vault ไม่สำเร็จ: " + str(e))
+
+                # --- Discovery: add to watchlist buttons ---
+                if is_discovery:
+                    st.divider()
+                    st.write("**เพิ่มเข้า Watchlist** — กดที่หุ้นที่อยากเพิ่ม:")
+                    existing = []
+                    if WATCHLIST_FILE.exists():
+                        existing = [
+                            l.strip() for l in WATCHLIST_FILE.read_text(encoding="utf-8").splitlines()
+                            if l.strip() and not l.strip().startswith("#")
+                        ]
+                    btn_cols = st.columns(min(len(results), 8))
+                    for idx, r in enumerate(results[:8]):
+                        tk = r["ticker"]
+                        with btn_cols[idx % 8]:
+                            label = ("+" if tk not in existing else "ok") + " " + tk
+                            if tk not in existing:
+                                if st.button(label, key="add_" + tk):
+                                    with open(str(WATCHLIST_FILE), "a", encoding="utf-8") as f:
+                                        f.write(tk + "\n")
+                                    st.success(tk + " เพิ่มแล้ว")
+                                    st.rerun()
+                            else:
+                                st.write(label)
 
         if stderr:
             with st.expander("Screener log (stderr)"):
