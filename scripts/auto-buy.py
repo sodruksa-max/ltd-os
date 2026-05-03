@@ -7,14 +7,20 @@ Usage:
     python scripts/auto-buy.py --dry-run    # show what WOULD be bought, no orders placed
     python scripts/auto-buy.py --top 3      # consider top 3 screener picks (default: 2)
     python scripts/auto-buy.py --size 0.05  # position size as fraction of portfolio (default: 5%)
+    python scripts/auto-buy.py --reversal   # use reversal screener (beginning-of-trend mode)
+    python scripts/auto-buy.py --bracket    # place bracket orders (stop -15% / target +30%)
 
 Rules applied (from PREFERENCES.md):
   1. Max 4 concurrent positions — skip if already at limit
   2. Skip tickers already held in portfolio
   3. Position size = size_pct * portfolio_value (round down to whole shares)
   4. Skip if buying power < position_size
-  5. Place market order (fills at next tick)
+  5. Place market order (fills at next tick); or bracket if --bracket
   6. Log every decision with reason
+
+Bracket order exits:
+  Stop loss  : entry_price * 0.85  (risk -15%)
+  Take profit: entry_price * 1.30  (target +30%)
 
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 Paper account must be funded (see: alpaca-paper.py account)
@@ -63,13 +69,13 @@ def get_account_state(client):
     return portfolio_value, buying_power, held, len(positions)
 
 
-def run_screener(top_n):
+def run_screener(top_n, reversal=False):
     """Run screener.py and return top N results as list of dicts."""
     import subprocess
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "screener.py"), "--json"],
-        capture_output=True, text=True, cwd=str(ROOT)
-    )
+    cmd = [sys.executable, str(ROOT / "scripts" / "screener.py"), "--json"]
+    if reversal:
+        cmd.append("--reversal")
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
     if result.returncode != 0:
         print(f"[warn] screener failed: {result.stderr.strip()}")
         return []
@@ -82,16 +88,38 @@ def run_screener(top_n):
         return []
 
 
-def place_order(client, ticker, shares, dry_run):
-    from alpaca.trading.requests import MarketOrderRequest
-    from alpaca.trading.enums import OrderSide, TimeInForce
-    if dry_run:
-        print(f"  [DRY RUN] would BUY {shares} x {ticker} (market)")
-        return None
-    req = MarketOrderRequest(
-        symbol=ticker, qty=shares,
-        side=OrderSide.BUY, time_in_force=TimeInForce.DAY,
+STOP_PCT   = 0.85   # stop loss at -15% of entry
+TARGET_PCT = 1.30   # take profit at +30% of entry
+
+
+def place_order(client, ticker, shares, dry_run, bracket=False, entry_price=None):
+    from alpaca.trading.requests import (
+        MarketOrderRequest, TakeProfitRequest, StopLossRequest,
     )
+    from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
+
+    if bracket and entry_price:
+        stop_price   = round(entry_price * STOP_PCT, 2)
+        target_price = round(entry_price * TARGET_PCT, 2)
+        if dry_run:
+            print(f"  [DRY RUN] would BUY {shares} x {ticker} BRACKET "
+                  f"stop=${stop_price} / target=${target_price}")
+            return None
+        req = MarketOrderRequest(
+            symbol=ticker, qty=shares,
+            side=OrderSide.BUY, time_in_force=TimeInForce.DAY,
+            order_class=OrderClass.BRACKET,
+            take_profit=TakeProfitRequest(limit_price=target_price),
+            stop_loss=StopLossRequest(stop_price=stop_price),
+        )
+    else:
+        if dry_run:
+            print(f"  [DRY RUN] would BUY {shares} x {ticker} (market)")
+            return None
+        req = MarketOrderRequest(
+            symbol=ticker, qty=shares,
+            side=OrderSide.BUY, time_in_force=TimeInForce.DAY,
+        )
     order = client.submit_order(req)
     return order
 
@@ -102,14 +130,22 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Show plan, do not place orders")
     parser.add_argument("--top", type=int, default=DEFAULT_TOP_N, help="Top N screener picks to consider")
     parser.add_argument("--size", type=float, default=DEFAULT_SIZE_PCT, help="Position size as fraction of portfolio (0.05 = 5%%)")
+    parser.add_argument("--reversal", action="store_true", help="Use reversal screener (beginning-of-trend mode)")
+    parser.add_argument("--bracket", action="store_true", help="Place bracket orders: stop -15%% / target +30%%")
     args = parser.parse_args()
 
     load_env()
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
+    flags = []
+    if args.reversal:
+        flags.append("REVERSAL")
+    if args.bracket:
+        flags.append("BRACKET stop=-15%/target=+30%")
     mode = "DRY RUN" if args.dry_run else "LIVE PAPER"
     print(f"## Auto-Buy Run -- {now} [{mode}]")
-    print(f"Config: top={args.top}, size={args.size*100:.0f}% per trade, max_positions={MAX_POSITIONS}")
+    print(f"Config: top={args.top}, size={args.size*100:.0f}% per trade, max_positions={MAX_POSITIONS}" +
+          (f", flags={' '.join(flags)}" if flags else ""))
     print()
 
     # --- Account state ---
@@ -137,8 +173,9 @@ def main():
     print()
 
     # --- Run screener ---
-    print(f"Running screener (top {args.top} picks)...")
-    candidates = run_screener(args.top)
+    screener_mode = "reversal" if args.reversal else "momentum"
+    print(f"Running screener in {screener_mode} mode (top {args.top} picks)...")
+    candidates = run_screener(args.top, reversal=args.reversal)
     if not candidates:
         print("Screener returned no candidates.")
         sys.exit(0)
@@ -146,7 +183,12 @@ def main():
     print(f"Screener top {len(candidates)}:")
     for i, c in enumerate(candidates, 1):
         rs_sign = "+" if c["rs_vs_spy_pct"] >= 0 else ""
-        print(f"  {i}. {c['ticker']:<8} ${c['price']:,.2f}  RS={rs_sign}{c['rs_vs_spy_pct']:.1f}%  vol={c['vol_ratio']:.1f}x  score={c['score']:.4f}")
+        if args.reversal:
+            cross = "MA50X" if c.get("crossed_ma50") else "     "
+            print(f"  {i}. {c['ticker']:<8} ${c['price']:,.2f}  5d={c.get('return_5d_pct',0):+.1f}%  "
+                  f"vol={c['vol_ratio']:.1f}x  {cross}  r-score={c.get('reversal_score',0):.4f}")
+        else:
+            print(f"  {i}. {c['ticker']:<8} ${c['price']:,.2f}  RS={rs_sign}{c['rs_vs_spy_pct']:.1f}%  vol={c['vol_ratio']:.1f}x  score={c['score']:.4f}")
     print()
 
     # --- Decision loop ---
@@ -190,14 +232,22 @@ def main():
 
         # Place order
         try:
-            order = place_order(client, ticker, shares, args.dry_run)
-            if order:
-                print(f"  BUY  {ticker} — {shares} shares @ ~${price:,.2f} (${cost:,.0f}) | order_id={str(order.id)[:8]} status={order.status.value}")
+            order = place_order(client, ticker, shares, args.dry_run,
+                                bracket=args.bracket, entry_price=price)
+            # dry_run path: place_order already printed "[DRY RUN]" and returned None
+            if args.dry_run or order:
+                order_type = "BRACKET" if args.bracket else "MARKET"
+                if order:
+                    stop_note = ""
+                    if args.bracket:
+                        stop_note = f" | stop=${price*STOP_PCT:,.2f} / target=${price*TARGET_PCT:,.2f}"
+                    print(f"  BUY  {ticker} -- {shares} sh @ ~${price:,.2f} (${cost:,.0f}) [{order_type}]"
+                          f" | order_id={str(order.id)[:8]} status={order.status.value}{stop_note}")
                 buying_power -= cost
                 held.add(ticker)
-            bought += 1
+                bought += 1
         except Exception as e:
-            print(f"  ERROR {ticker} — order failed: {e}")
+            print(f"  ERROR {ticker} -- order failed: {e}")
 
     print()
     if bought == 0:

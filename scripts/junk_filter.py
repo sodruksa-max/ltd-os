@@ -45,7 +45,11 @@ def check_price_based(ticker: str, closes: list, volumes: list, lookback: int = 
     past = closes[-lookback - 1]
     ret_20d = (current - past) / past if past > 0 else 0
 
-    # 1. Extreme runup — possible pump
+    # 1. Overextended — too far run for a fresh entry
+    if 0.70 < ret_20d <= 1.0:
+        issues.append(("WARN", "OVEREXT", f"+{ret_20d*100:.0f}% in 20d"))
+
+    # Extreme runup — possible pump
     if ret_20d > 1.0:
         issues.append(("WARN", "PUMP?", f"+{ret_20d*100:.0f}% in 20d"))
 

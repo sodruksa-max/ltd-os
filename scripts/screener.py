@@ -135,7 +135,24 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
                 vol_ratio = volumes[-1] / avg_vol if avg_vol > 0 else 0.0
 
             vol_weight = max(0.5, min(vol_ratio, 3.0))
-            score = rs * vol_weight
+            momentum_score = rs * vol_weight
+
+            # --- Reversal signals ---
+            ret_5d = (closes[-1] - closes[-6]) / closes[-6] if len(closes) >= 6 else 0.0
+
+            # Did price cross above MA50 in last 5 bars?
+            crossed_ma50 = False
+            if ma50_val and len(closes) >= MA_PERIOD + 6:
+                prev_ma50 = sum(closes[-MA_PERIOD - 5:-5]) / MA_PERIOD
+                was_below = closes[-6] < prev_ma50
+                crossed_ma50 = was_below and above_ma50
+
+            # Reversal score: recent 5d move × volume × bonus if just crossed MA50
+            ma_bonus = 2.0 if crossed_ma50 else 1.0
+            reversal_score = max(0.0, ret_5d) * vol_weight * ma_bonus
+
+            # Overextension: already run far = bad entry for "ต้นรอบ"
+            overextended = ret_20d > 0.70
 
             junk = junk_filter.evaluate(
                 ticker, closes, volumes,
@@ -147,11 +164,15 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
                 "ticker": ticker,
                 "price": round(current_price, 2),
                 "return_20d_pct": round(ret_20d * 100, 2),
+                "return_5d_pct": round(ret_5d * 100, 2),
                 "rs_vs_spy_pct": round(rs * 100, 2),
                 "vol_ratio": round(vol_ratio, 2),
                 "above_ma50": above_ma50,
+                "crossed_ma50": crossed_ma50,
+                "overextended": overextended,
                 "ma50": round(ma50_val, 2) if ma50_val else None,
-                "score": round(score, 4),
+                "score": round(momentum_score, 4),
+                "reversal_score": round(reversal_score, 4),
                 "junk_level": junk["level"],
                 "junk_summary": junk["summary"],
             })
@@ -163,29 +184,50 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
     return results, fails
 
 
-def print_table(results, top=None):
+def print_table(results, top=None, reversal_mode=False):
     rows = results[:top] if top else results
     if not rows:
         print("No results.")
         return
 
-    print(f"{'#':<3} {'Ticker':<8} {'Price':>8} {'20d Ret':>8} {'RS/SPY':>8} {'VolRatio':>9} {'MA50':>5} {'Score':>8}  Filter")
-    print("-" * 85)
-    for i, r in enumerate(rows, 1):
-        ma_flag = "Y" if r["above_ma50"] else "n"
-        rs_sign = "+" if r["rs_vs_spy_pct"] >= 0 else ""
-        ret_sign = "+" if r["return_20d_pct"] >= 0 else ""
-        junk_level = r.get("junk_level", "PASS")
-        junk_summary = r.get("junk_summary", "OK")
-        junk_col = f"[{junk_level}] {junk_summary}" if junk_level != "PASS" else "[OK]"
-        print(
-            f"{i:<3} {r['ticker']:<8} ${r['price']:>7,.2f} "
-            f"{ret_sign}{r['return_20d_pct']:>6.1f}% {rs_sign}{r['rs_vs_spy_pct']:>6.1f}% "
-            f"{r['vol_ratio']:>8.2f}x {ma_flag:>5} {r['score']:>8.4f}  {junk_col}"
-        )
-    print()
-    print("Score = RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)")
-    print("MA50 Y=above / n=below  |  Filter: [OK]=clean [WARN]=caution [FAIL]=excluded from auto-buy")
+    if reversal_mode:
+        print(f"{'#':<3} {'Ticker':<8} {'Price':>8} {'5d Ret':>7} {'20d Ret':>8} {'MA50X':>5} {'VolRatio':>9} {'R-Score':>8}  Filter")
+        print("-" * 88)
+        for i, r in enumerate(rows, 1):
+            junk_level = r.get("junk_level", "PASS")
+            junk_summary = r.get("junk_summary", "OK")
+            junk_col = f"[{junk_level}] {junk_summary}" if junk_level != "PASS" else "[OK]"
+            over = " OVER" if r.get("overextended") else ""
+            cross = "X" if r.get("crossed_ma50") else "-"
+            ret5_sign = "+" if r["return_5d_pct"] >= 0 else ""
+            ret20_sign = "+" if r["return_20d_pct"] >= 0 else ""
+            print(
+                f"{i:<3} {r['ticker']:<8} ${r['price']:>7,.2f} "
+                f"{ret5_sign}{r['return_5d_pct']:>5.1f}% {ret20_sign}{r['return_20d_pct']:>6.1f}% "
+                f"{cross:>5} {r['vol_ratio']:>8.2f}x {r['reversal_score']:>8.4f}  {junk_col}{over}"
+            )
+        print()
+        print("R-Score = 5d_return * clamp(VolRatio,0.5,3) * 2x_bonus_if_MA50_crossed")
+        print("MA50X: X=just crossed above MA50 (key reversal signal) | - =already above or below")
+        print("OVER = 20d return >70% — likely late stage, skip for 'ต้นรอบ'")
+    else:
+        print(f"{'#':<3} {'Ticker':<8} {'Price':>8} {'20d Ret':>8} {'RS/SPY':>8} {'VolRatio':>9} {'MA50':>5} {'Score':>8}  Filter")
+        print("-" * 85)
+        for i, r in enumerate(rows, 1):
+            ma_flag = "Y" if r["above_ma50"] else "n"
+            rs_sign = "+" if r["rs_vs_spy_pct"] >= 0 else ""
+            ret_sign = "+" if r["return_20d_pct"] >= 0 else ""
+            junk_level = r.get("junk_level", "PASS")
+            junk_summary = r.get("junk_summary", "OK")
+            junk_col = f"[{junk_level}] {junk_summary}" if junk_level != "PASS" else "[OK]"
+            print(
+                f"{i:<3} {r['ticker']:<8} ${r['price']:>7,.2f} "
+                f"{ret_sign}{r['return_20d_pct']:>6.1f}% {rs_sign}{r['rs_vs_spy_pct']:>6.1f}% "
+                f"{r['vol_ratio']:>8.2f}x {ma_flag:>5} {r['score']:>8.4f}  {junk_col}"
+            )
+        print()
+        print("Score = RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)")
+        print("MA50 Y=above / n=below  |  Filter: [OK]=clean [WARN]=caution [FAIL]=excluded from auto-buy")
 
 
 def main():
@@ -195,6 +237,8 @@ def main():
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--fundamentals", action="store_true",
                         help="Add yfinance fundamental junk checks (slower, ~30s extra)")
+    parser.add_argument("--reversal", action="store_true",
+                        help="Sort by reversal score (beginning-of-trend mode) — filters overextended stocks")
     parser.add_argument("tickers", nargs="*")
     args = parser.parse_args()
 
@@ -210,7 +254,9 @@ def main():
     fetch_list = list(set(tickers + [BENCHMARK]))
     print(f"Fetching {len(fetch_list)} tickers from Alpaca...", file=sys.stderr)
     if args.fundamentals:
-        print("Fundamental checks ON (yfinance — may take ~30s)...", file=sys.stderr)
+        print("Fundamental checks ON (yfinance -- may take ~30s)...", file=sys.stderr)
+    if args.reversal:
+        print("Reversal mode ON -- filtering overextended, sorting by reversal score...", file=sys.stderr)
 
     try:
         bars_data = fetch_bars(fetch_list)
@@ -220,12 +266,17 @@ def main():
 
     results, fails = screen(tickers, bars_data, fetch_fundamentals=args.fundamentals)
 
+    if args.reversal:
+        results = [r for r in results if not r.get("overextended")]
+        results.sort(key=lambda x: x["reversal_score"], reverse=True)
+
     if args.json:
         print(json.dumps(results, indent=2))
         return
 
-    print(f"\n## Momentum Screen -- {date.today()}\n")
-    print_table(results, top=args.top)
+    mode_label = "Reversal (beginning-of-trend)" if args.reversal else "Momentum"
+    print(f"\n## {mode_label} Screen -- {date.today()}\n")
+    print_table(results, top=args.top, reversal_mode=args.reversal)
 
     if fails:
         print(f"\n[skipped {len(fails)}]: " + ", ".join(f"{t}({r})" for t, r in fails[:8]))

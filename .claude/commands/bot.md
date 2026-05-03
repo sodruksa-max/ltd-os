@@ -17,10 +17,13 @@ Run the auto-trading pipeline: screen → rank → buy top picks on Alpaca paper
 ## Usage
 
 ```
-/bot                  # screen + buy (live paper orders)
-/bot --dry-run        # show what WOULD be bought, no orders
-/bot --top 3          # consider top 3 screener picks (default: 2)
-/bot --size 0.03      # 3% of portfolio per position (default: 5%)
+/bot                         # screen + buy (live paper orders)
+/bot --dry-run               # show what WOULD be bought, no orders
+/bot --top 3                 # consider top 3 screener picks (default: 2)
+/bot --size 0.03             # 3% of portfolio per position (default: 5%)
+/bot --reversal              # use reversal screener (beginning-of-trend mode)
+/bot --bracket               # bracket orders: stop -15% / take profit +30%
+/bot --reversal --bracket    # reversal entry + bracket exits (full Option B)
 ```
 
 ## Steps
@@ -49,14 +52,19 @@ Ask user: "ยืนยันให้ bot ซื้อ top picks ไหม? (y/
 
 ### 3. Run auto-buy
 
-**If user confirms (y):**
+**If user confirms (y) — momentum mode:**
 ```bash
 code/python/.venv/Scripts/python scripts/auto-buy.py
 ```
 
+**Reversal mode + bracket exits (Option B — full setup):**
+```bash
+code/python/.venv/Scripts/python scripts/auto-buy.py --reversal --bracket
+```
+
 **If user wants dry-run first:**
 ```bash
-code/python/.venv/Scripts/python scripts/auto-buy.py --dry-run
+code/python/.venv/Scripts/python scripts/auto-buy.py --dry-run --reversal --bracket
 ```
 Then ask again to confirm live run.
 
@@ -88,7 +96,11 @@ Bot run complete:
 | Skip if already held | yes | — |
 | Skip if below MA50 | yes | trend filter |
 | Skip if buying power insufficient | yes | — |
-| Order type | Market (DAY) | fills at next tick |
+| Order type (default) | Market (DAY) | fills at next tick |
+| Order type (`--bracket`) | Bracket: market entry + stop + target | auto-exits |
+| Stop loss (`--bracket`) | entry_price x 0.85 (risk -15%) | Option B |
+| Take profit (`--bracket`) | entry_price x 1.30 (target +30%) | Option B |
+| Screener mode (`--reversal`) | Filters overextended (>70% 20d), ranks by reversal score | beginning-of-trend |
 
 ## Watchlist management
 
