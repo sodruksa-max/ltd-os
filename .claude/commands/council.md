@@ -1,5 +1,5 @@
 ---
-description: Multi-agent debate workflow. 3 mindset proposers + 1 expertise lens generate independent input, cross-critique, synthesizer combines, devil's advocate challenges. Output = decision framework, NOT recommendation. Use for high-stakes decisions or project planning.
+description: Multi-agent debate workflow. 4 mindset proposers + 1 expertise lens generate independent input, cross-critique, synthesizer combines, devil's advocate challenges. Output = decision framework, NOT recommendation. Use for high-stakes decisions or project planning.
 ---
 
 # /council <topic> [--expertise=<lens>]
@@ -37,7 +37,7 @@ Show user the auto-picked lens at start: "Using expertise lens: <X>. Override wi
 - "Python list คืออะไร" → just ask
 - "เลือก library อะไร" → too small
 
-Cost: ~$0.75-2 per /council. Time: 7-12 min.
+Cost: ~$1-2.50 per /council. Time: 8-14 min.
 
 ## Pre-checks
 
@@ -53,28 +53,30 @@ Write `brief.md` (context, goal, constraints, stakes, open questions).
 
 Show user: "Brief done. Auto-picked expertise lens: <X>. Starting parallel proposals..."
 
-## Phase 2: Proposals (3 parallel)
+## Phase 2: Proposals (4 parallel)
 
-Invoke 3 mindset proposers IN PARALLEL with same brief:
+Invoke 4 mindset proposers IN PARALLEL with same brief:
 - `optimist`
-- `pragmatist`  
+- `pragmatist`
 - `skeptic`
+- `caveman`
 
 Each writes `proposal-<role>.md` independently. Don't share between agents.
 
-After all 3 done → 1-line summary of each.
+After all 4 done → 1-line summary of each.
 
 ## Phase 3: Cross-critique (1 turn)
 
-Generate 6 critiques (each proposer critiques other 2):
+Generate 12 critiques (each proposer critiques the other 3):
 - Format: steelman + weakness + question
-- Save all 6 in single `critiques.md`
+- Save all 12 in single `critiques.md`
+- Caveman critiques: keep language direct and physical — no abstract framing
 
 ## Phase 3.5: Expertise lens (NEW — 1 turn)
 
 Invoke chosen expertise agent (`engineer` / `strategist` / `financial_risk`).
 
-Reads brief + 3 proposals + 6 critiques. Writes `expertise-<lens>.md` with:
+Reads brief + 4 proposals + 12 critiques. Writes `expertise-<lens>.md` with:
 - Lens-specific evaluation per proposal
 - Hidden costs/risks proposers missed
 - Concrete recommendations FROM THIS LENS ONLY
@@ -83,9 +85,10 @@ This is NOT a 4th proposal — it's a reality check from one specific angle.
 
 ## Phase 4: Synthesis (synthesizer agent)
 
-Synthesizer reads brief + 3 proposals + 6 critiques + **expertise findings**. Produces `synthesis.md`:
+Synthesizer reads brief + 4 proposals + 12 critiques + **expertise findings**. Produces `synthesis.md`:
 - Decision matrix (now includes expertise dimensions)
 - Where proposers AGREE / DIVERGE
+- **Caveman gut signal** — did primal brain say SAFE, UNEASY, or DANGER? Note if gut contradicts sophisticates
 - Critique patterns
 - Expertise warnings highlighted
 - Hybrid options
@@ -118,6 +121,9 @@ status: open
 ## Expertise warnings
 <critical findings from expertise lens>
 
+## Caveman gut signal
+<SAFE / UNEASY / DANGER — and whether gut contradicts the sophisticated proposals>
+
 ## Recommendation framework
 <from synthesizer — IF dimension X matters → option Y>
 
@@ -126,7 +132,7 @@ status: open
 
 ## All artifacts
 - [[brief]]
-- [[proposal-optimist]] / [[proposal-pragmatist]] / [[proposal-skeptic]]
+- [[proposal-optimist]] / [[proposal-pragmatist]] / [[proposal-skeptic]] / [[proposal-caveman]]
 - [[critiques]]
 - [[expertise-<lens>]]
 - [[synthesis]]
@@ -151,9 +157,10 @@ Files: vault/_council/<date>-<slug>/
 Read in this order:
 1. DECISION.md (start here)
 2. expertise-<lens>.md (specific reality check)
-3. synthesis.md (decision matrix)
-4. proposal-*.md (full proposals if curious)
-5. final-challenge.md (questions YOU must answer)
+3. synthesis.md (decision matrix + caveman gut signal)
+4. proposal-caveman.md (gut check — read if sophisticated proposals feel too abstract)
+5. proposal-*.md (full proposals if curious)
+6. final-challenge.md (questions YOU must answer)
 
 The council does NOT decide for you.
 
@@ -163,9 +170,9 @@ After 2-8 weeks → log outcome to OUTCOMES.md (use /weekly-learnings)
 
 ## Constraints
 
-- Total token budget: 60-100K (6 phases)
-- Time budget: 7-12 minutes wall time
-- If a proposer fails → continue with 2, note in DECISION.md
+- Total token budget: 70-110K (6 phases, 4 proposers)
+- Time budget: 8-14 minutes wall time
+- If a proposer fails → continue with remaining, note in DECISION.md
 - DO NOT skip phases
 - DO NOT auto-decide for user
 - DO NOT execute decision (only document it)
