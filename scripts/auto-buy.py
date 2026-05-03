@@ -166,6 +166,14 @@ def main():
             print(f"  SKIP {ticker} — already holding")
             continue
 
+        junk_level = c.get("junk_level", "PASS")
+        junk_summary = c.get("junk_summary", "")
+        if junk_level == "FAIL":
+            print(f"  SKIP {ticker} — junk filter FAIL: {junk_summary}")
+            continue
+        if junk_level == "WARN":
+            print(f"  WARN {ticker} — junk flag: {junk_summary} (proceeding)")
+
         shares = int(position_size_usd / price)
         if shares < 1:
             print(f"  SKIP {ticker} — position size ${position_size_usd:,.0f} buys <1 share at ${price:,.2f}")
