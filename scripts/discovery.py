@@ -87,10 +87,12 @@ def fetch_universe():
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--top",      type=int, default=None)
-    parser.add_argument("--json",     action="store_true")
-    parser.add_argument("--reversal", action="store_true",
+    parser.add_argument("--top",          type=int, default=None)
+    parser.add_argument("--json",         action="store_true")
+    parser.add_argument("--reversal",     action="store_true",
                         help="Sort by reversal score, filter overextended")
+    parser.add_argument("--fundamentals", action="store_true",
+                        help="Add yfinance fundamental checks (EPS, debt, cash flow)")
     args = parser.parse_args()
 
     load_env()
@@ -113,7 +115,7 @@ def main():
         print(f"ERROR fetching bars: {e}", file=sys.stderr)
         sys.exit(1)
 
-    results, fails = sc.screen(universe, bars_data, fetch_fundamentals=False)
+    results, fails = sc.screen(universe, bars_data, fetch_fundamentals=args.fundamentals)
 
     if args.reversal:
         results = [r for r in results if not r.get("overextended")]
