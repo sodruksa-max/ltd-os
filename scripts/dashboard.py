@@ -20,6 +20,10 @@ PYTHON = str(ROOT / "code" / "python" / ".venv" / "Scripts" / "python")
 SCREENER = str(ROOT / "scripts" / "screener.py")
 AUTOBUY  = str(ROOT / "scripts" / "auto-buy.py")
 EOD      = str(ROOT / "scripts" / "eod-report.py")
+MACRO    = str(ROOT / "scripts" / "macro-snapshot.py")
+STATS    = str(ROOT / "scripts" / "stats-real-trade.py")
+WATCHLIST_FILE = ROOT / "config" / "watchlist.txt"
+TRADES_DIR = ROOT / "vault" / "20_investment" / "_journal" / "real-trades"
 
 
 # -- Env loader --------------------------------------------------------------
@@ -260,7 +264,16 @@ def render_colored_table(rows, columns, junk_key="junk_level"):
 # ============================================================================
 # TABS
 # ============================================================================
-tab1, tab2, tab3, tab4 = st.tabs(["🔍 Screener (คัดหุ้น)", "🤖 Bot (ซื้อหุ้น)", "📊 Positions (พอร์ต)", "📋 EOD Report"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    "🔍 Screener (คัดหุ้น)",
+    "🤖 Bot (ซื้อหุ้น)",
+    "📊 Positions (พอร์ต)",
+    "📋 EOD Report",
+    "🌍 Macro",
+    "📝 Watchlist",
+    "📚 Trade History",
+    "📈 Stats",
+])
 
 
 # ---------------------------------------------------------------------------
@@ -570,6 +583,166 @@ with tab4:
             except Exception as e:
                 st.warning("บันทึก vault ไม่สำเร็จ: " + str(e))
 
+        if stderr:
+            with st.expander("Log"):
+                st.code(stderr, language="text")
+
+
+# ---------------------------------------------------------------------------
+# TAB 5 - Macro
+# ---------------------------------------------------------------------------
+with tab5:
+    st.subheader("Macro Snapshot — ภาพรวมตลาด")
+    st.caption("Futures, VIX, 10Y yield, oil, gold, Asia markets — ดูก่อนตลาดเปิด")
+    if st.button("🌍 ดึงข้อมูล Macro", type="primary"):
+        with st.spinner("กำลังดึงข้อมูล... (ใช้เวลา ~10 วิ)"):
+            stdout, stderr, rc = run_subprocess([PYTHON, MACRO], timeout=60)
+        if rc != 0:
+            st.error("ดึงข้อมูลไม่ได้ (exit " + str(rc) + ")")
+            if stderr:
+                st.code(stderr, language="text")
+        else:
+            st.markdown(stdout)
+        if stderr:
+            with st.expander("Log"):
+                st.code(stderr, language="text")
+
+
+# ---------------------------------------------------------------------------
+# TAB 6 - Watchlist Editor
+# ---------------------------------------------------------------------------
+with tab6:
+    st.subheader("Watchlist Editor — แก้ไขรายชื่อหุ้น")
+    st.caption("หุ้นใน watchlist นี้จะถูกคัดโดย screener ทุกครั้ง")
+
+    raw_lines = WATCHLIST_FILE.read_text(encoding="utf-8").splitlines() if WATCHLIST_FILE.exists() else []
+    tickers = [l.strip() for l in raw_lines if l.strip() and not l.strip().startswith("#")]
+
+    st.write("**หุ้นปัจจุบัน (" + str(len(tickers)) + " ตัว):**")
+
+    to_remove = set()
+    cols_per_row = 4
+    ticker_chunks = [tickers[i:i + cols_per_row] for i in range(0, len(tickers), cols_per_row)]
+    for chunk in ticker_chunks:
+        cols = st.columns(cols_per_row)
+        for j, tk in enumerate(chunk):
+            with cols[j]:
+                if st.button("X " + tk, key="rm_" + tk):
+                    to_remove.add(tk)
+
+    if to_remove:
+        new_lines = [l for l in raw_lines if l.strip() not in to_remove]
+        WATCHLIST_FILE.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        st.success("ลบ " + ", ".join(to_remove) + " แล้ว — รีเฟรชหน้าเพื่อดูผล")
+        st.rerun()
+
+    st.divider()
+    st.write("**เพิ่มหุ้นใหม่:**")
+    col_input, col_add = st.columns([2, 1])
+    with col_input:
+        new_ticker = st.text_input("ชื่อ ticker", key="new_ticker", label_visibility="collapsed", placeholder="เช่น TSLA")
+    with col_add:
+        if st.button("+ เพิ่ม", type="primary"):
+            ticker_up = new_ticker.strip().upper()
+            if ticker_up and ticker_up not in tickers:
+                with open(str(WATCHLIST_FILE), "a", encoding="utf-8") as f:
+                    f.write(ticker_up + "\n")
+                st.success("เพิ่ม " + ticker_up + " แล้ว")
+                st.rerun()
+            elif ticker_up in tickers:
+                st.warning(ticker_up + " มีอยู่แล้ว")
+            else:
+                st.warning("กรุณาใส่ชื่อ ticker")
+
+
+# ---------------------------------------------------------------------------
+# TAB 7 - Trade History
+# ---------------------------------------------------------------------------
+with tab7:
+    st.subheader("Trade History — ประวัติ trade ทั้งหมด")
+    st.caption("อ่านจาก vault/20_investment/_journal/real-trades/")
+
+    def parse_fm(filepath):
+        """Parse YAML frontmatter from a markdown trade file, return dict."""
+        try:
+            text = filepath.read_text(encoding="utf-8")
+            import re as _re
+            m = _re.match(r"^---\n(.*?)\n---", text, _re.DOTALL)
+            if not m:
+                return {}
+            d = {}
+            for line in m.group(1).splitlines():
+                if ":" not in line:
+                    continue
+                k, _, v = line.partition(":")
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                d[k] = None if v in ("~", "", "null") else v
+            return d
+        except Exception:
+            return {}
+
+    if not TRADES_DIR.exists():
+        st.info("ยังไม่มีไฟล์ trade")
+    else:
+        files = sorted(TRADES_DIR.glob("*.md"), reverse=True)
+        rows = []
+        for f in files:
+            d = parse_fm(f)
+            if not d:
+                continue
+            ticker = d.get("ticker", f.stem)
+            status = d.get("status", "?")
+            trade_type = d.get("type", "real")
+            label = ticker + (" (Paper)" if trade_type == "paper" else "")
+            result = d.get("result")
+            if status == "open":
+                jl = "WARN"
+            else:
+                try:
+                    result_val = float(str(result).replace("$", "").replace(",", "")) if result else 0
+                    jl = "PASS" if result_val > 0 else "FAIL"
+                except ValueError:
+                    jl = "PASS" if result and str(result).startswith("+") else "FAIL"
+            rows.append({
+                "Ticker":     label,
+                "Direction":  (d.get("direction") or "long").upper(),
+                "Status":     status.upper() if status else "?",
+                "Date":       d.get("date_open", "?"),
+                "Entry":      "$" + d["entry_usd"] if d.get("entry_usd") else "--",
+                "Shares":     d.get("shares", "--"),
+                "Stop":       "$" + d["stop_usd"] if d.get("stop_usd") else "--",
+                "Target":     "$" + d["target_usd"] if d.get("target_usd") else "--",
+                "Exit":       "$" + d["exit_usd"] if d.get("exit_usd") else "--",
+                "Result":     d.get("result", "--"),
+                "junk_level": jl,
+            })
+        if not rows:
+            st.info("ไม่พบ trade ที่มีข้อมูล")
+        else:
+            st.write("พบ " + str(len(rows)) + " trades")
+            render_colored_table(
+                rows,
+                ["Ticker", "Direction", "Status", "Date", "Entry", "Shares", "Stop", "Target", "Exit", "Result"],
+            )
+            st.caption("เหลือง = open  |  เขียว = closed กำไร  |  แดง = closed ขาดทุน")
+
+
+# ---------------------------------------------------------------------------
+# TAB 8 - Stats
+# ---------------------------------------------------------------------------
+with tab8:
+    st.subheader("Stats — สถิติ paper trades")
+    st.caption("รัน stats-real-trade.py — win rate, avg R, total P&L")
+    if st.button("📈 คำนวณ Stats", type="primary"):
+        with st.spinner("กำลังคำนวณ..."):
+            stdout, stderr, rc = run_subprocess([PYTHON, STATS], timeout=60)
+        if rc != 0:
+            st.error("คำนวณไม่สำเร็จ (exit " + str(rc) + ")")
+            if stderr:
+                st.code(stderr, language="text")
+        else:
+            st.markdown(stdout if stdout.strip() else "*ยังไม่มีข้อมูลเพียงพอสำหรับ stats*")
         if stderr:
             with st.expander("Log"):
                 st.code(stderr, language="text")
