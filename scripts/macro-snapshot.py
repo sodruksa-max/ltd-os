@@ -7,8 +7,9 @@ Usage:
 
 Output sections (markdown, embed directly in pre-market brief):
   1. US ETF Proxies       (Alpaca)   — SPY, QQQ, IWM, VXX, TLT, USO, UUP, GLD
-  2. Macro Indicators     (yfinance) — VIX, 10Y yield, WTI, Brent, Gold, DXY
-  3. Asia Markets         (yfinance) — Nikkei, Hang Seng, KOSPI, ASX 200, CSI 300
+  2. US Futures           (yfinance) — ES=F, NQ=F, YM=F, RTY=F
+  3. Macro Indicators     (yfinance) — VIX, 10Y yield, WTI, Brent, Gold, DXY
+  4. Asia Markets         (yfinance) — Nikkei, Hang Seng, KOSPI, ASX 200, CSI 300
 
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 yfinance requires no API key.
@@ -41,6 +42,13 @@ YF_MACRO = [
     ("BZ=F",     "Brent",      "$/bbl", "up=global oil expensive"),
     ("GC=F",     "Gold",       "$/oz",  "up=flight to safety"),
     ("DX-Y.NYB", "DXY",        "idx",   "up=USD strong -> pressures EM"),
+]
+
+YF_FUTURES = [
+    ("ES=F",  "S&P 500 Futures",  "idx",   "implied S&P open direction"),
+    ("NQ=F",  "Nasdaq Futures",   "idx",   "implied Nasdaq open direction"),
+    ("YM=F",  "Dow Futures",      "idx",   "implied Dow open direction"),
+    ("RTY=F", "Russell Futures",  "idx",   "implied small-cap direction"),
 ]
 
 YF_ASIA = [
@@ -144,8 +152,13 @@ def fetch_alpaca():
 # yfinance fetch
 # ---------------------------------------------------------------------------
 
+_yf_rate_limited = False
+
 def yf_quote(ticker):
     """Return (current_price, pct_change) or (None, None) on failure."""
+    global _yf_rate_limited
+    if _yf_rate_limited:
+        return None, None
     try:
         import yfinance as yf
         t = yf.Ticker(ticker)
@@ -154,7 +167,10 @@ def yf_quote(ticker):
         prev = info.previous_close
         pct = (current - prev) / prev * 100 if current and prev else None
         return current, pct
-    except Exception:
+    except Exception as e:
+        if "Rate" in str(e) or "429" in str(e):
+            _yf_rate_limited = True
+            print("[warn] yfinance rate limited -- wait 5-10 min and retry")
         return None, None
 
 
@@ -198,6 +214,18 @@ def print_macro_section(data):
     print()
 
 
+def print_futures_section(data):
+    print("### US Futures (yfinance)")
+    print("| Futures | Level | Change | Context |")
+    print("|---|---|---|---|")
+    for ticker, label, unit, meaning in YF_FUTURES:
+        d = data.get(ticker, {})
+        val = price_str(d.get("current"), unit)
+        ch = pct_str(d.get("pct"))
+        print(f"| **{label}** | {val} | {ch} | {meaning} |")
+    print()
+
+
 def print_asia_section(data):
     print("### Asia Markets (yfinance)")
     print("| Market | Level | Change | Region |")
@@ -225,6 +253,10 @@ def main():
     # Alpaca
     alpaca_data, alpaca_err = fetch_alpaca()
     print_alpaca_section(alpaca_data or {}, alpaca_err)
+
+    # yfinance futures
+    yf_futures_data = fetch_yf_section(YF_FUTURES)
+    print_futures_section(yf_futures_data)
 
     # yfinance macro
     yf_macro_data = fetch_yf_section(YF_MACRO)
