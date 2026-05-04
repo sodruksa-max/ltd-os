@@ -28,13 +28,14 @@ Paper account must be funded (see: alpaca-paper.py account)
 
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 MAX_POSITIONS = 4
-DEFAULT_SIZE_PCT = 0.05   # 5% of portfolio per trade
+DEFAULT_SIZE_PCT = 0.05   # 5% of portfolio per trade (base, before vol adjustment)
 DEFAULT_TOP_N = 2          # consider top N screener picks per run
+VOL_TARGET = 0.015         # 1.5% daily vol target per position (vol targeting)
 
 
 def load_env():
@@ -57,6 +58,42 @@ def get_trading_client():
         print("ERROR: ALPACA keys not set in .secrets/.env")
         sys.exit(1)
     return TradingClient(api_key, secret_key, paper=True)
+
+
+def check_spy_trend():
+    """Time-series momentum macro filter (Moskowitz 2012).
+    Returns (is_uptrend: bool, spy_ret_12m: float).
+    """
+    from alpaca.data import StockHistoricalDataClient
+    from alpaca.data.requests import StockBarsRequest
+    from alpaca.data.timeframe import TimeFrame
+
+    api_key = os.environ.get("ALPACA_API_KEY")
+    secret_key = os.environ.get("ALPACA_SECRET_KEY")
+    client = StockHistoricalDataClient(api_key, secret_key)
+    start = datetime.combine(date.today() - timedelta(days=400), datetime.min.time())
+    try:
+        resp = client.get_stock_bars(
+            StockBarsRequest(symbol_or_symbols=["SPY"], timeframe=TimeFrame.Day, start=start)
+        )
+        bars = resp.data.get("SPY", [])
+        if len(bars) < 252:
+            return True, None  # not enough history — don't block
+        closes = [b.close if hasattr(b, "close") else b["close"] for b in bars]
+        spy_ret_12m = (closes[-1] - closes[-253]) / closes[-253]
+        return spy_ret_12m > 0, spy_ret_12m
+    except Exception as e:
+        print(f"[warn] SPY trend check failed: {e} — proceeding anyway")
+        return True, None
+
+
+def vol_adjusted_size(portfolio_value, base_pct, realized_vol):
+    """Volatility targeting: scale position so each trade targets VOL_TARGET daily vol."""
+    if realized_vol and realized_vol > 0:
+        multiplier = min(VOL_TARGET / realized_vol, 2.0)  # cap at 2x base
+    else:
+        multiplier = 1.0
+    return portfolio_value * base_pct * multiplier
 
 
 def get_account_state(client):
@@ -164,6 +201,17 @@ def main():
         print("  alpaca.markets -> Paper Trading -> Reset Account")
         sys.exit(1)
 
+    # --- Macro filter: Time-Series Momentum (Moskowitz 2012) ---
+    print("Checking SPY 12-month trend (macro filter)...")
+    spy_uptrend, spy_ret_12m = check_spy_trend()
+    ret_str = f"{spy_ret_12m*100:+.1f}%" if spy_ret_12m is not None else "n/a"
+    if spy_uptrend:
+        print(f"  SPY 12m return: {ret_str} → UPTREND — longs allowed")
+    else:
+        print(f"  SPY 12m return: {ret_str} → DOWNTREND — skipping all buys (macro filter)")
+        sys.exit(0)
+    print()
+
     slots_available = MAX_POSITIONS - open_count
     if slots_available <= 0:
         print(f"\nNo slots available (already at {MAX_POSITIONS} positions). Nothing to buy.")
@@ -193,7 +241,6 @@ def main():
 
     # --- Decision loop ---
     bought = 0
-    position_size_usd = portfolio_value * args.size
 
     print("Decisions:")
     for c in candidates:
@@ -215,6 +262,13 @@ def main():
             continue
         if junk_level == "WARN":
             print(f"  WARN {ticker} — junk flag: {junk_summary} (proceeding)")
+
+        # Volatility targeting: adjust size so each position risks ~VOL_TARGET daily
+        realized_vol = c.get("realized_vol_20d", 0)
+        position_size_usd = vol_adjusted_size(portfolio_value, args.size, realized_vol)
+        if realized_vol > 0:
+            vol_mult = min(VOL_TARGET / realized_vol, 2.0)
+            print(f"  VOL  {ticker} — daily_vol={realized_vol*100:.2f}% → size_mult={vol_mult:.2f}x → ${position_size_usd:,.0f}")
 
         shares = int(position_size_usd / price)
         if shares < 1:

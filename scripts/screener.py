@@ -10,20 +10,24 @@ Usage:
     python scripts/screener.py NVDA AAPL         # screen specific tickers only
 
 Criteria:
-  1. RS vs SPY     — 20-day return vs benchmark (higher = outperforming)
+  1. RS vs SPY     — composite of 20d / 3m / 6m return vs benchmark (Jegadeesh & Titman)
   2. Volume        — today's volume vs 20-day average (>1.5x = breakout confirmation)
   3. Above MA50    — price trend filter
   4. Price         — $5-$1000 (exclude penny stocks)
   5. Junk filter   — pump detection, volatility, + optionally fundamentals (EPS, debt, OCF)
 
-Score = RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)
+Score = composite_RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)
+  composite_RS = 0.2 * RS_20d + 0.4 * RS_3m + 0.4 * RS_6m  (falls back gracefully if history short)
 Junk: FAIL = excluded from auto-buy | WARN = flagged but still considered
+
+realized_vol_20d (annualized daily std) is included in JSON output for vol-targeting in auto-buy.py.
 
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 """
 
 import json
 import os
+import statistics
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -33,9 +37,11 @@ WATCHLIST = ROOT / "config" / "watchlist.txt"
 BENCHMARK = "SPY"
 PRICE_MIN = 5.0
 PRICE_MAX = 1000.0
-LOOKBACK = 20      # 20-day return window
+LOOKBACK    = 20   # 20-day return window
+LOOKBACK_3M = 63   # ~3 months of trading days
+LOOKBACK_6M = 126  # ~6 months of trading days
 MA_PERIOD = 50
-HISTORY_DAYS = 80  # calendar days to fetch (~56 trading days, enough for MA50)
+HISTORY_DAYS = 300  # calendar days to fetch (~210 trading days, covers 6-month lookback)
 
 
 def load_env():
@@ -123,6 +129,34 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
             else:
                 rs = ret_20d
 
+            # Multi-period RS (Jegadeesh & Titman cross-sectional momentum)
+            rs_3m = 0.0
+            rs_6m = 0.0
+            ret_3m_pct = 0.0
+            ret_6m_pct = 0.0
+            if len(closes) >= LOOKBACK_3M + 1 and len(spy_closes) >= LOOKBACK_3M + 1:
+                ret_3m = (closes[-1] - closes[-LOOKBACK_3M - 1]) / closes[-LOOKBACK_3M - 1]
+                spy_ret_3m = (spy_closes[-1] - spy_closes[-LOOKBACK_3M - 1]) / spy_closes[-LOOKBACK_3M - 1]
+                rs_3m = ret_3m - spy_ret_3m
+                ret_3m_pct = ret_3m * 100
+            if len(closes) >= LOOKBACK_6M + 1 and len(spy_closes) >= LOOKBACK_6M + 1:
+                ret_6m = (closes[-1] - closes[-LOOKBACK_6M - 1]) / closes[-LOOKBACK_6M - 1]
+                spy_ret_6m = (spy_closes[-1] - spy_closes[-LOOKBACK_6M - 1]) / spy_closes[-LOOKBACK_6M - 1]
+                rs_6m = ret_6m - spy_ret_6m
+                ret_6m_pct = ret_6m * 100
+
+            # Composite RS: weight longer periods more heavily
+            if rs_3m == 0.0 and rs_6m == 0.0:
+                composite_rs = rs
+            elif rs_6m == 0.0:
+                composite_rs = 0.5 * rs + 0.5 * rs_3m
+            else:
+                composite_rs = 0.2 * rs + 0.4 * rs_3m + 0.4 * rs_6m
+
+            # Realized daily vol (annualized) for vol-targeting in auto-buy.py
+            daily_rets = [(closes[i] - closes[i - 1]) / closes[i - 1] for i in range(-20, 0)]
+            realized_vol_20d = statistics.stdev(daily_rets) if len(daily_rets) >= 2 else 0.02
+
             above_ma50 = False
             ma50_val = None
             if len(closes) >= MA_PERIOD:
@@ -135,7 +169,7 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
                 vol_ratio = volumes[-1] / avg_vol if avg_vol > 0 else 0.0
 
             vol_weight = max(0.5, min(vol_ratio, 3.0))
-            momentum_score = rs * vol_weight
+            momentum_score = composite_rs * vol_weight
 
             # --- Reversal signals ---
             ret_5d = (closes[-1] - closes[-6]) / closes[-6] if len(closes) >= 6 else 0.0
@@ -164,13 +198,18 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
                 "ticker": ticker,
                 "price": round(current_price, 2),
                 "return_20d_pct": round(ret_20d * 100, 2),
+                "return_3m_pct": round(ret_3m_pct, 2),
+                "return_6m_pct": round(ret_6m_pct, 2),
                 "return_5d_pct": round(ret_5d * 100, 2),
                 "rs_vs_spy_pct": round(rs * 100, 2),
+                "rs_3m_pct": round(rs_3m * 100, 2),
+                "rs_6m_pct": round(rs_6m * 100, 2),
                 "vol_ratio": round(vol_ratio, 2),
                 "above_ma50": above_ma50,
                 "crossed_ma50": crossed_ma50,
                 "overextended": overextended,
                 "ma50": round(ma50_val, 2) if ma50_val else None,
+                "realized_vol_20d": round(realized_vol_20d, 5),
                 "score": round(momentum_score, 4),
                 "reversal_score": round(reversal_score, 4),
                 "junk_level": junk["level"],
@@ -226,7 +265,8 @@ def print_table(results, top=None, reversal_mode=False):
                 f"{r['vol_ratio']:>8.2f}x {ma_flag:>5} {r['score']:>8.4f}  {junk_col}"
             )
         print()
-        print("Score = RS_vs_SPY * clamp(VolRatio, 0.5, 3.0)")
+        print("Score = composite_RS * clamp(VolRatio, 0.5, 3.0)")
+        print("composite_RS = 0.2*RS_20d + 0.4*RS_3m + 0.4*RS_6m vs SPY (Jegadeesh & Titman)")
         print("MA50 Y=above / n=below  |  Filter: [OK]=clean [WARN]=caution [FAIL]=excluded from auto-buy")
 
 
@@ -267,7 +307,10 @@ def main():
     results, fails = screen(tickers, bars_data, fetch_fundamentals=args.fundamentals)
 
     if args.reversal:
-        results = [r for r in results if not r.get("overextended")]
+        results = [r for r in results
+                   if not r.get("overextended")
+                   and r.get("reversal_score", 0) > 0
+                   and r.get("return_5d_pct", 0) > 0]
         results.sort(key=lambda x: x["reversal_score"], reverse=True)
 
     if args.json:
