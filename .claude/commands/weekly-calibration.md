@@ -32,6 +32,14 @@ vault/_memory/PREFERENCES.md               (กฎปัจจุบัน)
 ถ้าไม่พบ review ไฟล์เลย → หยุดและแจ้ง:
 > ❌ ไม่พบ review ไฟล์ — รัน `/post-market` ก่อนอย่างน้อย 1 วัน
 
+**ถ้าพบ review บางวันแต่ขาดหายไปบางวัน** (วันที่อยู่ในช่วง N วัน แต่ไม่มี review file) → ดึงข้อมูลตลาดของวันที่ขาดหายด้วย script แทน web search:
+
+```bash
+code/python/.venv/Scripts/python scripts/post-snapshot.py --date <MISSING_DATE>
+```
+
+ใช้ output เป็น context ของวันนั้น (scenario = ดู SPY % ใน verdict section) — **ไม่ต้อง web search**
+
 ### 2. Extract raw data จากทุก review
 
 สำหรับแต่ละ review ไฟล์ที่พบ ดึง:
