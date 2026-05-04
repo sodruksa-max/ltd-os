@@ -9,17 +9,20 @@ Filter levels:
   FAIL — hard disqualification (auto-buy skips this ticker)
 
 Price-based checks (uses existing Alpaca bar data — no extra API call):
-  1. Extreme runup  : 20d return > 100%         → WARN (possible pump-and-dump)
-  2. High volatility: daily std > 8%             → WARN (erratic price action)
-  3. Near 52w low   : price < 130% of period low → WARN (weak price structure)
+  1. Extreme runup      : 20d return > 100%               → WARN (possible pump-and-dump)
+  2. High volatility    : daily std > 8%                  → WARN (erratic price action)
+  3. Near 52w low       : price < 115% of period low      → WARN (weak price structure)
+  4. Low liquidity      : avg daily dollar vol < $5M      → WARN  (Amihud 2002)
 
-Fundamental checks (yfinance — optional, pass fetch_fundamentals=True):
-  4. Micro-cap      : market cap < $50M          → FAIL (delisting risk)
-  5. Negative EPS   : trailing AND forward < 0   → FAIL (loss-making, no recovery)
-  6. Extreme debt   : D/E > 500%                 → FAIL (overleveraged)
-  7. Negative OCF   : operating cash flow < 0    → WARN (burning cash)
-  8. Revenue shrink : revenue growth < -30% YoY  → WARN (declining business)
-  9. Pump signal    : 20d return >150% (fund)    → FAIL (cross-check with fundamentals)
+Fundamental checks (yfinance — optional, pass fetch_fund=True):
+  5. Micro-cap          : market cap < $50M               → FAIL (delisting risk)
+  6. Negative EPS       : trailing AND forward < 0        → FAIL (loss-making, no recovery)
+  7. Extreme debt       : D/E > 500%                      → FAIL (overleveraged)
+  8. Negative OCF       : operating cash flow < 0         → WARN (burning cash)
+  9. Revenue shrink     : revenue growth < -30% YoY       → WARN (declining business)
+  10. Low gross profit  : gross_profit/assets < 0         → WARN  (Novy-Marx 2013)
+  11. High accruals     : (net_income - OCF) / assets > 0.10 → WARN  (Sloan 1996)
+  12. Pump signal       : 20d return >150% + bad fund     → FAIL (cross-check)
 
 ETFs are exempt from fundamental checks (quoteType=ETF).
 """
@@ -32,20 +35,18 @@ from statistics import stdev
 # Price-based checks (fast, no extra API)
 # ---------------------------------------------------------------------------
 
-def check_price_based(ticker: str, closes: list, volumes: list, lookback: int = 20) -> list:
-    """
-    Returns list of (level, code, detail) tuples.
-    level: 'WARN' | 'FAIL'
-    """
+def check_price_based(ticker: str, closes: list, volumes: list,
+                      lookback: int = 20, avg_dollar_vol: float = 0.0) -> list:
+    """Returns list of (level, code, detail) tuples."""
     issues = []
     if len(closes) < lookback + 2:
         return issues
 
     current = closes[-1]
-    past = closes[-lookback - 1]
+    past    = closes[-lookback - 1]
     ret_20d = (current - past) / past if past > 0 else 0
 
-    # 1. Overextended — too far run for a fresh entry
+    # 1. Overextended
     if 0.70 < ret_20d <= 1.0:
         issues.append(("WARN", "OVEREXT", f"+{ret_20d*100:.0f}% in 20d"))
 
@@ -64,10 +65,17 @@ def check_price_based(ticker: str, closes: list, volumes: list, lookback: int = 
         if vol > 0.08:
             issues.append(("WARN", "VOLATILE", f"daily std {vol*100:.1f}%"))
 
-    # 3. Near period low (52w proxy using available history)
+    # 3. Near period low
     period_low = min(closes)
-    if period_low > 0 and current < period_low * 1.3:
-        issues.append(("WARN", "LOW", f"within 30% of period low ${period_low:.2f}"))
+    if period_low > 0 and current < period_low * 1.15:
+        issues.append(("WARN", "LOW", f"within 15% of period low ${period_low:.2f}"))
+
+    # 4. Liquidity filter (Amihud 2002) — flag stocks with thin daily dollar volume
+    if avg_dollar_vol > 0:
+        if avg_dollar_vol < 1_000_000:
+            issues.append(("FAIL", "ILLIQUID", f"avg daily vol ${avg_dollar_vol/1e6:.1f}M (<$1M)"))
+        elif avg_dollar_vol < 5_000_000:
+            issues.append(("WARN", "LOW_LIQ", f"avg daily vol ${avg_dollar_vol/1e6:.1f}M (<$5M)"))
 
     return issues
 
@@ -81,15 +89,14 @@ _fund_cache: dict = {}
 
 
 def fetch_fundamentals(ticker: str) -> dict:
-    """Fetch yfinance info dict. Returns {} on failure."""
     if ticker in _fund_cache:
         return _fund_cache[ticker]
     try:
         import yfinance as yf
-        t = yf.Ticker(ticker)
+        t    = yf.Ticker(ticker)
         info = t.info or {}
         _fund_cache[ticker] = info
-        time.sleep(0.3)   # gentle rate-limit throttle
+        time.sleep(0.3)
         return info
     except Exception:
         _fund_cache[ticker] = {}
@@ -97,38 +104,32 @@ def fetch_fundamentals(ticker: str) -> dict:
 
 
 def check_fundamentals(ticker: str, ret_20d: float = 0.0) -> list:
-    """
-    Returns list of (level, code, detail) tuples.
-    Skips ETFs automatically.
-    """
     issues = []
-    info = fetch_fundamentals(ticker)
+    info   = fetch_fundamentals(ticker)
     if not info:
-        issues.append(("WARN", "NO_DATA", "fundamentals unavailable"))
-        return issues
+        return []
 
     # Skip ETFs
-    quote_type = info.get("quoteType", "")
-    if quote_type in ETF_QUOTE_TYPES:
-        return []   # ETFs are exempt
+    if info.get("quoteType", "") in ETF_QUOTE_TYPES:
+        return []
 
-    # 4. Micro-cap
+    # 5. Micro-cap
     market_cap = info.get("marketCap") or 0
     if 0 < market_cap < 50_000_000:
         issues.append(("FAIL", "MICRO_CAP", f"mktcap ${market_cap/1e6:.0f}M (<$50M)"))
     elif 0 < market_cap < 300_000_000:
         issues.append(("WARN", "SMALL_CAP", f"mktcap ${market_cap/1e6:.0f}M (<$300M)"))
 
-    # 5. Negative EPS (both trailing and forward)
+    # 6. Negative EPS
     trailing_eps = info.get("trailingEps")
-    forward_eps = info.get("forwardEps")
+    forward_eps  = info.get("forwardEps")
     if trailing_eps is not None and forward_eps is not None:
         if trailing_eps < 0 and forward_eps < 0:
-            issues.append(("FAIL", "NEG_EPS", f"trail EPS {trailing_eps:.2f} / fwd {forward_eps:.2f}"))
+            issues.append(("FAIL", "NEG_EPS", f"trail {trailing_eps:.2f} / fwd {forward_eps:.2f}"))
         elif trailing_eps < 0:
             issues.append(("WARN", "NEG_EPS_T", f"trailing EPS {trailing_eps:.2f}"))
 
-    # 6. Extreme debt
+    # 7. Extreme debt
     dte = info.get("debtToEquity")
     if dte is not None:
         if dte > 500:
@@ -136,18 +137,39 @@ def check_fundamentals(ticker: str, ret_20d: float = 0.0) -> list:
         elif dte > 300:
             issues.append(("WARN", "DEBT", f"D/E {dte:.0f}%"))
 
-    # 7. Negative operating cash flow
+    # 8. Negative operating cash flow
     ocf = info.get("operatingCashflow")
     if ocf is not None and ocf < 0:
         issues.append(("WARN", "NEG_OCF", f"OCF ${ocf/1e6:.0f}M"))
 
-    # 8. Revenue shrinking
+    # 9. Revenue shrinking
     rev_growth = info.get("revenueGrowth")
     if rev_growth is not None and rev_growth < -0.30:
         issues.append(("WARN", "REV_DOWN", f"rev {rev_growth*100:.0f}% YoY"))
 
-    # 9. Cross-check: huge runup + negative fundamentals = FAIL (likely pump)
-    if ret_20d > 1.5 and any(c == "FAIL" for l, c, _ in issues):
+    # 10. Gross profitability (Novy-Marx 2013)
+    # gross_profit / total_assets — negative = company destroys value on every sale
+    gross_profits = info.get("grossProfits")
+    total_assets  = info.get("totalAssets")
+    if gross_profits is not None and total_assets and total_assets > 0:
+        gp_ratio = gross_profits / total_assets
+        if gp_ratio < 0:
+            issues.append(("FAIL", "NEG_GROSSPROF", f"gross_profit/assets {gp_ratio:.3f}"))
+        elif gp_ratio < 0.10:
+            issues.append(("WARN", "LOW_QUALITY", f"gross_profit/assets {gp_ratio:.3f} (<0.10)"))
+
+    # 11. Accruals / earnings quality (Sloan 1996)
+    # High accruals = earnings not backed by real cash — earnings manipulation signal
+    net_income = info.get("netIncome")
+    if net_income is not None and ocf is not None and total_assets and total_assets > 0:
+        accruals = (net_income - ocf) / total_assets
+        if accruals > 0.15:
+            issues.append(("FAIL", "HIGH_ACCRUALS", f"accruals {accruals:.3f} (earnings quality risk)"))
+        elif accruals > 0.10:
+            issues.append(("WARN", "ACCRUALS", f"accruals {accruals:.3f} (watch earnings quality)"))
+
+    # 12. Cross-check: huge runup + bad fundamentals = confirmed pump
+    if ret_20d > 1.5 and any(l == "FAIL" for l, _, _ in issues):
         issues.append(("FAIL", "PUMP_CONFIRMED", f"+{ret_20d*100:.0f}% runup + bad fundamentals"))
 
     return issues
@@ -158,16 +180,18 @@ def check_fundamentals(ticker: str, ret_20d: float = 0.0) -> list:
 # ---------------------------------------------------------------------------
 
 def evaluate(ticker: str, closes: list, volumes: list,
-             ret_20d: float = 0.0, fetch_fund: bool = False) -> dict:
+             ret_20d: float = 0.0,
+             avg_dollar_vol: float = 0.0,
+             fetch_fund: bool = False) -> dict:
     """
     Returns:
       {
-        "level": "PASS" | "WARN" | "FAIL",
-        "issues": [(level, code, detail), ...],
+        "level":   "PASS" | "WARN" | "FAIL",
+        "issues":  [(level, code, detail), ...],
         "summary": "short string for table display"
       }
     """
-    issues = check_price_based(ticker, closes, volumes)
+    issues = check_price_based(ticker, closes, volumes, avg_dollar_vol=avg_dollar_vol)
 
     if fetch_fund:
         issues += check_fundamentals(ticker, ret_20d=ret_20d)
@@ -179,10 +203,6 @@ def evaluate(ticker: str, closes: list, volumes: list,
     else:
         level = "PASS"
 
-    if level == "PASS":
-        summary = "OK"
-    else:
-        codes = [f"[{l}] {c}: {d}" for l, c, d in issues]
-        summary = " | ".join(codes)
+    summary = "OK" if level == "PASS" else " | ".join(f"[{l}] {c}: {d}" for l, c, d in issues)
 
     return {"level": level, "issues": issues, "summary": summary}
