@@ -157,23 +157,23 @@ Phase 4 — Optional enhancement:
 
 ---
 
-### Theme B: Fear & Greed Index as Trading Signal
+### Theme B: Sentiment as Trading Signal
 
-#### Investor Sentiment and Cross-Section of Cryptocurrency Returns (2025)
-- **Source:** Finance Research Letters, ScienceDirect (DOI unverified — author names blocked by paywall)
-- **Method:** สร้าง portfolio sorted by "sentiment beta" (sensitivity ต่อ FGI alternative.me); Fama-MacBeth cross-sectional regression; 1,100+ cryptos
-- **Key finding:** Coins ที่มี high positive sentiment beta (co-move กับ Greed) underperform ต่อมา — 3.57%/week premium สำหรับ intermediate-beta coins; FGI เป็น contrarian signal ไม่ใช่ momentum
-- **Dataset:** 1,100+ cryptos จาก CoinMarketCap + daily FGI (alternative.me); Feb 2018 – Jul 2024
-- **Apply to project:** FGI > 75 (Extreme Greed) ติดต่อกัน 3+ วัน → ลด BTC long 25–50%; FGI < 25 (Extreme Fear) → เปิด full position; API: `https://api.alternative.me/fng/` (free, no auth)
+#### Using Sentiment and Technical Analysis to Predict Bitcoin with Machine Learning — Carosia (2024)
+- **Source:** arXiv:2410.14532
+- **Method:** ใช้ Fear & Greed Index (alternative.me) ร่วมกับ technical indicators เป็น input features ให้ ML model สำหรับ predict ทิศทาง BTC
+- **Key finding:** รวม FGI + technical analysis ชนะ Buy & Hold baseline ในแง่ investment returns; FGI เป็น feature ที่ช่วย ML model ที่ใช้เพียงราคาอย่างเดียว
+- **Dataset:** BTC daily; period/frequency unverified (paper accessible via arXiv)
+- **Apply to project:** ใช้ FGI เป็น feature เสริมให้ signal layer — เมื่อ FGI สูง (greed) ลด confidence ของ long signals; เมื่อ FGI ต่ำ (fear) เพิ่ม confidence; API: `https://api.alternative.me/fng/` (free, no auth)
 - **Tag:** IMPLEMENT
 
-#### U-Shaped Relationship: Crypto Fear-Greed Index + Price Synchronicity (2023)
-- **Source:** Finance Research Letters, ScienceDirect (author names unverified)
-- **Method:** Panel regression หา relationship ระหว่าง FGI และ price synchronicity (all-coins-move-together)
-- **Key finding:** Extreme fear และ extreme greed → synchronicity สูงสุด (BTC correlates ~1 กับ altcoins); moderate sentiment → idiosyncratic movement
-- **Dataset:** Multi-coin panel [period/frequency unverified]
-- **Apply to project:** เมื่อ FGI < 20 หรือ > 80 → treat portfolio as single-asset risk (ห้าม hedge BTC ด้วย crypto อื่น); ใช้เป็น regime flag ไม่ใช่ timing signal
-- **Tag:** REFERENCE
+#### Sentiment-Aware Mean-Variance Portfolio Optimization — Chen (2025)
+- **Source:** arXiv:2508.16378 | Digital Finance (accepted)
+- **Method:** รวม VADER news sentiment + RSI + SMA เข้า constrained mean-variance optimization; sentiment ทำหน้าที่เป็น expected return modifier
+- **Key finding:** Combined strategy: Sharpe 0.71, cumulative 6.06x (Feb 2020 – Aug 2025); ชนะ equal-weighted (Sharpe 0.58) และ Bitcoin Long-Short (Sharpe 0.55); แต่ max drawdown สูง 81.95% ในช่วง 2022
+- **Dataset:** BTC, ETH, ADA, BNB, XRP; daily; Feb 14, 2020 – Aug 6, 2025
+- **Apply to project:** ใช้ sentiment-weighted expected return เป็น input ให้ position sizer แทนการ hard threshold — ลด position ตาม sentiment score แบบ continuous ไม่ใช่ binary
+- **Tag:** REFERENCE (drawdown 82% สูงเกินไป; ใช้เป็น methodology reference ไม่ใช่ copy ตรงๆ)
 
 ---
 
