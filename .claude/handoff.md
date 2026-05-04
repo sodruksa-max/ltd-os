@@ -1,54 +1,90 @@
 ---
-created: 2026-04-29 (เช้าไทย)
-context_usage: ~moderate
-session_duration: ~1 session
+created: 2026-05-04 (afternoon/evening)
+context_usage: ~90%
+session_duration: ~4 hours (continued from previous)
 ---
 
 # Session Handoff
 
 ## What I was doing
-รัน post-market review สำหรับ 2026-04-28 แล้ว encode lesson จาก review เข้า command files `/pre-market` และ `/post-market`
+BTC-only trading bot — Phase 1 implementation เสร็จครบทุก module
 
 ## Current state
-- **Active plan**: ไม่มี plan.md — งานทั้งหมดเสร็จแล้ว
-- **Files modified (uncommitted)**:
-  - `vault/_memory/OUTCOMES.md` — append 1-line entry สำหรับ 2026-04-28 review
-  - `vault/_memory/COST_LOG.md` — มีการแก้ไขก่อนหน้า session นี้ (ยังไม่ commit)
-  - `vault/_memory/COUNCIL_LOG.md` — มีการแก้ไขก่อนหน้า session นี้ (ยังไม่ commit)
-  - `scripts/cost-report.sh` — มีการแก้ไขก่อนหน้า session นี้ (ยังไม่ commit)
-  - `vault/_templates/failure.md` — มีการแก้ไขก่อนหน้า session นี้ (ยังไม่ commit)
-- **Untracked files**:
-  - `vault/20_investment/_journal/2026-04-28-review.md` — review file ที่สร้างวันนี้ (ยังไม่ commit)
-  - `vault/_council/2026-04-25-trading-foundations-start/` — council session เก่า (ยังไม่ commit)
-- **Uncommitted changes**: YES — หลายไฟล์ยังไม่ commit
-- **Tests status**: not applicable
+- **Active plan**: none — Phase 1 complete
+- **Uncommitted changes**: yes — btc_bot/ ทุกไฟล์ใหม่ยังไม่ได้ commit
+- **Tests status**: ทุก module รัน --once ผ่าน live Binance data ✅
 
-## Decisions made this session (don't re-litigate)
-- `/post-market` รัน target date 2026-04-28 (ไม่ใช่ 2026-04-29) — brief มีแค่วันที่ 28
-- Actual scenario = Bearish (-0.49%) แม้ S&P อยู่ใน Base range 7,100–7,200 — ใช้ quantitative threshold เสมอ
-- Match = Partial (ไม่ใช่ No) — S&P ยังอยู่ใน narrative range แต่ข้าม threshold
-- pre-market v5: เพิ่ม Event Risk Check (≥2 risks → confidence = low) — encode จาก lesson 04-28
-- Council Recommendation section ใน post-market: ห้าม fabricate, ต้อง specific เท่านั้น
-- Decision Confidence Check ใน pre-market decision tree: 4 checkbox แต่ละอันมี action ชัดเจน
+## Files created this session (all uncommitted)
 
-## Open questions for next session
-- ไฟล์ uncommitted หลายตัว (COST_LOG, COUNCIL_LOG, cost-report.sh, failure.md, council folder) — ควร commit หรือยัง? ตรวจสอบก่อน
-- `vault/_council/2026-04-25-trading-foundations-start/` — council session นี้เสร็จแล้วหรือยัง?
-- OUTCOMES.md ยังไม่ commit — ควร commit พร้อมกับ 2026-04-28-review.md
-- Brief 2026-04-29 ยังไม่ได้สร้าง — วันนี้เป็นวัน FOMC announcement + Powell + Mag7 earnings after-close
+### BTC Bot — code/python/btc_bot/
+- `data.py` — fetch OHLCV + price จาก Binance via ccxt (no key needed)
+- `signals.py` — VP-MACD (arXiv 2604.26063) + MA 20/100 + 1h momentum
+- `regime.py` — HMM 3-state Bull/Neutral/Bear (hmmlearn, Preprints 2026)
+- `sizer.py` — Tri-Power Variation + GARCH(1,1) vol-targeted position sizing
+- `risk.py` — max 30% NAV, stop-loss -3% NAV, drawdown halt -15%
+- `executor.py` — market_buy/sell via ccxt (dry_run=True default)
+- `main.py` — 1h loop orchestrator (`python -m btc_bot.main --once`)
 
-## Next step
-ถ้าต่องาน trading:
-1. `/pre-market` สำหรับ 2026-04-29 (FOMC announcement + Powell 2:30pm ET + GOOGL/AMZN/META/MSFT after-close) — Event Risk Check จะ auto-cap confidence = low
-2. Commit uncommitted files ที่ค้างอยู่ก่อน (ตรวจสอบแต่ละไฟล์ว่าพร้อม commit)
+### Research vault
+- `vault/10_research/papers/btc-bot-papers-survey.md` — 10 BTC papers Tier 1/2/3
 
-## Context that matters
-- pre-market v5 แล้ว — commit `9a13abb`
-- post-market + pre-market มี council hooks แล้ว — commit `a3551b9`
-- Lesson ที่ encode แล้ว: event risk ≥2 → confidence = low ใน `/pre-market`; council section ใน `/post-market` ต้อง specific ไม่ generic
-- 2026-04-29 เป็นวันสำคัญมาก: FOMC announcement (ตลาดคาด hold) + Powell press conference 2:30pm ET + Mag7 4 ตัวรายงาน after-close (GOOGL/AMZN/META/MSFT)
+### Memory
+- `.claude/projects/.../memory/project_trading_bot_direction.md` — BTC-only scope
+
+## Latest live output (2026-05-04 ~15:37 UTC)
+```
+BTC/USDT   : $79,578
+Signal     : HOLD (no VP-MACD crossover)
+Regime     : NEUTRAL (HMM)
+Vol fcast  : 38.3%
+Action     : HOLD
+```
+
+## Decisions made (don't re-litigate)
+- **BTC/USDT only** — no ETH, no altcoins
+- **ccxt Binance public** for market data, API keys needed only for live orders
+- **HMM regime** uses daily log return + 5d realized vol (hmmlearn GaussianHMM)
+- **TPV + GARCH blend** (50/50 weight) for vol forecast
+- **dry_run=True default** — live orders need BINANCE_API_KEY + BINANCE_SECRET_KEY
+- **State in-memory** — no DB yet (restart loses position state) → Phase 4 fix
+- **Run as module**: `python -m btc_bot.main --once` (not `python btc_bot/main.py`)
+
+## Installed packages (this session)
+- `hmmlearn` — for regime.py
+- `arch` — for GARCH in sizer.py
+
+## Phase roadmap
+
+### Phase 1 ✅ DONE
+VP-MACD signals + HMM regime + RGARCH sizer + risk guardrails + executor + main loop
+
+### Phase 2 — Walk-forward optimization
+- quarterly re-optimize VP-MACD params (arXiv 2602.10785)
+- backtest framework needed
+
+### Phase 3 — On-chain filters (free APIs available)
+- **Fear & Greed Index** (alternative.me) — free, no key, block longs when < 25
+- **Funding rate** (Coinglass free tier) — reduce size when overleveraged
+- user asked "มีแยยฟรีไหม" — answered yes (alternative.me + Coinglass)
+- user said พักก่อน (session ending)
+
+### Phase 4 — Production hardening (needed before go-live)
+- State persistence (JSON file so restart doesn't lose position)
+- Alert (Line/Telegram when trade fires)
+- Scheduler (Windows Task Scheduler or cron instead of time.sleep)
+
+## Open questions
+- Binance API keys — ยังไม่ได้ใส่ใน `.secrets/.env` (ต้องมีก่อน go-live)
+- Phase 3 หรือ Phase 4 ก่อน? — user พักก่อน ยังไม่ตัดสินใจ
+- Walk-forward backtest: ยังไม่ได้ implement เลย
+
+## Next steps (suggested order)
+1. Commit ทุก btc_bot/ files ก่อน
+2. Phase 4: state persistence (save/load JSON) — สำคัญสุดก่อน go-live
+3. Phase 3: onchain.py (Fear & Greed + Funding rate)
+4. เพิ่ม Binance API keys ใน .secrets/.env แล้วทดสอบ --live
 
 ## Files to read first next session
-1. `.claude/handoff.md` — this file
-2. `vault/20_investment/_journal/2026-04-28-review.md` — context ล่าสุดก่อนรัน pre-market วันนี้
-3. `vault/_memory/OUTCOMES.md` — calibration history
+1. `code/python/btc_bot/main.py` — ดู pipeline flow
+2. `code/python/btc_bot/risk.py` — guardrail rules
+3. `vault/10_research/papers/btc-bot-papers-survey.md` — phase roadmap

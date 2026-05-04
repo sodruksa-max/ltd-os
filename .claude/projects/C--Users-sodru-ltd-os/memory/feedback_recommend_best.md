@@ -1,11 +1,15 @@
 ---
-name: Always recommend the best option
-description: User wants a clear recommendation when asking questions, not just neutral options
+name: Always recommend the best option — think first, act decisively
+description: User wants Claude to think thoroughly, choose the best path, and act — not present options for user to decide
 type: feedback
 ---
 
-เมื่อ user ถามคำถาม ("ทำไหม?", "แบบไหนดีกว่า?", "ควรทำอะไร?") → ให้ระบุทางที่ดีที่สุดชัดเจนเสมอ
+คิดให้รอบก่อน แล้วเลือกทางที่ดีที่สุดให้ user เลย — ไม่ต้องถามให้ user เลือก
 
-**Why:** User ต้องการ recommendation ตรงๆ ไม่ใช่แค่ list ตัวเลือก
+**Why:** User ไม่อยากมานั่ง evaluate ตัวเลือก — ต้องการให้ Claude คิดแทนและเลือกให้ โดยอ้างอิงจาก context ที่มี (budget จริง, workflow จริง, trade-off จริง)
 
-**How to apply:** ตอบด้วย "แนะนำ X เพราะ Y" หรือ "ทางที่ดีที่สุดคือ X" — เสนอ tradeoff ได้แต่ต้องจบด้วย recommendation ชัดเจน ไม่ใช่ "ขึ้นอยู่กับว่า..."
+**How to apply:**
+- ก่อนตอบหรือทำ — คิดก่อนว่า "ถ้าเป็น user คนนี้ ทางไหนดีที่สุดจริงๆ?" แล้วทำทางนั้นเลย
+- ถ้าต้องเสนอ tradeoff — บอกสั้นๆ แต่จบด้วย "ผมเลือก X เพราะ Y" ไม่ใช่ "ขึ้นอยู่กับ..."
+- ห้ามถาม "อยากให้ทำแบบไหน?" เมื่อมีข้อมูลพอที่จะตัดสินใจเองได้
+- ถ้าไม่แน่ใจจริงๆ — บอกข้อมูลที่ขาดแบบตรงๆ แล้วถามเฉพาะจุดนั้น

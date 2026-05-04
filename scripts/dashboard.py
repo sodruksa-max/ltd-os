@@ -221,7 +221,7 @@ def run_subprocess(cmd, timeout=120):
         )
         return result.stdout, result.stderr, result.returncode
     except subprocess.TimeoutExpired:
-        return "", "ERROR: command timed out after 120s", 1
+        return "", f"ERROR: command timed out after {timeout}s", 1
     except Exception as e:
         return "", f"ERROR: {e}", 1
 
@@ -287,12 +287,29 @@ with tab1:
     with col_left:
         source = st.radio(
             "Universe",
-            ["Watchlist (หุ้นที่ตั้งไว้)", "Discovery (หาหุ้นใหม่จาก market)"],
+            [
+                "Watchlist (หุ้นที่ตั้งไว้)",
+                "Discovery + S&P 500 (หาหุ้นดีที่กำลังเคลื่อนไหว)",
+                "S&P 500 ทั้งหมด (~789 ตัว)",
+            ],
             horizontal=False,
         )
-        is_discovery = source.startswith("Discovery")
-        if is_discovery:
-            st.caption("ดึง top 50 most-active + top gainers จาก Alpaca วันนี้ — ใช้เวลา ~60 วิ")
+        is_combined = source.startswith("Discovery")
+        is_sp500 = source.startswith("S&P 500")
+        is_discovery = False  # legacy flag, no longer used standalone
+        if is_combined:
+            st.caption("ดึง market movers วันนี้จาก Alpaca แล้วกรองเฉพาะที่อยู่ใน S&P 500 — ได้หุ้นดีที่ active วันนี้")
+        elif is_sp500:
+            st.caption("คัดจาก S&P 500 บริสุทธิ์ 503 ตัว — ใช้เวลา 2-4 นาที")
+            if st.button("🔄 Update Universe List", help="Re-download S&P 500 + Nasdaq tickers (run monthly)"):
+                with st.spinner("Downloading tickers..."):
+                    _out, _err, _rc = run_subprocess(
+                        [PYTHON, str(ROOT / "scripts" / "update-universe.py")], timeout=30
+                    )
+                if _rc == 0:
+                    st.success(_out.strip() or "Universe updated")
+                else:
+                    st.error("Update failed: " + _err[:200])
         else:
             st.caption("ดึงข้อมูลจาก watchlist ที่ตั้งไว้ใน config/watchlist.txt")
 
@@ -301,17 +318,29 @@ with tab1:
             ["Momentum (แรงส่ง)", "Reversal (ต้นรอบ)"],
             horizontal=True,
         )
+        is_reversal_selected = screen_mode.startswith("Reversal")
+
+        # Auto-recommend universe based on mode
+        if is_reversal_selected and is_combined:
+            st.warning("Reversal ควรใช้ S&P 500 ทั้งหมด — หุ้นที่อยู่ใน 'most actives' วันนี้มักวิ่งไปแล้ว ไม่ใช่ต้นรอบ")
+
         top_n = st.slider("แสดงกี่ตัว (Top N)", min_value=5, max_value=25, value=10, step=1)
         use_fundamentals = st.checkbox(
             "Fundamental checks (EPS, หนี้, market cap) — ช้ากว่า ~30 วิ",
             value=False,
         )
+        filter_price = st.checkbox(
+            "กรองหุ้นราคาเกิน $350 ออก (budget จริง ~$1,400)",
+            value=True,
+        )
         run_btn = st.button("🔍 คัดหุ้น (Run Screen)", type="primary")
 
     if run_btn:
         is_reversal = screen_mode.startswith("Reversal")
-        if is_discovery:
-            cmd = [PYTHON, DISCOVERY, "--json", "--top", str(top_n)]
+        if is_combined:
+            cmd = [PYTHON, DISCOVERY, "--json", "--top", str(top_n), "--universe", "combined"]
+        elif is_sp500:
+            cmd = [PYTHON, DISCOVERY, "--json", "--top", str(top_n), "--universe", "sp500"]
         else:
             cmd = [PYTHON, SCREENER, "--json", "--top", str(top_n)]
         if is_reversal:
@@ -320,10 +349,15 @@ with tab1:
             cmd.append("--fundamentals")
 
         spin_msg = "Running screener... (may take 15-30s)"
+        if is_combined:
+            spin_msg = "ดึง market movers + กรอง S&P 500... (~30-60 วิ)"
+        elif is_sp500:
+            spin_msg = "Screening S&P 500 (503 ตัว)... อาจใช้เวลา 2-4 นาที"
         if use_fundamentals:
             spin_msg = "Running screener + fundamental checks... (may take ~60s)"
+        timeout_sec = 600 if is_sp500 else 180
         with st.spinner(spin_msg):
-            stdout, stderr, rc = run_subprocess(cmd, timeout=180)
+            stdout, stderr, rc = run_subprocess(cmd, timeout=timeout_sec)
 
         if rc != 0:
             st.error("Screener failed (exit " + str(rc) + ")")
@@ -336,6 +370,13 @@ with tab1:
                 st.error("Could not parse screener output: " + str(e))
                 st.code(stdout[:500], language="text")
                 results = []
+
+            if filter_price:
+                before = len(results)
+                results = [r for r in results if r.get("price", 0) <= 350]
+                removed = before - len(results)
+                if removed:
+                    st.caption(f"กรองออก {removed} ตัวที่ราคา > $350 (ซื้อไม่ได้ด้วย budget $1,400)")
 
             if not results:
                 st.warning("ไม่พบหุ้นที่ผ่านเกณฑ์")

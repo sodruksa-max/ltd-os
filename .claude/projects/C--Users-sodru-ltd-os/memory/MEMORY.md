@@ -4,3 +4,5 @@
 - [Show exact change before asking approval](feedback_approval_context.md) — ทุก y/n prompt ต้องแสดงว่าถ้า approve แล้วจะเกิดอะไร ก่อนถามเสมอ
 - [Verify workflow feasibility before proposing](feedback_verify_workflow_before_proposing.md) — ต้อง verify ทุก step ว่าทำได้จริงใน interface ที่ user ใช้ ก่อนเสนอ workflow
 - [User values cost efficiency](user_cost_conscious.md) — ชอบความคุ้มค่า ใช้ token ให้หมดก่อนปิด อย่าแค่บอกให้ปิด — เสนองานเล็กๆ ที่ทำได้แทน
+- [Cross-apply improvements to related systems](feedback_cross_apply_improvements.md) — เมื่อ improvement ทำงานได้ดี ให้ scan และแนะนำส่วนอื่นที่ควรได้รับ pattern เดียวกัน
+- [Trading bot direction](project_trading_bot_direction.md) — เพิ่ม crypto bot (Binance/ccxt) ต่อจาก stock screener ที่เก็บไว้ครบ

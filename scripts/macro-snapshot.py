@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-Full macro snapshot: Alpaca ETF proxies + yfinance (yields, commodities, Asia).
+Full macro snapshot: Alpaca ETF proxies + direct Yahoo Finance HTTP (all macro).
 
 Usage:
     code/python/.venv/Scripts/python scripts/macro-snapshot.py
 
 Output sections (markdown, embed directly in pre-market brief):
-  1. US ETF Proxies       (Alpaca)   — SPY, QQQ, IWM, VXX, TLT, USO, UUP, GLD
-  2. US Futures           (yfinance) — ES=F, NQ=F, YM=F, RTY=F
-  3. Macro Indicators     (yfinance) — VIX, 10Y yield, WTI, Brent, Gold, DXY
-  4. Asia Markets         (yfinance) — Nikkei, Hang Seng, KOSPI, ASX 200, CSI 300
+  1. US ETF Proxies    (Alpaca)      — SPY, QQQM, IWM, VXX, TLT, USO, UUP, GLD
+  2. US Futures        (direct HTTP) — ES=F, NQ=F, YM=F, RTY=F
+  3. Macro Indicators  (direct HTTP) — VIX, 10Y yield, WTI, Brent, Gold, DXY
+
+All market data fetched via Yahoo Finance v8 chart API directly — no yfinance library,
+no rate limiting issues.
 
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
-yfinance requires no API key.
 """
 
 import os
-import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -25,40 +25,40 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 ALPACA_PROXIES = [
-    ("SPY", "S&P 500",      "up=risk-on"),
-    ("QQQ", "Nasdaq-100",   "up=tech risk-on"),
-    ("IWM", "Russell 2000", "up=small-cap risk-on"),
-    ("VXX", "VIX proxy",    "up=fear rising"),
-    ("TLT", "Bonds 20Y",    "down=yield rising -> pressures growth"),
-    ("USO", "WTI Oil",      "up=oil expensive"),
-    ("UUP", "Dollar (DXY)", "up=USD strong"),
-    ("GLD", "Gold",         "up=flight to safety"),
+    ("SPY",  "S&P 500",      "up=risk-on"),
+    ("QQQM", "Nasdaq-100",   "up=tech risk-on"),
+    ("IWM",  "Russell 2000", "up=small-cap risk-on"),
+    ("VXX",  "VIX proxy",    "up=fear rising"),
+    ("TLT",  "Bonds 20Y",    "down=yield rising -> pressures growth"),
+    ("USO",  "WTI Oil",      "up=oil expensive"),
+    ("UUP",  "Dollar (DXY)", "up=USD strong"),
+    ("GLD",  "Gold",         "up=flight to safety"),
 ]
 
-YF_MACRO = [
-    ("^VIX",     "VIX",        "pts",   "fear index: <15 calm / 15-25 caution / >25 panic"),
-    ("^TNX",     "10Y Yield",  "%",     "up=rates rising -> pressures growth stocks"),
+MACRO_TICKERS = [
     ("CL=F",     "WTI Crude",  "$/bbl", "up=oil expensive"),
     ("BZ=F",     "Brent",      "$/bbl", "up=global oil expensive"),
+    ("^VIX",     "VIX",        "pts",   "fear index: <15 calm / 15-25 caution / >25 panic"),
+    ("^TNX",     "10Y Yield",  "%",     "up=rates rising -> pressures growth stocks"),
     ("GC=F",     "Gold",       "$/oz",  "up=flight to safety"),
     ("DX-Y.NYB", "DXY",        "idx",   "up=USD strong -> pressures EM"),
 ]
 
-YF_FUTURES = [
-    ("ES=F",  "S&P 500 Futures",  "idx",   "implied S&P open direction"),
-    ("NQ=F",  "Nasdaq Futures",   "idx",   "implied Nasdaq open direction"),
-    ("YM=F",  "Dow Futures",      "idx",   "implied Dow open direction"),
-    ("RTY=F", "Russell Futures",  "idx",   "implied small-cap direction"),
+FUTURES_TICKERS = [
+    ("ES=F",  "S&P 500 Futures", "idx", "implied S&P open direction"),
+    ("NQ=F",  "Nasdaq Futures",  "idx", "implied Nasdaq open direction"),
+    ("YM=F",  "Dow Futures",     "idx", "implied Dow open direction"),
+    ("RTY=F", "Russell Futures", "idx", "implied small-cap direction"),
 ]
 
-YF_ASIA = [
-    ("^N225",    "Nikkei 225",  "Japan"),
-    ("^HSI",     "Hang Seng",   "HK/China"),
-    ("^KS11",    "KOSPI",       "Korea"),
-    ("^AXJO",    "ASX 200",     "Australia"),
-    ("000300.SS","CSI 300",     "China (may lag)"),
-]
-
+_YF_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json",
+}
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,8 +87,8 @@ def price_str(val, unit):
     if val is None:
         return "—"
     if unit == "%":
-        return f"{val:.2f}%"
-    if unit == "pts" or unit == "idx":
+        return f"{val:.3f}%"
+    if unit in ("pts", "idx"):
         return f"{val:,.2f}"
     return f"${val:,.2f}"
 
@@ -100,9 +100,40 @@ def signal_alpaca(ticker, pct):
         return "FEAR+" if pct > 3 else ("fear-" if pct < -3 else "")
     if ticker == "TLT":
         return "YIELD+" if pct < -0.5 else ("yield-" if pct > 0.5 else "")
-    if ticker in ("SPY", "QQQ", "IWM"):
+    if ticker in ("SPY", "QQQM", "IWM"):
         return "RISK+" if pct > 0.5 else ("risk-" if pct < -0.5 else "")
     return ""
+
+
+# ---------------------------------------------------------------------------
+# Direct Yahoo Finance v8 fetch (no yfinance library)
+# ---------------------------------------------------------------------------
+
+def fetch_direct(ticker: str):
+    """Fetch (current_price, pct_change) via Yahoo Finance v8 chart API."""
+    import requests
+    try:
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
+        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+        resp.raise_for_status()
+        result = resp.json()["chart"]["result"][0]
+        closes = result["indicators"]["quote"][0]["close"]
+        valid = [c for c in closes if c is not None]
+        if len(valid) < 2:
+            return None, None
+        current, prev = valid[-1], valid[-2]
+        pct = (current - prev) / prev * 100 if prev else None
+        return round(current, 4), pct
+    except Exception:
+        return None, None
+
+
+def fetch_direct_batch(items):
+    result = {}
+    for ticker, *_ in items:
+        current, pct = fetch_direct(ticker)
+        result[ticker] = {"current": current, "pct": pct}
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -149,40 +180,6 @@ def fetch_alpaca():
 
 
 # ---------------------------------------------------------------------------
-# yfinance fetch
-# ---------------------------------------------------------------------------
-
-_yf_rate_limited = False
-
-def yf_quote(ticker):
-    """Return (current_price, pct_change) or (None, None) on failure."""
-    global _yf_rate_limited
-    if _yf_rate_limited:
-        return None, None
-    try:
-        import yfinance as yf
-        t = yf.Ticker(ticker)
-        info = t.fast_info
-        current = info.last_price
-        prev = info.previous_close
-        pct = (current - prev) / prev * 100 if current and prev else None
-        return current, pct
-    except Exception as e:
-        if "Rate" in str(e) or "429" in str(e):
-            _yf_rate_limited = True
-            print("[warn] yfinance rate limited -- wait 5-10 min and retry")
-        return None, None
-
-
-def fetch_yf_section(items):
-    result = {}
-    for ticker, *_ in items:
-        current, pct = yf_quote(ticker)
-        result[ticker] = {"current": current, "pct": pct}
-    return result
-
-
-# ---------------------------------------------------------------------------
 # Print sections
 # ---------------------------------------------------------------------------
 
@@ -202,23 +199,11 @@ def print_alpaca_section(data, error):
     print()
 
 
-def print_macro_section(data):
-    print("### Macro Indicators (yfinance)")
-    print("| Indicator | Ticker | Value | Change | Context |")
-    print("|---|---|---|---|---|")
-    for ticker, label, unit, meaning in YF_MACRO:
-        d = data.get(ticker, {})
-        val = price_str(d.get("current"), unit)
-        ch = pct_str(d.get("pct"))
-        print(f"| **{label}** | {ticker} | {val} | {ch} | {meaning} |")
-    print()
-
-
 def print_futures_section(data):
-    print("### US Futures (yfinance)")
+    print("### US Futures (direct HTTP)")
     print("| Futures | Level | Change | Context |")
     print("|---|---|---|---|")
-    for ticker, label, unit, meaning in YF_FUTURES:
+    for ticker, label, unit, meaning in FUTURES_TICKERS:
         d = data.get(ticker, {})
         val = price_str(d.get("current"), unit)
         ch = pct_str(d.get("pct"))
@@ -226,15 +211,15 @@ def print_futures_section(data):
     print()
 
 
-def print_asia_section(data):
-    print("### Asia Markets (yfinance)")
-    print("| Market | Level | Change | Region |")
-    print("|---|---|---|---|")
-    for ticker, label, region in YF_ASIA:
+def print_macro_section(data):
+    print("### Macro Indicators (direct HTTP)")
+    print("| Indicator | Ticker | Value | Change | Context |")
+    print("|---|---|---|---|---|")
+    for ticker, label, unit, meaning in MACRO_TICKERS:
         d = data.get(ticker, {})
-        val = price_str(d.get("current"), "idx")
+        val = price_str(d.get("current"), unit)
         ch = pct_str(d.get("pct"))
-        print(f"| **{label}** | {val} | {ch} | {region} |")
+        print(f"| **{label}** | {ticker} | {val} | {ch} | {meaning} |")
     print()
 
 
@@ -247,24 +232,20 @@ def main():
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     print("## Macro Snapshot")
-    print(f"*{now} | Alpaca (US ETFs) + yfinance (macro + Asia) | embed in pre-market brief*\n")
+    print(f"*{now} | Alpaca (US ETFs) + Yahoo Finance direct HTTP (macro) | embed in pre-market brief*\n")
     print("---\n")
 
-    # Alpaca
+    # Alpaca ETF proxies
     alpaca_data, alpaca_err = fetch_alpaca()
     print_alpaca_section(alpaca_data or {}, alpaca_err)
 
-    # yfinance futures
-    yf_futures_data = fetch_yf_section(YF_FUTURES)
-    print_futures_section(yf_futures_data)
+    # Futures via direct HTTP
+    futures_data = fetch_direct_batch(FUTURES_TICKERS)
+    print_futures_section(futures_data)
 
-    # yfinance macro
-    yf_macro_data = fetch_yf_section(YF_MACRO)
-    print_macro_section(yf_macro_data)
-
-    # yfinance Asia
-    yf_asia_data = fetch_yf_section(YF_ASIA)
-    print_asia_section(yf_asia_data)
+    # Macro via direct HTTP
+    macro_data = fetch_direct_batch(MACRO_TICKERS)
+    print_macro_section(macro_data)
 
     # Quick read summary
     reads = []
@@ -273,18 +254,27 @@ def main():
         vxx_pct = alpaca_data.get("VXX", {}).get("pct")
         tlt_pct = alpaca_data.get("TLT", {}).get("pct")
         if spy_pct and spy_pct > 0.3:
-            reads.append(f"SPY +{spy_pct:.1f}% pre-mkt")
+            reads.append(f"SPY +{spy_pct:.1f}%")
         elif spy_pct and spy_pct < -0.3:
-            reads.append(f"SPY {spy_pct:.1f}% pre-mkt")
+            reads.append(f"SPY {spy_pct:.1f}%")
         if vxx_pct and abs(vxx_pct) > 2:
             reads.append(f"VXX {'+' if vxx_pct > 0 else ''}{vxx_pct:.1f}% fear {'up' if vxx_pct > 0 else 'down'}")
         if tlt_pct and abs(tlt_pct) > 0.4:
             reads.append(f"TLT {'+' if tlt_pct > 0 else ''}{tlt_pct:.1f}% yield {'down' if tlt_pct > 0 else 'up'}")
 
-    vix_val = yf_macro_data.get("^VIX", {}).get("current")
-    if vix_val:
-        zone = "calm" if vix_val < 15 else ("CAUTION" if vix_val < 25 else "PANIC")
-        reads.append(f"VIX {vix_val:.1f} [{zone}]")
+    wti = macro_data.get("CL=F", {})
+    if wti.get("current"):
+        pct = wti.get("pct")
+        s = f"WTI ${wti['current']:.2f}"
+        if pct is not None:
+            s += f" ({'+' if pct >= 0 else ''}{pct:.1f}%)"
+        reads.append(s)
+
+    vix = macro_data.get("^VIX", {})
+    if vix.get("current"):
+        v = vix["current"]
+        zone = "calm" if v < 15 else ("CAUTION" if v < 25 else "PANIC")
+        reads.append(f"VIX {v:.1f} [{zone}]")
 
     if reads:
         print("**Quick read:** " + " | ".join(reads))

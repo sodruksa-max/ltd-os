@@ -1,5 +1,5 @@
 # Real Money Portfolio — Dashboard
-*Updated: 2026-05-03 19:39 | คำนวณอัตโนมัติจาก `scripts/stats-real-trade.py` | ราคาจาก Alpaca*
+*Updated: 2026-05-04 01:16 | คำนวณอัตโนมัติจาก `scripts/stats-real-trade.py` | ราคาจาก Alpaca*
 
 ---
 
@@ -7,8 +7,8 @@
 
 | Metric | Value |
 |---|---|
-| **Open positions** | 0 |
-| **Unrealized P&L** | — (no API or no open position) |
+| **Open positions** | 1 |
+| **Unrealized P&L** | $+808.60 |
 | **Closed trades** | 0 |
 | **Realized P&L (net fees)** | $+0.00 |
 | **Total fees paid** | $0.00 |
@@ -21,7 +21,7 @@
 
 | Date | Ticker | Dir | Entry | Current | Shares | Unrealized P&L |
 |---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — |
+| 2026-05-03 | SPY | long | $558.00 | $719.72 | 5 | $+808.60 |
 
 *ราคา current จาก Alpaca (อาจ delay 15 นาที สำหรับ free tier)*
 

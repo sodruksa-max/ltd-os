@@ -84,6 +84,29 @@ def fetch_universe():
     return sorted(symbols)
 
 
+UNIVERSE_FILE = ROOT / "config" / "universe-sp500.txt"
+
+
+def load_universe_file() -> list:
+    """Load tickers from config/universe-sp500.txt. Skips class-share tickers (BRK-B etc) that Alpaca doesn't support."""
+    if not UNIVERSE_FILE.exists():
+        print(f"ERROR: {UNIVERSE_FILE} not found — run: python scripts/update-universe.py", file=sys.stderr)
+        sys.exit(1)
+    tickers = []
+    skipped = []
+    for line in UNIVERSE_FILE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "-" in line:
+            skipped.append(line)
+        else:
+            tickers.append(line)
+    if skipped:
+        print(f"Skipped {len(skipped)} class-share tickers (Alpaca unsupported): {', '.join(skipped)}", file=sys.stderr)
+    return tickers
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser()
@@ -93,6 +116,8 @@ def main():
                         help="Sort by reversal score, filter overextended")
     parser.add_argument("--fundamentals", action="store_true",
                         help="Add yfinance fundamental checks (EPS, debt, cash flow)")
+    parser.add_argument("--universe",     choices=["market", "sp500", "combined"], default="market",
+                        help="market = Alpaca movers; sp500 = index file; combined = movers ∩ S&P500")
     args = parser.parse_args()
 
     load_env()
@@ -100,8 +125,22 @@ def main():
     # Import reusable functions from screener.py
     import screener as sc
 
-    print("Fetching universe from Alpaca market data...", file=sys.stderr)
-    universe = fetch_universe()
+    if args.universe == "sp500":
+        print("Loading S&P 500 universe from file...", file=sys.stderr)
+        universe = load_universe_file()
+        print(f"Universe: {len(universe)} tickers from config/universe-sp500.txt", file=sys.stderr)
+    elif args.universe == "combined":
+        print("Fetching market movers from Alpaca...", file=sys.stderr)
+        movers = set(fetch_universe())
+        sp500 = set(load_universe_file())
+        universe = sorted(movers & sp500)
+        print(f"Combined (movers ∩ S&P500): {len(movers)} movers, {len(sp500)} index → {len(universe)} overlap", file=sys.stderr)
+        if not universe:
+            print("WARN: no overlap found, falling back to all movers", file=sys.stderr)
+            universe = sorted(movers)
+    else:
+        print("Fetching universe from Alpaca market data...", file=sys.stderr)
+        universe = fetch_universe()
     if not universe:
         print("ERROR: no tickers fetched", file=sys.stderr)
         sys.exit(1)
@@ -118,7 +157,10 @@ def main():
     results, fails = sc.screen(universe, bars_data, fetch_fundamentals=args.fundamentals)
 
     if args.reversal:
-        results = [r for r in results if not r.get("overextended")]
+        results = [r for r in results
+                   if not r.get("overextended")
+                   and r.get("reversal_score", 0) > 0
+                   and r.get("return_5d_pct", 0) > 0]
         results.sort(key=lambda x: x["reversal_score"], reverse=True)
 
     if args.json:
