@@ -55,31 +55,37 @@ Use the result as `<date>`. Confirm in first line: `Target date: YYYY-MM-DD`
 
 ### 3. Fetch actual market results
 
-Fire these searches **in parallel**:
+#### 3a. Run post-snapshot.py (primary — no search slots used)
 
-**Search queries (run all at once):**
+```bash
+code/python/.venv/Scripts/python scripts/post-snapshot.py --date <DATE>
+```
+
+Output ครอบคลุม **ทุก ETF + macro** ที่ต้องการ:
+- SPY, QQQ, DIA, IWM, VXX (indexes + VIX proxy)
+- XLE, XLK, XLP, XLU, XLY (sector ETFs)
+- GLD, TLT (gold + bonds)
+- USO, BNO (WTI + Brent proxies)
+- ^VIX, ^TNX, CL=F, BZ=F, GC=F (macro indicators)
+
+ใช้ output ของ script เป็น **Market Data section** โดยตรง — ข้อมูลมาจาก Alpaca IEX feed + Yahoo Finance direct HTTP (ไม่ใช้ web search)
+
+**ถ้า script fail** → fallback ใช้ web search แทน (4 queries ตาม list เดิม):
 - `S&P 500 Nasdaq Dow Jones close <DATE> stock market results`
 - `VIX close intraday high <DATE>`
 - `XLE XLK XLP XLU XLY GLD TLT ETF performance <DATE>`
 - `Brent WTI crude oil close price <DATE>`
-- `[EARNINGS TICKERS from brief] earnings results EPS actual <DATE>`
 
-**WebFetch:**
-- `https://finance.yahoo.com/markets/stocks/` — extract close prices if available
+#### 3b. Earnings results (web search — เฉพาะถ้ามี earnings tickers ใน brief)
 
-**Data to collect:**
+ถ้า brief ระบุ earnings tickers → search **1 query**:
+```
+[EARNINGS TICKERS from brief] earnings results EPS actual <DATE>
+```
 
-| Metric | Target |
-|---|---|
-| S&P 500 | open, high, low, close, % change |
-| Nasdaq-100 | close, % change |
-| Dow Jones | close, % change |
-| VIX | close + intraday high |
-| XLE, XLK, XLP, XLU, XLY | % change each |
-| GLD, TLT | % change each |
-| Brent crude | close |
-| WTI crude | close |
-| Earnings tickers | EPS actual vs estimate, % move after-hours |
+**Data to collect (earnings only):** EPS actual vs estimate, % move after-hours
+
+**ถ้าไม่มี earnings tickers ใน brief → ข้ามทั้งหมด (0 search slots)**
 
 **Conflict rule:** ถ้า 2 sources ให้ค่าต่างกัน → flag ⚠️ CONFLICT แสดงทั้งสองค่า ไม่เลือกข้างใดข้างหนึ่ง
 
