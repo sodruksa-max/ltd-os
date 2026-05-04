@@ -147,13 +147,13 @@ Phase 4 — Optional enhancement:
 - **Apply to project:** ที่ funding > +0.1%/8h → contrarian short bias; ที่ funding < −0.1%/8h → contrarian long bias; อย่าใช้เป็น momentum signal
 - **Tag:** REFERENCE
 
-#### Predictability of Funding Rates — Inan (2025)
+#### Predictability of Funding Rates — Emre Inan (2025)
 - **Source:** SSRN:5576424
-- **Method:** Out-of-sample predictability study สำหรับ Binance BTCUSDT perp funding rates [full method unverified — SSRN blocked]
-- **Key finding:** Past funding rate levels predict future funding rate direction (autocorrelated) [unverified — ต้องอ่าน full paper]
-- **Dataset:** Binance BTCUSDT perpetual; period/frequency unverified
-- **Apply to project:** Build AR(1) model บน 8h funding observations; ถ้า predicted next funding > 0 → ลด long 30 นาทีก่อน settlement
-- **Tag:** IMPLEMENT (high relevance — Binance BTC โดยตรง; verify ก่อน implement)
+- **Method:** DAR (Dynamic Autoregressive) models + Lyapunov exponents วิเคราะห์ out-of-sample predictability ของ funding rate บน Binance และ Bybit BTC perp
+- **Key finding:** Funding rate (ไม่ใช่ price returns) มี out-of-sample predictability — สามารถ forecast "next funding print" ได้ → ใช้ predict ทิศทาง BTC ต่อไป
+- **Dataset:** Binance + Bybit BTCUSDT perpetual; October 2025 [period/frequency unverified — SSRN ยัง blocked แต่ abstract verified via web]
+- **Apply to project:** แทน AR(1) ธรรมดา → ใช้ DAR model บน 8h funding observations; ถ้า predicted next funding > 0 (longs pay) → ลด long 30 นาทีก่อน settlement; ถ้า predicted < 0 (shorts pay) → bias long
+- **Tag:** IMPLEMENT
 
 ---
 
