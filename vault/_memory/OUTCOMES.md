@@ -68,6 +68,8 @@ Each entry follows this structure:
 2026-04-30 — Predicted: Base (low), Actual: Bullish (+1.02%), Match: No, Calibration: wrong direction (appropriate uncertainty), Top lesson: PCE 4.5% triggered QQQ invalidation rule แต่ตลาดขึ้น +1% — month-end window dressing + AAPL beat override macro; revisit PCE hard invalidation criterion
 [weekly-calibration 2026-05-02] 3 reviews analyzed — proposals: 3 approved, 0 skipped — top pattern: EPS beat ≠ stock up (Apr 28 UPS + Apr 29 Mag7); confidence threshold tightened (2+ events → cap low)
 
+2026-05-04 — Predicted: Base (medium), Actual: Bearish (-0.41%), Match: No, Calibration: over-confident, Top lesson: Binary geopolitical events (Iran peace→missiles) = cap confidence Low; add 10Y yield rate-of-change tracker to brief
+
 ## Weekly Market Log
 
 *One-line per week — appended by /weekly-market*
