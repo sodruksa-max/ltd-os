@@ -3,12 +3,18 @@
 Hedge-fund grade momentum screener — ranks watchlist stocks using multi-paper factor stack.
 
 Usage:
-    python scripts/screener.py                   # screen all tickers in config/watchlist.txt
-    python scripts/screener.py --top 5           # show top 5 only
-    python scripts/screener.py --json            # output JSON (for auto-buy.py to consume)
-    python scripts/screener.py --fundamentals    # add yfinance fundamental checks (slower)
-    python scripts/screener.py --reversal        # sort by reversal score (beginning-of-trend)
-    python scripts/screener.py NVDA AAPL         # screen specific tickers only
+    python scripts/screener.py                        # screen watchlist (default)
+    python scripts/screener.py --sector healthcare    # all S&P 500 healthcare stocks
+    python scripts/screener.py --sector tech          # all S&P 500 tech stocks
+    python scripts/screener.py --universe             # full S&P 500 (~500 tickers, slower)
+    python scripts/screener.py --sector energy --reversal   # energy sector, beginning-of-trend
+    python scripts/screener.py --top 5               # top 5 only
+    python scripts/screener.py --json                # JSON output (for auto-buy.py)
+    python scripts/screener.py --fundamentals        # add quality checks (Novy-Marx, Sloan)
+    python scripts/screener.py NVDA AAPL             # specific tickers only
+
+Sector aliases: healthcare, tech, energy, financials, industrials, utilities,
+                materials, realestate, comm, consumer, defensive
 
 Scoring (hedge-fund grade):
   Primary score = cross-sectional percentile rank of vol-scaled 12-1 momentum
@@ -47,9 +53,38 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT      = Path(__file__).parent.parent
-WATCHLIST = ROOT / "config" / "watchlist.txt"
-BENCHMARK = "SPY"
+ROOT        = Path(__file__).parent.parent
+WATCHLIST   = ROOT / "config" / "watchlist.txt"
+UNIVERSE    = ROOT / "config" / "universe-sp500.txt"
+SECTOR_MAP  = ROOT / "config" / "sector-map.json"
+BENCHMARK   = "SPY"
+
+# Friendly aliases → GICS sector names (as stored in sector-map.json)
+SECTOR_ALIASES = {
+    "healthcare":    "Health Care",
+    "health":        "Health Care",
+    "tech":          "Information Technology",
+    "technology":    "Information Technology",
+    "it":            "Information Technology",
+    "finance":       "Financials",
+    "financials":    "Financials",
+    "fin":           "Financials",
+    "energy":        "Energy",
+    "utilities":     "Utilities",
+    "util":          "Utilities",
+    "consumer":      "Consumer Discretionary",
+    "cyclical":      "Consumer Discretionary",
+    "discretionary": "Consumer Discretionary",
+    "defensive":     "Consumer Staples",
+    "staples":       "Consumer Staples",
+    "industrial":    "Industrials",
+    "industrials":   "Industrials",
+    "materials":     "Materials",
+    "realestate":    "Real Estate",
+    "re":            "Real Estate",
+    "comm":          "Communication Services",
+    "communication": "Communication Services",
+}
 
 PRICE_MIN    = 5.0
 PRICE_MAX    = 1000.0
@@ -84,6 +119,46 @@ def load_watchlist():
         if not line or line.startswith("#"):
             continue
         tickers.append(line.upper())
+    return tickers
+
+
+def load_universe():
+    """Load full S&P 500 ticker list from config/universe-sp500.txt."""
+    if not UNIVERSE.exists():
+        print(f"[warn] universe not found: {UNIVERSE} — run scripts/update-universe.py", file=sys.stderr)
+        return []
+    tickers = []
+    for line in UNIVERSE.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        tickers.append(line.upper())
+    return tickers
+
+
+def load_sector_tickers(sector_alias: str) -> list:
+    """
+    Return all S&P 500 tickers for a given sector alias (e.g. 'healthcare' → 'Health Care').
+    Requires config/sector-map.json — run scripts/update-sectors.py to build it.
+    """
+    import json as _json
+    gics = SECTOR_ALIASES.get(sector_alias.lower().replace(" ", ""))
+    if not gics:
+        # Try exact match against GICS names
+        all_gics = set(SECTOR_ALIASES.values())
+        gics = next((g for g in all_gics if g.lower() == sector_alias.lower()), None)
+    if not gics:
+        print(f"ERROR: unknown sector '{sector_alias}'", file=sys.stderr)
+        print(f"Available: {', '.join(sorted(set(SECTOR_ALIASES.keys())))}", file=sys.stderr)
+        sys.exit(1)
+
+    if not SECTOR_MAP.exists():
+        print(f"ERROR: sector-map.json not found — run scripts/update-sectors.py", file=sys.stderr)
+        sys.exit(1)
+
+    sector_data = _json.loads(SECTOR_MAP.read_text(encoding="utf-8"))
+    tickers = [t for t, s in sector_data.items() if s == gics]
+    print(f"Sector '{gics}': {len(tickers)} stocks in S&P 500", file=sys.stderr)
     return tickers
 
 
@@ -130,24 +205,41 @@ SECTOR_ABBREV = {
 
 def fetch_sectors(tickers: list) -> dict:
     """
-    Fetch GICS sector for each ticker via yfinance (lightweight call).
-    ETFs → 'ETF'. Any error → 'Unknown'. Takes ~3s for 25 tickers.
+    Fetch GICS sector for each ticker.
+    Primary: config/sector-map.json (instant — no API call).
+    Fallback: yfinance for tickers not in the map (ETFs, non-S&P500 stocks).
     """
+    import json as _json
     result = {}
-    try:
-        import time
-        import yfinance as yf
-        for t in tickers:
-            try:
-                info      = yf.Ticker(t).info
-                qt        = info.get("quoteType", "")
-                result[t] = info.get("sector") or qt or "Unknown"
-            except Exception:
-                result[t] = "Unknown"
-            time.sleep(0.1)
-    except ImportError:
-        pass
-    # Fill any missing tickers
+
+    # Load pre-built sector map (covers all S&P 500 stocks instantly)
+    cached: dict = {}
+    if SECTOR_MAP.exists():
+        cached = _json.loads(SECTOR_MAP.read_text(encoding="utf-8"))
+
+    unknown = []
+    for t in tickers:
+        if t in cached:
+            result[t] = cached[t]
+        else:
+            unknown.append(t)
+
+    # Fallback to yfinance only for tickers not in sector-map (ETFs, etc.)
+    if unknown:
+        try:
+            import time
+            import yfinance as yf
+            for t in unknown:
+                try:
+                    info      = yf.Ticker(t).info
+                    qt        = info.get("quoteType", "")
+                    result[t] = info.get("sector") or qt or "Unknown"
+                except Exception:
+                    result[t] = "Unknown"
+                time.sleep(0.1)
+        except ImportError:
+            pass
+
     for t in tickers:
         result.setdefault(t, "Unknown")
     return result
@@ -442,17 +534,29 @@ def main():
     parser.add_argument("--top",          type=int, default=None)
     parser.add_argument("--json",         action="store_true")
     parser.add_argument("--fundamentals", action="store_true",
-                        help="Add yfinance quality checks: gross profitability (Novy-Marx), "
-                             "accruals (Sloan), EPS, debt, OCF — slower (~30s extra)")
+                        help="Add yfinance quality checks: gross profitability, accruals, EPS, debt, OCF")
     parser.add_argument("--reversal",     action="store_true",
                         help="Sort by reversal score (beginning-of-trend mode)")
+    parser.add_argument("--sector",       type=str, default=None,
+                        help="Screen all S&P 500 stocks in a sector: healthcare, tech, energy, "
+                             "financials, industrials, utilities, materials, realestate, comm, "
+                             "consumer, defensive")
+    parser.add_argument("--universe",     action="store_true",
+                        help="Screen full S&P 500 universe instead of watchlist (~500 tickers, slower)")
     parser.add_argument("tickers",        nargs="*")
     args = parser.parse_args()
 
     load_env()
     sys.path.insert(0, str(ROOT / "scripts"))
 
-    tickers = [t.upper() for t in args.tickers] if args.tickers else load_watchlist()
+    if args.tickers:
+        tickers = [t.upper() for t in args.tickers]
+    elif args.sector:
+        tickers = load_sector_tickers(args.sector)
+    elif args.universe:
+        tickers = load_universe()
+    else:
+        tickers = load_watchlist()
     if not tickers:
         print("No tickers to screen.")
         sys.exit(1)
