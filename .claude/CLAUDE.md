@@ -15,7 +15,10 @@ Personal knowledge base + workflow OS for: research, note-taking, investment ana
 
 Before doing any task, planner must:
 1. Check `.claude/handoff.md` — if exists, offer to resume
-2. Load `vault/_memory/`: PROJECTS.md, DECISIONS.md, PREFERENCES.md
+2. Load `vault/_memory/` — **task-scoped** (see Token economics §8):
+   - Trading task → PREFERENCES.md + OUTCOMES.md (Trading Calibration Log section only)
+   - Code/project task → PROJECTS.md + DECISIONS.md
+   - Unknown/general → PROJECTS.md + PREFERENCES.md (skip DECISIONS.md unless needed)
 3. Check `scripts/context-check.sh` before long tasks
 
 ## Folder map
@@ -95,6 +98,25 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - researcher: 5 searches / task
 - devils_advocate: 5 searches + 10 vault reads + 1500 words output
 - analyst: 5K tokens budget
+
+### 6. Observation masking — ห้าม re-read หรือ summarize
+(From: arXiv:2508.21433 — masking ถูกกว่า LLM summarization 52% ผลเท่ากัน)
+- หลังอ่าน vault file แล้ว → ห้าม re-read ในรอบเดียวกัน; อ้างอิงจากที่จำได้แทน
+- ห้าม summarize file ที่อ่านแล้วเพื่อย่อลง context — ถ้าไม่ต้องการแล้วให้ ignore ทิ้งเลย
+- Exception: user ขอ summary โดยตรง หรือ file เปลี่ยนระหว่าง session
+
+### 7. Partial file reads สำหรับ file ขนาดใหญ่
+(From: arXiv:2511.22729 — memory pointer แทน full content)
+- File > 1000 words → ใช้ Read tool ด้วย offset+limit เพื่ออ่านเฉพาะ section ที่ต้องการ
+- ห้ามโหลดทั้งไฟล์เพื่อหาข้อมูล 1-2 ส่วน
+- ถ้าไม่รู้ว่า section อยู่ที่ไหน → ใช้ Grep หา line number ก่อน แล้วค่อย Read ด้วย offset
+
+### 8. Task-scoped memory loading
+(From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)
+- **Trading tasks** (pre-market, post-market, stock-research, eod): โหลดแค่ PREFERENCES.md + OUTCOMES.md
+- **Code/project tasks** (coder, executor, planner สำหรับ code): โหลดแค่ PROJECTS.md + DECISIONS.md
+- **Content tasks** (writer): โหลดแค่ PREFERENCES.md
+- **Full load** (PROJECTS + DECISIONS + PREFERENCES): เฉพาะ session start ครั้งแรก, /council, หรือ task ที่ span หลาย domain
 
 ## Memory system
 

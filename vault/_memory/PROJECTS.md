@@ -5,26 +5,6 @@ updated: auto
 
 # Active Projects
 
-Claude reads this at the start of every session. Keep this **short and current** — long PROJECTS.md = expensive to load.
-
-## Rules
-- **Active** = worked on in last 30 days
-- If not touched 30 days → move to `ARCHIVE.md` (not loaded by default)
-- Each project: ≤ 5 lines
-
-## Format
-
-```
-### <project-name>
-- **Status**: active | paused | blocked
-- **Last touch**: YYYY-MM-DD
-- **Goal**: <1 line>
-- **Next**: <what's the next step>
-- **Notes**: [[40_projects/<name>]]
-```
-
----
-
 ## Active
 
 ### LTD-OS

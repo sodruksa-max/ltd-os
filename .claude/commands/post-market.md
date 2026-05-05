@@ -147,6 +147,11 @@ Save to `vault/20_investment/_journal/<date>-review.md`.
   - Predicted [low/medium/high] confidence → ผล [ถูก/ผิด]
   - [ประเมิน: เช่น "มั่นใจ medium แล้วถูก = well-calibrated" | "มั่นใจ high แล้วผิด = over-confident"]
 - **Verdict:** well-calibrated / over-confident / under-confident
+- **Brier Score:** `BS = (confidence_decimal − outcome)²`
+  - confidence_decimal = [0.3 / 0.5 / 0.7] สำหรับ low / medium / high confidence
+  - outcome = 1 ถ้า scenario ถูก, 0 ถ้าผิด
+  - Example: high confidence (0.7) + ผิด → BS = (0.7 − 0)² = **0.49** (bad) | medium + ถูก → (0.5 − 1)² = **0.25** (ok)
+  - Rolling 10-day average BS: > 0.25 = over-confident โดยรวม
 
 ---
 
@@ -159,6 +164,12 @@ Save to `vault/20_investment/_journal/<date>-review.md`.
 | Setup 3 | [ticker] | Yes / No / [unverified] | [Long/Short/Skip] | [+/-X%] | [+/-X% / N/A] |
 
 *Hypothetical P/L: entry = ราคาเปิดตลาด (open) หรือ trigger price ถ้าระบุในน setup; exit = time-stop ที่ระบุหรือ EOD close; size = ตามที่ระบุใน setup (half/full); ไม่รวม slippage/commission — เพื่อ learning เท่านั้น ไม่ใช่ผลกำไรจริง ถ้าไม่มีราคา open/trigger จริง → [unverified]*
+
+**PEAD Inconsistent Surprise Check** (ทำเฉพาะ setup ที่มี earnings):
+- [ ] EPS beat แต่หุ้นลง → เช็ค analyst consensus: majority Buy/Hold หรือ Sell?
+  - ถ้า consensus **Buy** (consistent surprise) → drift น้อย ปกติ ไม่น่า add
+  - ถ้า consensus **Sell/Hold** (inconsistent surprise) → expect strong PEAD drift ต่ออีก 90 วัน → **hold/add ไม่ใช่ขาย** (McCarthy SSRN 5311906: drift 5.8-7.4%)
+- [ ] EPS miss แต่หุ้นขึ้น → เช็ค consensus เช่นกัน — ถ้า consensus Sell อยู่ = inconsistent → drift ลงต่อได้
 
 ---
 
@@ -302,7 +313,7 @@ Append 1 line ใต้ section `## Trading Calibration Log` ใน `vault/_memo
 
 **Full mode:**
 ```
-<date> — Predicted: <X> (<confidence>), Actual: <Y>, Match: <Yes/Partial/No>, Calibration: <well-calibrated/over-confident/under-confident>, Top lesson: <Z>
+<date> — Predicted: <X> (<confidence>), Actual: <Y>, Match: <Yes/Partial/No>, Calibration: <well-calibrated/over-confident/under-confident>, BS: <value e.g. 0.25>, Top lesson: <Z>
 ```
 
 **Review-only mode:**

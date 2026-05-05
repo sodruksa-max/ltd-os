@@ -89,7 +89,9 @@ Mental accounts (ห้าม mix เด็ดขาด):
 
 Trading focus:
 - Market: US stocks
-- Style: momentum + small/mid cap + sector rotation
+- Style: momentum + sector focus (semicon / AI / datacenter)
+- Sector universe: semiconductors (NVDA, AMD, MU, AVGO, ARM, ASML), AI infrastructure (SMCI, DELL, HPE), datacenter/cloud (MSFT, AMZN, GOOGL, META — capex play), AI software (PLTR, CRM, SNOW)
+- Rationale: AI capex cycle ยังอยู่ใน early innings — semicon + datacenter = direct beneficiary; momentum + future growth ตรงกับ style
 - Risk per trade: ≤5% of capital (5K initial), max 4 concurrent positions
 - Stop loss: -25% hard, -15% review
 - Profit taking: take 50% off at +50%, trail rest
