@@ -239,6 +239,150 @@ def get_ipo_radar():
     return files[0].read_text(encoding="utf-8") if files else ""
 
 
+def compute_risk_stats(nav_history, holdings, nav, thesis_data):
+    """Returns dict of risk metrics calculated from available data."""
+    stats = {
+        "max_drawdown": None,
+        "sharpe": None,
+        "sharpe_note": "",
+        "largest_position": None,
+        "largest_ticker": "",
+        "thesis_hhi": None,
+        "weeks_of_data": 0,
+    }
+
+    # Max drawdown from nav history
+    if len(nav_history) >= 2:
+        navs = [r["nick"] for r in nav_history]
+        peak = navs[0]
+        max_dd = 0.0
+        for n in navs:
+            if n > peak:
+                peak = n
+            dd = (n - peak) / peak * 100
+            if dd < max_dd:
+                max_dd = dd
+        stats["max_drawdown"] = round(max_dd, 2)
+        stats["weeks_of_data"] = len(navs) - 1
+
+        # Sharpe (annualized weekly) — needs >=4 data points
+        if len(navs) >= 4:
+            import statistics
+            returns = [(navs[i] - navs[i-1]) / navs[i-1] * 100 for i in range(1, len(navs))]
+            avg_r = statistics.mean(returns)
+            std_r = statistics.stdev(returns) if len(returns) > 1 else 0
+            if std_r > 0:
+                stats["sharpe"] = round((avg_r / std_r) * (52 ** 0.5), 2)
+                stats["sharpe_note"] = f"({len(returns)} สัปดาห์)"
+            else:
+                stats["sharpe_note"] = "stddev=0"
+        else:
+            stats["sharpe_note"] = f"ต้องการ 4+ สัปดาห์ (มี {len(navs)-1})"
+
+    # Largest position
+    if holdings:
+        top = max(holdings, key=lambda h: h["weight"])
+        stats["largest_position"] = top["weight"]
+        stats["largest_ticker"] = top["ticker"]
+
+    # Thesis HHI — concentration by thesis cluster
+    if holdings:
+        clusters: dict[str, float] = {}
+        for h in holdings:
+            tid = thesis_data.get(h["ticker"], {}).get("thesis_id", "Other")
+            clusters[tid] = clusters.get(tid, 0) + h["weight"]
+        total = sum(clusters.values()) or 1
+        hhi = sum((v / total * 100) ** 2 for v in clusters.values())
+        stats["thesis_hhi"] = round(hhi)
+
+    return stats
+
+
+def risk_stats_html(stats):
+    # Max drawdown
+    dd = stats["max_drawdown"]
+    if dd is None:
+        dd_val, dd_cls = "N/A", "stat-muted"
+    elif dd == 0:
+        dd_val, dd_cls = "0.00%", "stat-ok"
+    elif dd > -10:
+        dd_val, dd_cls = f"{dd:.2f}%", "stat-ok"
+    elif dd > -20:
+        dd_val, dd_cls = f"{dd:.2f}%", "stat-warn"
+    else:
+        dd_val, dd_cls = f"{dd:.2f}%", "stat-danger"
+
+    # Sharpe
+    sh = stats["sharpe"]
+    sh_note = stats["sharpe_note"]
+    if sh is None:
+        sh_val, sh_cls = "—", "stat-muted"
+        sh_sub = sh_note
+    elif sh >= 1.5:
+        sh_val, sh_cls = f"{sh:.2f}", "stat-ok"
+        sh_sub = sh_note
+    elif sh >= 0.5:
+        sh_val, sh_cls = f"{sh:.2f}", "stat-warn"
+        sh_sub = sh_note
+    else:
+        sh_val, sh_cls = f"{sh:.2f}", "stat-danger"
+        sh_sub = sh_note
+
+    # Largest position
+    lp = stats["largest_position"]
+    lt = stats["largest_ticker"]
+    if lp is None:
+        lp_val, lp_cls = "N/A", "stat-muted"
+        lp_sub = ""
+    elif lp >= 35:
+        lp_val, lp_cls = f"{lp}%", "stat-danger"
+        lp_sub = f"{lt} — เกินขีดจำกัด 30%"
+    elif lp >= 25:
+        lp_val, lp_cls = f"{lp}%", "stat-warn"
+        lp_sub = f"{lt} — ระดับ high-conviction"
+    else:
+        lp_val, lp_cls = f"{lp}%", "stat-ok"
+        lp_sub = lt
+
+    # HHI
+    hhi = stats["thesis_hhi"]
+    if hhi is None:
+        hhi_val, hhi_cls = "N/A", "stat-muted"
+        hhi_sub = ""
+    elif hhi >= 5000:
+        hhi_val, hhi_cls = str(hhi), "stat-danger"
+        hhi_sub = "Concentrated สูงมาก"
+    elif hhi >= 2500:
+        hhi_val, hhi_cls = str(hhi), "stat-warn"
+        hhi_sub = "Moderately concentrated"
+    else:
+        hhi_val, hhi_cls = str(hhi), "stat-ok"
+        hhi_sub = "Diversified ดี"
+
+    return f"""<div class="risk-panel">
+      <div class="risk-stat">
+        <div class="risk-lbl">Max Drawdown</div>
+        <div class="risk-val {dd_cls}">{dd_val}</div>
+        <div class="risk-sub">จาก peak ตั้งแต่เริ่ม</div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Sharpe Ratio</div>
+        <div class="risk-val {sh_cls}">{sh_val}</div>
+        <div class="risk-sub">{sh_sub}</div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Largest Position</div>
+        <div class="risk-val {lp_cls}">{lp_val}</div>
+        <div class="risk-sub">{lp_sub}</div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Thesis HHI</div>
+        <div class="risk-val {hhi_cls}">{hhi_val}</div>
+        <div class="risk-sub">{hhi_sub}</div>
+      </div>
+    </div>"""
+
+
 def get_earnings_calendar(tickers: list[str]):
     """Fetch next earnings date for each ticker. Returns sorted list of dicts."""
     today = date.today()
@@ -768,6 +912,15 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .th-text{{font-size:12px;line-height:1.85;color:var(--text)}}
 .kill-list{{list-style:none}}
 .kill-list li{{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}}
+/* Risk Stats Panel */
+.risk-panel{{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--border);background:var(--card);margin-bottom:16px}}
+.risk-stat{{padding:16px 20px;border-right:1px solid var(--border)}}
+.risk-stat:last-child{{border-right:none}}
+.risk-lbl{{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}}
+.risk-val{{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px}}
+.risk-sub{{font-size:10px;color:var(--muted);line-height:1.4}}
+.stat-ok{{color:#3fb950}}.stat-warn{{color:#d29922}}.stat-danger{{color:#f85149}}.stat-muted{{color:var(--muted)}}
+@media(max-width:760px){{.risk-panel{{grid-template-columns:repeat(2,1fr)}}.risk-stat{{border-bottom:1px solid var(--border)}}}}
 /* Earnings Calendar */
 .earn-item{{display:grid;grid-template-columns:140px 1fr 100px 110px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}}
 .earn-item:last-child{{border-bottom:none}}
@@ -861,6 +1014,8 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
   </div>
 
 {regime_html(regime)}
+
+  {risk_stats_html(compute_risk_stats(nav_history, holdings, nav, thesis_data))}
 
   <div class="tl">
     <span class="tl-lbl">ไทม์ไลน์</span>
