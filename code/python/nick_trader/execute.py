@@ -25,7 +25,7 @@ STATE_FILE = NICK_DIR / "nick_state.json"
 CONVICTION_SIZE = {"high": 0.15, "med": 0.08, "low": 0.03}
 STOP_LOSS_PCT = -0.25
 TARGET_PCT = 0.50
-MIN_CASH_PCT = 0.10
+MIN_CASH_PCT = 0.05
 MAX_POSITION_PCT = 0.30
 
 
