@@ -185,7 +185,7 @@ def holdings_rows_html(holdings, nav, cash):
         rows += f"""
         <tr onclick="selectHolding('{h['ticker']}')" id="row-{h['ticker']}">
           <td><div class="ticker-name">{h['ticker']}</div><div class="ticker-company">{h['company']}</div></td>
-          <td><span class="status-pill">intact</span></td>
+          <td><span class="status-pill">ปกติ</span></td>
           <td>{h['shares']}</td>
           <td>${h['cost']:.2f}</td>
           <td>${h['last']:.2f}</td>
@@ -216,7 +216,7 @@ def holdings_rows_html(holdings, nav, cash):
 
 
 def timeline_steps_html(weeks):
-    labels = ["Seed", "Wk 1", "Wk 2", "Wk 4", "Wk 8", "Wk 12"]
+    labels = ["เริ่ม", "สป.1", "สป.2", "สป.4", "สป.8", "สป.12"]
     thresholds = [0, 1, 2, 4, 8, 12]
     html = ""
     for i, (label, thresh) in enumerate(zip(labels, thresholds)):
@@ -237,35 +237,35 @@ def build_html(holdings, nav, cash, nav_history, benchmarks, thesis_data, weeks,
 
     note_html = ""
     if nick_note:
-        note_html = f'<div class="action-block"><div class="action-block-title">Nick\'s note</div><div class="action-block-text">{nick_note}</div></div>'
+        note_html = f'<div class="ab"><div class="ab-title">บันทึกของ Nick</div><div class="ab-text">{nick_note}</div></div>'
 
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nick's Portfolio</title>
+<title>พอร์ตของ Nick</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {{
-  --bg: #f5f0e8; --accent: #3d4a30; --accent-l: #5c6e4a;
-  --text: #1a1a1a; --muted: #777; --border: #1a1a1a;
-  --card: #fdfaf5; --white: #fff;
+  --bg: #0d1117; --accent: #00c896; --accent-l: #00a87e;
+  --text: #e6edf3; --muted: #8b949e; --border: #30363d;
+  --card: #161b22; --white: #e6edf3;
 }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ font-family: 'IBM Plex Mono', 'Courier New', monospace; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.6; }}
+body {{ font-family: 'IBM Plex Mono', 'Courier New', monospace; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }}
 a {{ color: inherit; text-decoration: none; }}
 .wrap {{ max-width: 1280px; margin: 0 auto; padding: 0 24px 60px; }}
 
 /* Header */
 .hdr {{ border-bottom: 2px solid var(--border); padding: 22px 0 0; margin-bottom: 24px; }}
 .hdr-top {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }}
-.site-title {{ font-size: 20px; font-weight: 700; letter-spacing: -.5px; }}
-.site-sub {{ font-size: 11px; color: var(--muted); margin-top: 3px; }}
-.hdr-meta {{ font-size: 11px; color: var(--muted); text-align: right; line-height: 1.9; }}
+.site-title {{ font-size: 24px; font-weight: 700; letter-spacing: -.5px; }}
+.site-sub {{ font-size: 13px; color: var(--muted); margin-top: 4px; }}
+.hdr-meta {{ font-size: 13px; color: var(--muted); text-align: right; line-height: 1.9; }}
 .tabs {{ display: flex; }}
-.tab {{ padding: 8px 22px; border: 2px solid var(--border); border-bottom: none; font-family: inherit; font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; background: transparent; color: var(--muted); cursor: pointer; margin-right: -2px; }}
-.tab.on {{ background: var(--accent); color: var(--white); border-color: var(--accent); }}
+.tab {{ padding: 10px 26px; border: 2px solid var(--border); border-bottom: none; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .5px; background: transparent; color: var(--muted); cursor: pointer; margin-right: -2px; }}
+.tab.on {{ background: var(--accent); color: #0d1117; border-color: var(--accent); }}
 
 /* Metrics */
 .metrics {{ background: var(--accent); color: var(--white); border: 2px solid var(--border); display: grid; grid-template-columns: repeat(3,1fr); margin-bottom: 0; }}
@@ -279,7 +279,7 @@ a {{ color: inherit; text-decoration: none; }}
 /* Timeline */
 .tl {{ border: 2px solid var(--border); border-top: none; padding: 11px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }}
 .tl-lbl {{ font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }}
-.tl-track {{ flex: 1; height: 4px; background: #ddd; }}
+.tl-track {{ flex: 1; height: 4px; background: var(--border); }}
 .tl-fill {{ height: 100%; background: var(--accent); }}
 .tl-steps {{ display: flex; }}
 .timeline-step {{ font-size: 10px; padding: 4px 10px; border: 1px solid var(--border); margin-left: -1px; color: var(--muted); font-weight: 600; }}
@@ -305,7 +305,7 @@ a {{ color: inherit; text-decoration: none; }}
 .act-hdr {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }}
 .act-sum {{ font-size: 13px; font-weight: 600; line-height: 1.4; max-width: 200px; }}
 .act-badge {{ background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; white-space: nowrap; }}
-.act-feed {{ max-height: 260px; overflow-y: auto; border-top: 1px solid #ddd; padding-top: 14px; }}
+.act-feed {{ max-height: 260px; overflow-y: auto; border-top: 1px solid var(--border); padding-top: 14px; }}
 .ab {{ margin-bottom: 16px; }}
 .ab-title {{ font-weight: 700; font-size: 12px; margin-bottom: 4px; }}
 .ab-text {{ color: var(--muted); font-size: 12px; line-height: 1.75; }}
@@ -313,15 +313,15 @@ a {{ color: inherit; text-decoration: none; }}
 /* Table */
 .htable {{ width: 100%; border-collapse: collapse; }}
 .htable th {{ font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600; }}
-.htable td {{ padding: 11px 12px; border-bottom: 1px solid #e5dfd4; vertical-align: middle; font-size: 12px; }}
+.htable td {{ padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 12px; }}
 .htable tbody tr {{ cursor: pointer; }}
-.htable tbody tr:hover {{ background: #ede7d9; }}
-.htable tbody tr.sel {{ background: #e0d9cc; outline: 2px solid var(--accent); }}
+.htable tbody tr:hover {{ background: #1f2937; }}
+.htable tbody tr.sel {{ background: #243447; outline: 2px solid var(--accent); }}
 .tn {{ font-weight: 700; font-size: 13px; }}
 .tc {{ font-size: 10px; color: var(--muted); margin-top: 1px; }}
 .pill {{ display: inline-block; background: var(--accent); color: white; font-size: 9px; font-weight: 700; padding: 2px 8px; letter-spacing: .4px; text-transform: uppercase; }}
 .wbar-wrap {{ display: flex; align-items: center; gap: 6px; white-space: nowrap; }}
-.wbar-bg {{ width: 52px; height: 5px; background: #ddd; flex-shrink: 0; }}
+.wbar-bg {{ width: 52px; height: 5px; background: var(--border); flex-shrink: 0; }}
 .wbar-fill {{ height: 100%; background: var(--accent); }}
 .pnl-pos {{ color: #2d6a2d; font-weight: 600; }}
 .pnl-neg {{ color: #8b2222; font-weight: 600; }}
@@ -334,15 +334,15 @@ a {{ color: inherit; text-decoration: none; }}
 .th-co {{ color: var(--muted); font-size: 12px; margin: 4px 0 12px; }}
 .th-seed {{ display: inline-block; border: 1px solid var(--border); padding: 2px 10px; font-size: 11px; margin-bottom: 18px; }}
 .th-sec {{ font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin: 16px 0 8px; }}
-.th-text {{ font-size: 12px; line-height: 1.85; color: #333; }}
+.th-text {{ font-size: 12px; line-height: 1.85; color: var(--text); }}
 .kill-list {{ list-style: none; }}
-.kill-list li {{ padding: 8px 12px; border-left: 3px solid var(--accent); margin-bottom: 8px; font-size: 12px; background: rgba(61,74,48,.05); line-height: 1.65; }}
+.kill-list li {{ padding: 8px 12px; border-left: 3px solid var(--accent); margin-bottom: 8px; font-size: 12px; background: rgba(0,200,150,.05); line-height: 1.65; }}
 
 /* About */
 .about {{ max-width: 620px; padding: 36px 0; }}
-.about h2 {{ font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }}
-.about p {{ font-size: 12px; line-height: 1.9; color: #333; margin-bottom: 14px; }}
-.about ul {{ margin: 0 0 14px 16px; font-size: 12px; line-height: 2; color: #333; }}
+.about h2 {{ font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }}
+.about p {{ font-size: 12px; line-height: 1.9; color: var(--text); margin-bottom: 14px; }}
+.about ul {{ margin: 0 0 14px 16px; font-size: 12px; line-height: 2; color: var(--text); }}
 
 @media(max-width:760px) {{
   .g2 {{ grid-template-columns: 1fr; }}
@@ -357,17 +357,17 @@ a {{ color: inherit; text-decoration: none; }}
 <div class="hdr">
   <div class="hdr-top">
     <div>
-      <div class="site-title">Nick's Portfolio</div>
-      <div class="site-sub">Blinded $10K paper portfolio &bull; Nick Sleep-style discipline</div>
+      <div class="site-title">พอร์ตของ Nick</div>
+      <div class="site-sub">พอร์ตทดลอง $10K &bull; วินัยสไตล์ Nick Sleep</div>
     </div>
     <div class="hdr-meta">
-      Inception: {INCEPTION_DATE}<br>
-      Last updated: {today_str}
+      วันเริ่ม: {INCEPTION_DATE}<br>
+      อัปเดตล่าสุด: {today_str}
     </div>
   </div>
   <div class="tabs">
-    <button class="tab on" onclick="showTab('dash',this)">Dashboard</button>
-    <button class="tab" onclick="showTab('about',this)">About Nick</button>
+    <button class="tab on" onclick="showTab('dash',this)">แดชบอร์ด</button>
+    <button class="tab" onclick="showTab('about',this)">เกี่ยวกับ Nick</button>
   </div>
 </div>
 
@@ -375,26 +375,26 @@ a {{ color: inherit; text-decoration: none; }}
 
   <div class="metrics">
     <div class="mc">
-      <div class="mc-lbl">Date</div>
+      <div class="mc-lbl">วันที่</div>
       <div class="mc-val">{today_str}</div>
-      <div class="mc-sub">Week {weeks} since inception</div>
+      <div class="mc-sub">สัปดาห์ที่ {weeks} นับจากเริ่ม</div>
     </div>
     <div class="mc">
-      <div class="mc-lbl">Net Liquidation</div>
+      <div class="mc-lbl">มูลค่าพอร์ต</div>
       <div class="mc-val">${nav:,.2f}</div>
-      <div class="mc-sub">{total_return:+.2f}% since inception</div>
-      <div class="mc-badge">vs SPY: {vs_spy}</div>
+      <div class="mc-sub">{total_return:+.2f}% นับจากเริ่ม</div>
+      <div class="mc-badge">เทียบ SPY: {vs_spy}</div>
     </div>
     <div class="mc">
-      <div class="mc-lbl">Status</div>
-      <div class="mc-val">{weeks} wks</div>
-      <div class="mc-sub">{actions_count} action(s) this week</div>
-      <div class="mc-badge">{len(holdings)} positions open</div>
+      <div class="mc-lbl">สถานะ</div>
+      <div class="mc-val">{weeks} สัปดาห์</div>
+      <div class="mc-sub">{actions_count} รายการสัปดาห์นี้</div>
+      <div class="mc-badge">{len(holdings)} หุ้นในพอร์ต</div>
     </div>
   </div>
 
   <div class="tl">
-    <span class="tl-lbl">Timeline</span>
+    <span class="tl-lbl">ไทม์ไลน์</span>
     <div class="tl-track"><div class="tl-fill" style="width:{timeline_pct}%"></div></div>
     <div class="tl-steps">{timeline_html}</div>
   </div>
@@ -402,8 +402,8 @@ a {{ color: inherit; text-decoration: none; }}
   <div class="g2">
     <div class="card">
       <div class="card-hdr">
-        <span class="card-title">Performance vs Benchmark</span>
-        <span class="card-sub">Cumulative return since inception</span>
+        <span class="card-title">ผลตอบแทนเทียบ Benchmark</span>
+        <span class="card-sub">ผลตอบแทนสะสมนับจากเริ่ม</span>
       </div>
       <div class="card-body">
         <div class="bbtns">
@@ -417,8 +417,8 @@ a {{ color: inherit; text-decoration: none; }}
 
     <div class="card">
       <div class="card-hdr">
-        <span class="card-title">Recommended Actions</span>
-        <span class="act-badge" style="font-size:10px;background:var(--accent);color:white;padding:3px 10px;">{actions_count} actions</span>
+        <span class="card-title">คำแนะนำสัปดาห์นี้</span>
+        <span class="act-badge" style="font-size:10px;background:var(--accent);color:white;padding:3px 10px;">{actions_count} รายการ</span>
       </div>
       <div class="card-body">
         <div class="act-hdr">
@@ -426,12 +426,12 @@ a {{ color: inherit; text-decoration: none; }}
         </div>
         <div class="act-feed">
           <div class="ab">
-            <div class="ab-title">Kill conditions</div>
-            <div class="ab-text">No kill condition was triggered this week. All thesis states remain intact based on available price data.</div>
+            <div class="ab-title">Kill Conditions</div>
+            <div class="ab-text">ไม่มี kill condition ถูกกระตุ้นสัปดาห์นี้ ทุก thesis ยังคงสถานะปกติตามข้อมูลราคาล่าสุด</div>
           </div>
           <div class="ab">
-            <div class="ab-title">Cash position</div>
-            <div class="ab-text">Cash at {cash_pct:.1f}% NAV is dry powder. EARLY-only entry rule — new buys require VIX &lt; 20.</div>
+            <div class="ab-title">เงินสด</div>
+            <div class="ab-text">เงินสด {cash_pct:.1f}% ของ NAV รอโอกาส — กฎ EARLY-only ซื้อใหม่ได้เมื่อ VIX &lt; 20 เท่านั้น</div>
           </div>
           {note_html}
         </div>
@@ -442,16 +442,16 @@ a {{ color: inherit; text-decoration: none; }}
   <div class="g2">
     <div class="card">
       <div class="card-hdr">
-        <span class="card-title">Brokerage View</span>
-        <span class="card-sub">{len(holdings)} positions + cash</span>
+        <span class="card-title">พอร์ตหุ้น</span>
+        <span class="card-sub">{len(holdings)} หุ้น + เงินสด</span>
       </div>
       <div class="card-body" style="padding:0;">
         <table class="htable">
           <thead>
             <tr>
-              <th>Ticker</th><th>Status</th><th>Shares</th>
-              <th>Cost</th><th>Last</th><th>Position</th>
-              <th>Weight</th><th>P / L</th>
+              <th>หุ้น</th><th>สถานะ</th><th>จำนวน</th>
+              <th>ต้นทุน</th><th>ราคาล่าสุด</th><th>มูลค่า</th>
+              <th>น้ำหนัก</th><th>กำไร/ขาดทุน</th>
             </tr>
           </thead>
           <tbody>{rows_html}</tbody>
@@ -466,14 +466,14 @@ a {{ color: inherit; text-decoration: none; }}
       </div>
       <div class="card-body">
         <div id="th-empty" class="th-empty">
-          <div class="th-empty-t">Pick a holding</div>
-          <div class="th-empty-s">Click a row in the holdings table<br>to see Nick's thesis and kill conditions</div>
+          <div class="th-empty-t">เลือกหุ้น</div>
+          <div class="th-empty-s">คลิกแถวในตารางเพื่อดู thesis<br>และ kill conditions ของ Nick</div>
         </div>
         <div id="th-content" style="display:none;">
           <div class="th-ticker" id="th-ticker"></div>
           <div class="th-co" id="th-co"></div>
           <div class="th-seed" id="th-seed"></div>
-          <div class="th-sec">Original Thesis</div>
+          <div class="th-sec">Thesis เดิม</div>
           <div class="th-text" id="th-thesis"></div>
           <div class="th-sec">Kill Conditions</div>
           <ul class="kill-list" id="th-kills"></ul>
@@ -486,21 +486,21 @@ a {{ color: inherit; text-decoration: none; }}
 
 <div id="pane-about" style="display:none;">
   <div class="about">
-    <h2>Who is Nick?</h2>
-    <p>Nick is a blinded portfolio manager agent that reads only the knowledge base — thesis tracker, insight atoms, and current prices. He does not know about real trades or actual portfolio positions.</p>
-    <p>Nick is inspired by Nick Sleep, the legendary fund manager known for extreme concentration, long holding periods, and thesis-driven discipline.</p>
-    <h2>Rules</h2>
+    <h2>Nick คือใคร?</h2>
+    <p>Nick คือ AI portfolio manager ที่อ่านได้เฉพาะ knowledge base — thesis tracker, insight atoms และราคาปัจจุบัน ไม่รู้เกี่ยวกับการเทรดจริงหรือพอร์ตจริง</p>
+    <p>Nick ได้รับแรงบันดาลใจจาก Nick Sleep นักลงทุนชื่อดังที่เน้น concentration สูง ถือยาว และวินัยตาม thesis</p>
+    <h2>กฎ</h2>
     <ul>
-      <li>EARLY-only entry: VIX must be below 20 for new buys</li>
-      <li>Max 10 positions (typically 4–6 high-conviction)</li>
-      <li>Hard stop: –25% per position (full exit)</li>
-      <li>Partial exit: sell half at +50%, trail remainder</li>
-      <li>Benchmark: 50% QQQM + 50% SOXX, not SPY</li>
-      <li>No autonomous KB writes — Nick only flags gaps</li>
+      <li>EARLY-only: ซื้อใหม่ได้เมื่อ VIX &lt; 20 เท่านั้น</li>
+      <li>ถือสูงสุด 10 หุ้น (ปกติ 4–6 high-conviction)</li>
+      <li>Stop แข็ง: –25% ต่อหุ้น (ออกทั้งหมด)</li>
+      <li>Partial exit: ขายครึ่งเมื่อ +50% ถือส่วนที่เหลือต่อ</li>
+      <li>Benchmark: 50% QQQM + 50% SOXX ไม่ใช่ SPY</li>
+      <li>ไม่เขียน KB เอง — Nick แค่แจ้ง gap ให้ทราบ</li>
     </ul>
-    <h2>Self-improvement loop</h2>
-    <p>Nick Weekly runs every Friday via GitHub Actions (Gemini 2.0 Flash). Trade log captures regime tags (VIX, 10Y, sector ETF trend) on every entry. After 30+ closed trades, patterns feed back into the KB.</p>
-    <p style="color:var(--muted); font-size:11px;">Source: github.com/sodruksa-max/ltd-os &bull; Paper trading only &bull; Not financial advice</p>
+    <h2>วงจรพัฒนาตนเอง</h2>
+    <p>Nick Weekly รันทุกวันศุกร์ผ่าน GitHub Actions (Gemini 2.0 Flash) Trade log บันทึก regime tags (VIX, 10Y, sector ETF trend) ทุก entry หลัง 30+ trade ที่ปิดแล้ว pattern จะป้อนกลับเข้า KB</p>
+    <p style="color:var(--muted); font-size:11px;">ที่มา: github.com/sodruksa-max/ltd-os &bull; เทรดจำลองเท่านั้น &bull; ไม่ใช่คำแนะนำทางการเงิน</p>
   </div>
 </div>
 
@@ -529,8 +529,8 @@ function selectHolding(ticker) {{
   document.getElementById('th-content').style.display = '';
   document.getElementById('th-ticker').textContent = ticker;
   document.getElementById('th-co').textContent = h.company || '';
-  document.getElementById('th-seed').textContent = 'Seed weight: ' + (t.seed_weight || 'N/A');
-  document.getElementById('th-thesis').textContent = t.thesis || 'Run /stock-research '+ticker+' to document thesis in KB.';
+  document.getElementById('th-seed').textContent = 'น้ำหนักเริ่มต้น: ' + (t.seed_weight || 'N/A');
+  document.getElementById('th-thesis').textContent = t.thesis || 'รัน /stock-research '+ticker+' เพื่อบันทึก thesis ใน KB';
   const ul = document.getElementById('th-kills');
   ul.innerHTML = '';
   (t.kill_conditions || []).forEach(k => {{
@@ -539,29 +539,29 @@ function selectHolding(ticker) {{
     ul.appendChild(li);
   }});
   if (!t.kill_conditions || !t.kill_conditions.length) {{
-    ul.innerHTML = '<li>Run /stock-research '+ticker+' to document kill conditions.</li>';
+    ul.innerHTML = '<li>รัน /stock-research '+ticker+' เพื่อบันทึก kill conditions</li>';
   }}
 }}
 
 // Chart
 let chart;
-const COLORS = {{nick:'#3d4a30', SPY:'#aaa', QQQ:'#6b7a5e', SOXX:'#b5a060'}};
+const COLORS = {{nick:'#00c896', SPY:'#8b949e', QQQ:'#58a6ff', SOXX:'#d29922'}};
 function initChart() {{
   chart = new Chart(document.getElementById('perf').getContext('2d'), {{
     type: 'line',
     data: {{
       labels: CD.dates,
       datasets: [
-        {{ label:'Nick', data:CD.nick, borderColor:COLORS.nick, backgroundColor:'rgba(61,74,48,.07)', borderWidth:2.5, fill:true, tension:.3, pointRadius:3 }},
+        {{ label:'Nick', data:CD.nick, borderColor:COLORS.nick, backgroundColor:'rgba(0,200,150,.08)', borderWidth:2.5, fill:true, tension:.3, pointRadius:3 }},
         {{ label:'SPY', data:CD.SPY, borderColor:COLORS.SPY, borderWidth:1.5, borderDash:[5,4], fill:false, tension:.3, pointRadius:0 }}
       ]
     }},
     options: {{
       responsive:true, maintainAspectRatio:false,
-      plugins:{{ legend:{{ labels:{{ font:{{family:'monospace',size:11}}, color:'#333' }} }}, tooltip:{{ mode:'index', intersect:false }} }},
+      plugins:{{ legend:{{ labels:{{ font:{{family:'monospace',size:11}}, color:'#e6edf3' }} }}, tooltip:{{ mode:'index', intersect:false }} }},
       scales:{{
-        x:{{ grid:{{color:'#e8e2d8'}}, ticks:{{font:{{family:'monospace',size:10}}, color:'#999'}} }},
-        y:{{ grid:{{color:'#e8e2d8'}}, ticks:{{font:{{family:'monospace',size:10}}, color:'#999', callback:v=>'$'+v.toLocaleString()}} }}
+        x:{{ grid:{{color:'#30363d'}}, ticks:{{font:{{family:'monospace',size:10}}, color:'#8b949e'}} }},
+        y:{{ grid:{{color:'#30363d'}}, ticks:{{font:{{family:'monospace',size:10}}, color:'#8b949e', callback:v=>'$'+v.toLocaleString()}} }}
       }}
     }}
   }});
