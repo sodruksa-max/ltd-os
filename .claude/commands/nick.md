@@ -170,6 +170,13 @@ cat vault/Knowledge/nick-soul.md
 - Sizing: ...
 - Reason: ...
 
+## ORDERS (machine-readable — parsed by nick-execute.py)
+```json
+[
+  {"action": "BUY|SELL|TRIM|NONE", "ticker": "TICKER", "conviction": "high|med|low", "reason": "1-line reason"}
+]
+```
+
 ## KB Gaps — Research requests
 | Priority | Topic | Why needed | Suggested command |
 |---|---|---|---|
