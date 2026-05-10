@@ -116,10 +116,15 @@ def get_spy_comparison(inception: str, current_nav: float):
 
 
 def get_regime():
-    data = {"vix": None, "tnx": None, "soxx_chg": None}
+    data = {"vix": None, "vix_prev": None, "vix_chg": None, "tnx": None, "soxx_chg": None}
     try:
-        v = yf.Ticker("^VIX").history(period="2d")["Close"]
-        data["vix"] = round(float(v.iloc[-1]), 1) if not v.empty else None
+        v = yf.Ticker("^VIX").history(period="5d")["Close"]
+        if not v.empty:
+            data["vix"] = round(float(v.iloc[-1]), 2)
+            if len(v) >= 2:
+                prev = round(float(v.iloc[-2]), 2)
+                data["vix_prev"] = prev
+                data["vix_chg"] = round(data["vix"] - prev, 2)
     except Exception:
         pass
     try:
@@ -272,6 +277,49 @@ def status_label(pnl_pct):
     return ("ปกติ", "pill pill-ok")
 
 
+def early_gate_html(r):
+    vix = r.get("vix")
+    chg = r.get("vix_chg")
+
+    if vix is None:
+        return """  <div class="gate gate-unknown">
+    <div class="gate-status">EARLY GATE <span class="gate-icon">?</span></div>
+    <div class="gate-detail">ไม่สามารถดึงข้อมูล VIX ได้</div>
+    <div class="gate-rule">กฎ: ซื้อใหม่ได้เมื่อ VIX &lt; 20</div>
+  </div>"""
+
+    if chg is not None:
+        arrow = "↑" if chg > 0 else ("↓" if chg < 0 else "→")
+        chg_cls = "gate-chg-up" if chg > 0 else ("gate-chg-down" if chg < 0 else "")
+        chg_str = f'<span class="gate-vix-chg {chg_cls}">{arrow} {chg:+.2f} จากเมื่อวาน</span>'
+    else:
+        chg_str = ""
+
+    if vix < 18:
+        cls, icon, label, note = "gate-open", "✓", "เปิด", "ซื้อหุ้นใหม่ได้"
+    elif vix < 20:
+        cls, icon, label, note = "gate-caution", "⚠", "เปิด — ใกล้เส้น", f"VIX ห่างจากเส้น {20 - vix:.1f} จุด — ระวังกลับตัว"
+    elif vix < 28:
+        cls, icon, label, note = "gate-closed", "✗", "ปิด", "ห้ามซื้อหุ้นใหม่ รอ VIX ต่ำกว่า 20"
+    else:
+        cls, icon, label, note = "gate-panic", "✗", "ปิด — ตลาดตื่นตระหนก", "ห้ามซื้อเด็ดขาด รอความสงบก่อน"
+
+    return f"""  <div class="gate {cls}">
+    <div class="gate-left">
+      <div class="gate-label">EARLY GATE</div>
+      <div class="gate-status">{label} <span class="gate-icon">{icon}</span></div>
+    </div>
+    <div class="gate-center">
+      <div class="gate-vix-num">{vix}</div>
+      <div class="gate-vix-label">VIX {chg_str}</div>
+    </div>
+    <div class="gate-right">
+      <div class="gate-note">{note}</div>
+      <div class="gate-rule">กฎ: ซื้อใหม่เมื่อ VIX &lt; 20 เท่านั้น</div>
+    </div>
+  </div>"""
+
+
 def build_chart_data(nav_history, benchmarks):
     dates = [r["date"] for r in nav_history]
     return {
@@ -324,22 +372,8 @@ def timeline_steps_html(weeks):
 
 
 def regime_html(r):
-    vix = r.get("vix")
     tnx = r.get("tnx")
     soxx = r.get("soxx_chg")
-
-    if vix is None:
-        vix_h = '<span class="regime-val">N/A</span>'
-        note_h = ""
-    elif vix < 20:
-        vix_h = f'<span class="regime-val vix-low">{vix}</span>'
-        note_h = '<span class="regime-note ok">EARLY เปิด ✓</span>'
-    elif vix < 30:
-        vix_h = f'<span class="regime-val vix-mid">{vix}</span>'
-        note_h = '<span class="regime-note warn">ระวัง</span>'
-    else:
-        vix_h = f'<span class="regime-val vix-high">{vix}</span>'
-        note_h = '<span class="regime-note danger">EARLY ปิด ✗</span>'
 
     tnx_h = f'<span class="regime-val">{tnx}%</span>' if tnx else '<span class="regime-val">N/A</span>'
 
@@ -351,8 +385,6 @@ def regime_html(r):
         soxx_h = f'<span class="regime-val pnl-neg">{soxx}%</span>'
 
     return f"""  <div class="regime-bar">
-    <div class="regime-item"><span class="regime-lbl">VIX</span>{vix_h}{note_h}</div>
-    <span class="regime-sep">|</span>
     <div class="regime-item"><span class="regime-lbl">10Y Yield</span>{tnx_h}</div>
     <span class="regime-sep">|</span>
     <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span>{soxx_h}</div>
@@ -473,6 +505,32 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .mc-val{{font-size:24px;font-weight:700;letter-spacing:-1px;color:#0d1117}}
 .mc-sub{{font-size:11px;opacity:.8;margin-top:3px;color:#0d1117}}
 .mc-badge{{display:inline-block;background:rgba(0,0,0,.15);padding:2px 9px;font-size:11px;margin-top:5px;color:#0d1117}}
+/* EARLY Gate Banner */
+.gate{{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0;padding:14px 28px;border:2px solid var(--border);margin-bottom:0;border-bottom:none}}
+.gate-open{{background:rgba(0,200,150,.10);border-color:#00c896}}
+.gate-caution{{background:rgba(210,153,34,.10);border-color:#d29922}}
+.gate-closed{{background:rgba(248,81,73,.10);border-color:#f85149}}
+.gate-panic{{background:rgba(248,81,73,.18);border-color:#f85149;animation:pulse-red 1.8s ease-in-out infinite}}
+.gate-unknown{{background:rgba(139,148,158,.08);border-color:var(--border);grid-template-columns:auto 1fr auto}}
+@keyframes pulse-red{{0%,100%{{box-shadow:0 0 0 0 rgba(248,81,73,0)}}50%{{box-shadow:0 0 0 6px rgba(248,81,73,.15)}}}}
+.gate-left{{padding-right:32px;border-right:1px solid rgba(255,255,255,.08)}}
+.gate-label{{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:3px}}
+.gate-status{{font-size:18px;font-weight:700;letter-spacing:-.3px}}
+.gate-open .gate-status{{color:#00c896}}
+.gate-caution .gate-status{{color:#d29922}}
+.gate-closed .gate-status,.gate-panic .gate-status{{color:#f85149}}
+.gate-icon{{font-style:normal}}
+.gate-center{{text-align:center;padding:0 32px;border-right:1px solid rgba(255,255,255,.08)}}
+.gate-vix-num{{font-size:36px;font-weight:700;letter-spacing:-2px;line-height:1}}
+.gate-open .gate-vix-num{{color:#00c896}}
+.gate-caution .gate-vix-num{{color:#d29922}}
+.gate-closed .gate-vix-num,.gate-panic .gate-vix-num{{color:#f85149}}
+.gate-vix-label{{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1px}}
+.gate-vix-chg{{margin-left:6px;font-size:11px}}
+.gate-chg-up{{color:#f85149}}.gate-chg-down{{color:#00c896}}
+.gate-right{{padding-left:32px}}
+.gate-note{{font-size:13px;font-weight:600;margin-bottom:4px}}
+.gate-rule{{font-size:11px;color:var(--muted)}}
 /* Regime */
 .regime-bar{{border:2px solid var(--border);border-top:none;padding:10px 24px;display:flex;align-items:center;gap:20px;background:var(--card)}}
 .regime-item{{display:flex;align-items:center;gap:8px}}
@@ -557,6 +615,9 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
   .metrics{{grid-template-columns:1fr}}
   .mc{{border-right:none;border-bottom:1px solid rgba(255,255,255,.18)}}
   .regime-bar{{flex-wrap:wrap;gap:12px}}
+  .gate{{grid-template-columns:1fr;gap:12px;text-align:center}}
+  .gate-left,.gate-center,.gate-right{{border:none;padding:0}}
+  .gate-vix-num{{font-size:28px}}
 }}
 </style>
 </head>
@@ -578,6 +639,8 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 </div>
 
 <div id="pane-dash">
+
+{early_gate_html(regime)}
 
   <div class="metrics">
     <div class="mc">
