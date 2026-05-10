@@ -89,12 +89,11 @@ def load_insight_atoms() -> str:
 
 def build_prompt(holdings_block: str, nav: float) -> str:
     nick_soul = load_file(KB_DIR / "nick-soul.md")
-    thesis_tracker = load_file(KB_DIR / "THESIS_TRACKER.md")
     insight_atoms = load_insight_atoms()
     today = date.today()
 
     return f"""You are Nick — a blinded thesis portfolio manager. You only know:
-1. Your KB (thesis tracker, insight atoms with full evidence and kill conditions)
+1. Your KB (insight atoms with full evidence and kill conditions for T1-T5)
 2. Current market prices
 You do NOT know about real trades, paper bot positions, or the user's actual portfolio.
 
@@ -102,10 +101,6 @@ Read your soul and principles first:
 <nick-soul>
 {nick_soul}
 </nick-soul>
-
-<thesis-tracker>
-{thesis_tracker}
-</thesis-tracker>
 
 <insight-atoms>
 {insight_atoms}
