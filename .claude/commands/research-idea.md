@@ -57,9 +57,11 @@ grep -ri "<topic>" vault/Knowledge/ vault/10_research/ --include="*.md" -l
 
 ## STEP 3 — SOURCE ANSWERS
 
-**Budget: 5 searches max**
+**เลือก path ตามประเภท source:**
 
-ค้นหาตาม sub-questions จาก Minnie:
+### Path A — Web search (default)
+ใช้เมื่อ: ต้องการข้อมูลสด (earnings, news, analyst estimates)
+**Budget: 5 searches max**
 
 | ประเภท | Query |
 |---|---|
@@ -68,6 +70,23 @@ grep -ri "<topic>" vault/Knowledge/ vault/10_research/ --include="*.md" -l
 | Bear case | `<topic> bear case risks problems` |
 | Data/numbers | `<topic> revenue margin data statistics` |
 | Expert take | `<topic> expert analysis deep dive` |
+
+### Path B — NotebookLM (optional, เมื่อมี doc ยาว)
+ใช้เมื่อ: source เป็น PDF ยาว / earnings transcript / annual report / academic paper
+**ไม่นับต่อ search budget**
+
+1. แจ้ง user: "Source นี้เหมาะกับ NotebookLM — อัพไฟล์หรือ URL แล้วผมจะ query ให้"
+2. User อัพขึ้น NotebookLM (หรือใช้ `/nlm` เพื่อ add source)
+3. Query ผ่าน NotebookLM MCP: `mcp__notebooklm-mcp__notebook_query`
+4. ผลที่ได้ → ใช้เป็น input ให้ Reese ใน step 4
+
+**ตัวอย่างที่เหมาะกับ Path B:**
+- NVDA / AVGO / ASML 10-K หรือ 10-Q (> 100 หน้า)
+- Earnings call transcript ยาว (> 30 หน้า)
+- arXiv paper หรือ academic research (> 20 หน้า)
+- Multiple documents ที่ต้องการ cross-reference
+
+**หมายเหตุ:** Path A และ B ใช้ร่วมกันได้ — web search หาข่าวสด + NotebookLM วิเคราะห์ doc ยาว
 
 สร้าง Q&A doc ใน context: แต่ละ sub-question + คำตอบ + source
 
