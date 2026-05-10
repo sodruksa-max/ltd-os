@@ -28,50 +28,23 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 CAPE_CACHE_FILE = Path(__file__).parent.parent / ".secrets" / "cape_cache.json"
-_ENV_FILE       = Path(__file__).parent.parent / ".secrets" / ".env"
+
+sys.path.insert(0, str(Path(__file__).parent))
+from _llm import call_gemini  # noqa: E402
 
 
-def _load_anthropic_key() -> str | None:
-    key = __import__("os").environ.get("ANTHROPIC_API_KEY")
-    if key:
-        return key
-    if _ENV_FILE.exists():
-        for line in _ENV_FILE.read_text(encoding="utf-8").splitlines():
-            if line.strip().startswith("ANTHROPIC_API_KEY="):
-                return line.split("=", 1)[1].strip()
-    return None
-
-
-def llm_bubble_narrative(score: float, details: list[tuple[str, int, str]]) -> str | None:
-    """Call Claude Haiku to produce 2-sentence Thai narrative from vector scores."""
-    api_key = _load_anthropic_key()
-    if not api_key:
-        return None
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        vector_lines = "\n".join(
-            f"  [{s}/2] {name}: {detail}" for name, _, s, detail in details
-        )
-        resp = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=150,
-            system=[{
-                "type": "text",
-                "text": (
-                    "You are a macro risk analyst. Write EXACTLY 2 sentences in Thai "
-                    "explaining: (1) which bubble risk vectors are most elevated this week, "
-                    "(2) what it means for equity position sizing. Be specific, cite numbers."
-                ),
-                "cache_control": {"type": "ephemeral"},
-            }],
-            messages=[{"role": "user", "content": (
-                f"Bubble Pressure Score: {score}/10\n\nVector breakdown:\n{vector_lines}"
-            )}],
-        )
-        return resp.content[0].text.strip()
-    except Exception:
-        return None
+def llm_bubble_narrative(score: float, details: list[tuple]) -> str | None:
+    """2-sentence Thai narrative via Gemini Flash (free). Returns None if no key."""
+    vector_lines = "\n".join(
+        f"  [{s}/2] {name}: {detail}" for name, _, s, detail in details
+    )
+    system = (
+        "You are a macro risk analyst. Write EXACTLY 2 sentences in Thai explaining: "
+        "(1) which bubble risk vectors are most elevated this week, "
+        "(2) what it means for equity position sizing. Be specific, cite numbers."
+    )
+    user = f"Bubble Pressure Score: {score}/10\n\nVector breakdown:\n{vector_lines}"
+    return call_gemini(system, user, max_tokens=150)
 
 _HEADERS = {
     "User-Agent": (
