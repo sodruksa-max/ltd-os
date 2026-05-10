@@ -191,7 +191,7 @@ def main():
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
 
-    for model_id in ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash-lite"]:
+    for model_id in ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash-exp"]:
         try:
             print(f"Calling {model_id}...")
             response = gemini_client.models.generate_content(
