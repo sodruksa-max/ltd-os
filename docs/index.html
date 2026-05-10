@@ -125,6 +125,23 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
 .th-text{font-size:12px;line-height:1.85;color:var(--text)}
 .kill-list{list-style:none}
 .kill-list li{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}
+/* 52-week range bar */
+.range-bar-wrap{margin-top:5px}
+.range-bar-bg{position:relative;height:3px;background:var(--border);border-radius:1px;margin-bottom:3px}
+.range-bar-dot{position:absolute;top:-3px;width:3px;height:9px;border-radius:1px;transform:translateX(-50%)}
+.range-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);line-height:1}
+/* 5-day momentum */
+.week-chg{font-size:9px;margin-top:3px;opacity:.85}
+/* P&L Contribution */
+.contrib-row{display:grid;grid-template-columns:52px 1fr 70px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.contrib-row:last-child{border-bottom:none}
+.contrib-sym{font-weight:700;font-size:12px}
+.contrib-track{position:relative;height:16px;background:rgba(255,255,255,.04);border-radius:1px;overflow:hidden}
+.contrib-center{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--border)}
+.contrib-bar{height:100%;max-width:50%;position:absolute;top:0}
+.contrib-bar[style*="float:left"]{left:50%}
+.contrib-bar[style*="float:right"]{right:50%}
+.contrib-val{text-align:right;font-weight:700;font-size:12px;white-space:nowrap}
 /* Risk Stats Panel */
 .risk-panel{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--border);background:var(--card);margin-bottom:16px}
 .risk-stat{padding:16px 20px;border-right:1px solid var(--border)}
@@ -350,6 +367,8 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
           <span class="earn-badge earn-far">อีก 85 วัน</span>
         </div></div>
     </div>
+
+  
 
   <div class="card" style="margin-bottom:16px">
       <div class="card-hdr">
