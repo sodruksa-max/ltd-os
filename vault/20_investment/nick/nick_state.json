@@ -1,11 +1,4 @@
 {
   "last_executed_rec": null,
-  "positions": {
-    "IONQ": {"partial_taken": false, "entry_date": "2026-05-10"},
-    "AVGO": {"partial_taken": false, "entry_date": "2026-05-10"},
-    "PLTR": {"partial_taken": false, "entry_date": "2026-05-10"},
-    "CRM":  {"partial_taken": false, "entry_date": "2026-05-10"},
-    "SNOW": {"partial_taken": false, "entry_date": "2026-05-10"},
-    "RKLB": {"partial_taken": false, "entry_date": "2026-05-10"}
-  }
+  "positions": {}
 }

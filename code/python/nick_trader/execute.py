@@ -12,8 +12,8 @@ from pathlib import Path
 
 import yfinance as yf
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
+from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
+from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
 
 REPO = Path(__file__).resolve().parents[3]
 NICK_DIR = REPO / "vault/20_investment/nick"
@@ -114,6 +114,11 @@ def main():
 
     client = TradingClient(os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True)
     positions = {p.symbol: p for p in client.get_all_positions()}
+    pending_orders = {
+        o.symbol for o in client.get_orders(
+            filter=GetOrdersRequest(status=QueryOrderStatus.OPEN)
+        )
+    }
     account = client.get_account()
     nav = get_nav(client)
     cash = float(account.cash)
@@ -140,6 +145,9 @@ def main():
 
             if ticker in positions:
                 print(f"  SKIP {ticker}: already have position")
+                continue
+            if ticker in pending_orders:
+                print(f"  SKIP {ticker}: pending order already exists")
                 continue
 
             price = get_price(ticker)
