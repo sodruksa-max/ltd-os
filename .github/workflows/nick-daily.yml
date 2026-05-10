@@ -1,0 +1,42 @@
+name: Nick Daily Trader
+
+on:
+  schedule:
+    - cron: '30 13 * * 1-5'  # 9:30 AM EDT Mon-Fri (13:30 UTC)
+  workflow_dispatch:           # manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install alpaca-py yfinance pandas --quiet
+
+      - name: Exit check (stop/target)
+        run: python code/python/nick_trader/exit_check.py
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+
+      - name: Execute new weekly rec (self-skips if already done)
+        run: python code/python/nick_trader/execute.py
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+
+      - name: Commit trade log back to repo
+        run: |
+          git config user.name "nick-bot"
+          git config user.email "nick-bot@users.noreply.github.com"
+          git add vault/20_investment/nick/trade-log.md vault/20_investment/nick/nick_state.json
+          git diff --staged --quiet || git commit -m "chore(nick): auto trade log $(date +%Y-%m-%d)"
+          git push
