@@ -16,6 +16,7 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ## Architecture / system
 
+- 2026-05-11 — CI workflow ที่ push to git ต้องมี `git pull --rebase origin main` ก่อน push เสมอ — concurrent GitHub Actions runs reject กัน เรียนรู้จาก nick-daily + nick-weekly push rejection 2026-05-10
 - 2026-04-25 — v0.3.9: เพิ่ม /council command + 4 agents (optimist, pragmatist, skeptic, synthesizer) — multi-agent debate สำหรับ decisions ใหญ่ ไม่ตัดสินใจให้ user
 - 2026-04-25 — v0.3.8: เพิ่ม vault/_assets/ folder (5 subfolders) + .gitignore template สำหรับ binary exclusion (commented out)
 - 2026-04-25 — v0.3.7: เพิ่ม OUTCOMES.md + WORKFLOWS.md + AI_PORTABILITY.md — vault เป็น "AI-portable knowledge base" ใช้ได้ทุก LLM

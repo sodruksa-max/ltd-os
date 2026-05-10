@@ -55,7 +55,18 @@ Each entry follows this structure:
 
 ## Entries
 
-(empty — entries will appear as you live with decisions long enough to see results)
+## 2026-05-11 — Command iteration freeze หลัง /pre-market v5
+
+**Decision**: freeze /pre-market command 1-2 สัปดาห์หลัง v5 เพื่อ validate ก่อน iterate — ไม่แตะ command จนถึง /weekly-learnings ~4 พ.ค.
+**Reasoning at the time**: บ่ออยากแก้ command ทุกวัน — validate ใน real use ก่อน ไม่งั้นไม่รู้ว่า v5 ดีจริงหรือแค่ดูดีในหัว
+**Alternatives considered**: iterate ทันที (rejected: ไม่มี signal จาก real use); freeze ยาวกว่า 2 สัปดาห์ (rejected: overkill)
+**Outcome (after 2 weeks)**: ✅ worked
+**What I learned**:
+  - freeze ช่วยให้ focus ไปที่ Nick system ได้เต็มที่โดยไม่กระจัดกระจาย
+  - /pre-market ไม่ได้ใช้ตลอดสัปดาห์ WN19 — market focus เบาลง ทำให้ freeze ไม่รู้สึก painful เลย
+  - 2 สัปดาห์เหมาะกับ command ที่ใช้ 3-4 ครั้ง/สัปดาห์ ถ้าใช้ทุกวันอาจต้องสั้นกว่า
+**Would recommend to future-me / other AI**: yes — ทุกครั้งที่ ship command ใหม่ ให้ freeze 5-10 real uses ก่อน iterate
+**Tags**: #process #workflow #pre-market #command-design
 
 ---
 
