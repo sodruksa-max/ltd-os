@@ -107,6 +107,10 @@ cat vault/Knowledge/nick-soul.md
 5. KB sweep: มี research doc ใหม่จาก /research-idea หรือ /stock-research ไหม
 6. Earnings calendar: หุ้นใน universe ที่จะประกาศ 4 สัปดาห์ข้างหน้า
 7. Recommendation ต่อแต่ละ position: hold / add / trim / sell + เหตุผล
+8. **KB Gaps:** ระบุช่องว่างที่ Nick ต้องการข้อมูลเพิ่มเพื่อตัดสินใจได้ดีขึ้น:
+   - Thesis ที่ไม่มี research doc (→ เสนอ `/research-idea <topic>`)
+   - Holdings ที่ KB บางหรืออายุข้อมูลเกิน 30 วัน (→ เสนอ refresh)
+   - Kill conditions ที่ต้องการข้อมูลสดเพื่อ verify (→ ระบุ metric ที่ต้องการ)
 
 ### Cluster-complete trigger:
 ถ้า 3+ holdings invalidated พร้อมกัน → flag ให้รัน /nick-quarterly
@@ -165,6 +169,11 @@ cat vault/Knowledge/nick-soul.md
 - [Buy / Sell / Trim / None]: ...
 - Sizing: ...
 - Reason: ...
+
+## KB Gaps — Research requests
+| Priority | Topic | Why needed | Suggested command |
+|---|---|---|---|
+| High/Med/Low | `<topic>` | `<thesis/kill condition ที่ขาดข้อมูล>` | `/research-idea <topic>` |
 
 ## Nick's note
 [1-2 ประโยค process observation — เกี่ยวกับ thesis หรือ decision quality ไม่ใช่ราคา]
