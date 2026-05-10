@@ -31,6 +31,70 @@ import sys
 import io
 import requests
 from datetime import datetime
+from pathlib import Path
+
+_ENV_FILE = Path(__file__).parent.parent / ".secrets" / ".env"
+
+
+def _load_anthropic_key() -> str | None:
+    import os
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if key:
+        return key
+    if _ENV_FILE.exists():
+        for line in _ENV_FILE.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("ANTHROPIC_API_KEY="):
+                return line.split("=", 1)[1].strip()
+    return None
+
+
+def llm_tier_rationales(entries: list[dict]) -> dict[str, str]:
+    """
+    Batch call to Claude Haiku — returns {ticker: one_sentence_thai} for EARLY/ALERT tickers.
+    Falls back to empty dict if no API key or error.
+    """
+    if not entries:
+        return {}
+    api_key = _load_anthropic_key()
+    if not api_key:
+        return {}
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+
+        lines = []
+        for r in entries:
+            lines.append(
+                f"{r['ticker']} [{r['tier']}]: RSI={r['rsi']} | "
+                f"vs_MA20={r['pct_vs_ma']:+.1f}% | vol={r['vol_ratio']:.2f}x | "
+                f"PTH={r['pth']:.2f} | RS10d={r['rs_10d']:+.1f}%" if r['rs_10d'] is not None
+                else f"{r['ticker']} [{r['tier']}]: RSI={r['rsi']} | "
+                     f"vs_MA20={r['pct_vs_ma']:+.1f}% | vol={r['vol_ratio']:.2f}x | PTH={r['pth']:.2f}"
+            )
+
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            system=[{
+                "type": "text",
+                "text": (
+                    "You are a technical analyst. For each ticker, write ONE sentence in Thai "
+                    "explaining why it is in that tier based on the indicators. "
+                    "Format: TICKER: sentence. One ticker per line. No other text."
+                ),
+                "cache_control": {"type": "ephemeral"},
+            }],
+            messages=[{"role": "user", "content": "\n".join(lines)}],
+        )
+
+        result = {}
+        for line in resp.content[0].text.strip().splitlines():
+            if ":" in line:
+                ticker, _, sent = line.partition(":")
+                result[ticker.strip()] = sent.strip()
+        return result
+    except Exception:
+        return {}
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
@@ -454,6 +518,15 @@ def main():
 
     if not any(by_tier[t] for t in ["EARLY", "ALERT", "EXTENDED", "WATCH"]):
         print("ไม่มีหุ้นใน universe ที่มีสัญญาณชัดเจนวันนี้")
+
+    # LLM tier rationales — batch call for EARLY + ALERT only
+    actionable = [r for _, _, r in by_tier["EARLY"] + by_tier["ALERT"]]
+    rationales = llm_tier_rationales(actionable)
+    if rationales:
+        print("### Why (AI rationale)")
+        for ticker, sentence in rationales.items():
+            print(f"  {ticker}: {sentence}")
+        print()
 
     print("-> รัน /pre-market สำหรับ S/R levels + full brief ของตัว [EARLY★] และ [ALERT]")
     print("-> รัน sector-flow.py เพื่อดูว่า sector ไหนกำลังดูด money")

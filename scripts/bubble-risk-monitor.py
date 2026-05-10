@@ -28,6 +28,50 @@ from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 CAPE_CACHE_FILE = Path(__file__).parent.parent / ".secrets" / "cape_cache.json"
+_ENV_FILE       = Path(__file__).parent.parent / ".secrets" / ".env"
+
+
+def _load_anthropic_key() -> str | None:
+    key = __import__("os").environ.get("ANTHROPIC_API_KEY")
+    if key:
+        return key
+    if _ENV_FILE.exists():
+        for line in _ENV_FILE.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("ANTHROPIC_API_KEY="):
+                return line.split("=", 1)[1].strip()
+    return None
+
+
+def llm_bubble_narrative(score: float, details: list[tuple[str, int, str]]) -> str | None:
+    """Call Claude Haiku to produce 2-sentence Thai narrative from vector scores."""
+    api_key = _load_anthropic_key()
+    if not api_key:
+        return None
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=api_key)
+        vector_lines = "\n".join(
+            f"  [{s}/2] {name}: {detail}" for name, _, s, detail in details
+        )
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=150,
+            system=[{
+                "type": "text",
+                "text": (
+                    "You are a macro risk analyst. Write EXACTLY 2 sentences in Thai "
+                    "explaining: (1) which bubble risk vectors are most elevated this week, "
+                    "(2) what it means for equity position sizing. Be specific, cite numbers."
+                ),
+                "cache_control": {"type": "ephemeral"},
+            }],
+            messages=[{"role": "user", "content": (
+                f"Bubble Pressure Score: {score}/10\n\nVector breakdown:\n{vector_lines}"
+            )}],
+        )
+        return resp.content[0].text.strip()
+    except Exception:
+        return None
 
 _HEADERS = {
     "User-Agent": (
@@ -293,6 +337,21 @@ def main():
     print(f"### Composite Bubble Pressure Score: {comp}/10")
     print(f"### Risk Level: {level}")
     print()
+
+    # LLM narrative (2 sentences Thai) — skipped if no API key
+    detail_rows = [
+        ("Long-end Yield",      "25%", s_yield, d_yield),
+        ("Yen Carry",           "15%", s_yen,   d_yen),
+        ("VIX Term Structure",  "20%", s_vix,   d_vix),
+        ("Index Concentration", "20%", s_conc,  d_conc),
+        ("CAPE",                "20%", s_cape,  d_cape),
+    ]
+    narrative = llm_bubble_narrative(comp, detail_rows)
+    if narrative:
+        print("### Macro Narrative")
+        print(narrative)
+        print()
+
     print("Full framework: vault/10_research/bubble-risk-framework.md")
     if "cached" in cape_note or "not set" in cape_note:
         print(f"CAPE note: {cape_note}")

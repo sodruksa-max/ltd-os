@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 from btc_bot.data     import fetch_ohlcv, fetch_price
 from btc_bot.signals  import get_signal
 from btc_bot.regime   import get_regime
+from btc_bot.decision import get_decision
 from btc_bot.sizer    import get_size
 from btc_bot.risk     import check_entry, check_stop, update_peak
 from btc_bot.executor import market_buy, market_sell
@@ -86,19 +87,22 @@ def run_scan(state: BotState, dry_run: bool, verbose: bool = True) -> dict:
     # 2. Signals
     sig    = get_signal(df_1h, df_1d)
     regime = get_regime(df_1d)
+    dec    = get_decision(sig, regime)   # LLM synthesis layer (falls back if no API key)
     size   = get_size(df_1h, df_1d, nav=state.nav)
 
-    action = sig["action"]
+    action = dec["llm_action"]           # use LLM-adjudicated action
     in_position = state.position_btc > 0
 
     log = {
-        "time":      now,
-        "price":     price,
-        "nav":       round(state.nav, 2),
-        "signal":    action,
-        "regime":    regime["state"],
-        "vol_fcast": size["forecast_vol"],
-        "action_taken": "none",
+        "time":          now,
+        "price":         price,
+        "nav":           round(state.nav, 2),
+        "signal":        action,
+        "regime":        regime["state"],
+        "vol_fcast":     size["forecast_vol"],
+        "justification": dec["llm_justification"],
+        "confidence":    dec["llm_confidence"],
+        "action_taken":  "none",
     }
 
     # 3. Check stop-loss if holding
@@ -169,6 +173,8 @@ def _print_scan(log: dict, verbose: bool):
     print(f"  Signal     : {log['signal'].upper()}")
     print(f"  Regime     : {log['regime'].upper()}")
     print(f"  Vol fcast  : {log['vol_fcast']:.1%}")
+    print(f"  Confidence : {log['confidence'] or 'n/a (no LLM key)'}")
+    print(f"  Why        : {log['justification']}")
     print(f"  Action     : {log['action_taken']}")
     print(bar)
 
