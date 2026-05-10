@@ -1,7 +1,7 @@
 """
-nick_weekly_auto.py — auto-generate Nick weekly rec using Claude Haiku.
+nick_weekly_auto.py — auto-generate Nick weekly rec using Gemini Flash (free).
 Runs Friday 8:30 PM Thailand (1:30 PM UTC) via GitHub Actions.
-Reads: Alpaca positions + KB files → Claude → weekly-rec.md + ORDERS block.
+Reads: Alpaca positions + KB files → Gemini → weekly-rec.md + ORDERS block.
 """
 
 import os
@@ -10,9 +10,9 @@ import re
 from datetime import date
 from pathlib import Path
 
-import anthropic
 import yfinance as yf
 from alpaca.trading.client import TradingClient
+from google import genai
 
 REPO = Path(__file__).resolve().parents[3]
 NICK_DIR = REPO / "vault/20_investment/nick"
@@ -170,7 +170,7 @@ def main():
     alpaca_client = TradingClient(
         os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True
     )
-    claude_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     print("Fetching holdings from Alpaca...")
     holdings_block, nav = build_holdings_block(alpaca_client)
@@ -178,17 +178,21 @@ def main():
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
 
-    print("Calling Claude Haiku...")
-    try:
-        message = claude_client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        rec_text = message.content[0].text
-        print(f"Success — {message.usage.input_tokens} in / {message.usage.output_tokens} out tokens")
-    except Exception as e:
-        raise RuntimeError(f"Claude API failed: {e}")
+    for model_id in ["gemini-2.0-flash", "gemini-2.0-flash-lite"]:
+        try:
+            print(f"Calling {model_id}...")
+            response = gemini_client.models.generate_content(
+                model=model_id, contents=prompt
+            )
+            print(f"Success with {model_id}")
+            break
+        except Exception as e:
+            print(f"{model_id} failed: {e}")
+            response = None
+
+    if response is None:
+        raise RuntimeError("All Gemini models failed — check API key quota")
+    rec_text = response.text
 
     orders = validate_orders_block(rec_text)
     if not orders:
