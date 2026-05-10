@@ -188,6 +188,7 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
 
     high_52w   = max(highs[-252:]) if len(highs) >= 252 else max(highs)
     pct_from_high = (current - high_52w) / high_52w * 100
+    pth        = round(current / high_52w, 3)  # Price-to-High: 1.0 = at 52w-high
 
     atr_now    = calc_atr(bars, 14)
     atr_prev   = calc_atr(bars[:-5], 14) if len(bars) > 20 else None
@@ -213,7 +214,8 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
         above_ma and pct_vs_ma < 8.0,
         pct_from_high >= -15.0,
         (vol_ratio or 1.0) < 1.0,
-        rs_10d is not None and rs_10d > 1.0,   # RS กำลังแข็งกว่า SPY
+        rs_10d is not None and rs_10d > 1.0,        # RS กำลังแข็งกว่า SPY
+        pth > 0.90 and (vol_ratio or 0) > 1.0,      # PTH boost: near 52w-high + volume rising (Chen et al. 2024)
     ])
 
     # [ALERT] — momentum starting
@@ -253,6 +255,7 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
         "pct_from_high":  round(pct_from_high, 1),
         "atr_contract":   atr_contracting,
         "rs_10d":         rs_10d,
+        "pth":            pth,
         "tier":           tier,
         "star":           star,
         "early_score":    early_score,
@@ -342,6 +345,7 @@ def main():
                 f"RSI {r['rsi']}",
                 f"+{r['pct_vs_ma']:.1f}% above MA20",
                 f"{r['pct_from_high']:+.1f}% from 52w-high",
+                f"PTH {r['pth']:.2f}",
                 f"RS {r['rs_10d']:+.1f}% vs SPY",
             ]
             if r["atr_contract"]:
@@ -357,6 +361,7 @@ def main():
                 f"RSI {r['rsi']}",
                 f"+{r['pct_vs_ma']:.1f}% above MA20",
                 f"{r['pct_from_high']:+.1f}% from 52w-high",
+                f"PTH {r['pth']:.2f}",
                 f"RS {r['rs_10d']:+.1f}% vs SPY" if r["rs_10d"] is not None else "RS n/a",
             ]
             if r["atr_contract"]:
