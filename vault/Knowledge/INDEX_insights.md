@@ -43,3 +43,10 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — CRM Agentforce AWU model decouples revenue from headcount; $800M ARR +169% YoY; right architecture for AI workforce transition
 - [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — SNOW data gravity + $200M OpenAI deal = AI runs where enterprise data already lives; AI workloads +200% linked to 50% of new bookings
 - [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — T4 cross-thesis: hyperscaler/OpenAI partnerships are defensive signals not pure upside; talent leakage to AI labs is leading displacement indicator
+
+## Quantum Computing T5 (quantum-computing-t5-2026-05-11.md)
+- [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — IONQ: $130M FY2025 +202% YoY, $470M RPO +554%, FY2026 guide $260-270M — only pure-play with unambiguous commercial momentum
+- [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — QBTS annealing is commercially viable today (no fault tolerance needed); $32.8M YTD 2026 bookings incl. Fortune 100 QCaaS deal
+- [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — IBM qLDPC 480ns decoding (10x speedup, 1yr ahead of schedule); Kookaburra 2026 + Starling 2029 = most credible fault-tolerance roadmap
+- [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — T5 valuation is primary risk: RGTI ~1,025x sales ❓, QBTS ~325x ❓ — 1-2yr timeline slip = severe multiple compression
+- [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — RGTI revenue -34% YoY FY2025 (structural laggard); QUBT cash ❓ + short-seller allegations ❓ — both lottery-ticket tier, not thesis anchors
