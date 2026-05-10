@@ -29,3 +29,10 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T2] semiconductor-moats-t2-2026-05-11 — LRCX 80%+ advanced etch share; "content per wafer" compounds with each node — 200→300+ NAND layers = more etch steps on flat wafer starts
 - [2026-05-11] [T2] semiconductor-moats-t2-2026-05-11 — AEIS has cycle-diversifying AI server power (37% of sales, +113% YoY) — preferred sub-tier WFE pick vs UCTT which has no hedge
 - [2026-05-11] [T2] semiconductor-moats-t2-2026-05-11 — ONTO has GAA metrology edge KLA can't match today; ROIC below WACC = "moat in formation," speculative tier only
+
+## Space & Defense AI T3 (space-defense-ai-t3-2026-05-11.md)
+- [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — RKLB: $2.2B backlog + Neutron Q4 2026 = two-layer moat validated; only vertically integrated launch+spacecraft provider outside SpaceX
+- [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — ASTS: FCC commercial authority April 2026 removes regulatory kill condition; carrier-partnership model is moat vs Starlink consumer-direct
+- [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — KTOS: $1.35B revenue, 16.6% organic growth, Valkyrie 8→40 units/yr, $447M Space Force contract — T3's only compounder
+- [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — LUNR: $210M→$900M 2026 guidance = extreme execution risk; entire thesis depends on NASA Artemis budget intact
+- [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — BBAI: insufficient conviction; $13.2M contracts too small vs PLTR/Booz Allen competition; needs $50M+ sole-source win first
