@@ -157,6 +157,7 @@ Rules:
 - Kill conditions with qualitative data → flag for human review, do not invalidate automatically
 - Benchmark is 50% QQQM + 50% SOXX, not SPY
 - ORDERS block must be valid JSON
+- **If portfolio is empty:** this is a new portfolio — recommend initial seed BUY orders for highest-conviction tickers from each active thesis. Size each position at 10-20% NAV. Do NOT leave ORDERS empty just because portfolio is empty.
 """
 
 
