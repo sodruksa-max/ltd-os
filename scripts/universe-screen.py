@@ -72,6 +72,21 @@ UNIVERSE = [
     ("BBAI",  "BigBear.ai"),
 ]
 
+SECTOR_MAP = {
+    # Semicon → SMH
+    "NVDA": "SMH", "AMD": "SMH", "MU": "SMH", "AVGO": "SMH",
+    "MRVL": "SMH", "ARM": "SMH", "ASML": "SMH", "CRDO": "SMH",
+    "AEIS": "SMH", "UCTT": "SMH", "LRCX": "SMH", "WDC": "SMH", "ONTO": "SMH",
+    # AI Infra / Datacenter / Cloud → XLK
+    "SMCI": "XLK", "DELL": "XLK", "HPE": "XLK",
+    "MSFT": "XLK", "AMZN": "XLK", "GOOGL": "XLK", "META": "XLK",
+    "PLTR": "XLK", "MOD": "XLK",
+    # Space / Defense → UFO
+    "RKLB": "UFO", "ASTS": "UFO", "LUNR": "UFO", "KTOS": "UFO", "BBAI": "UFO",
+}
+
+SECTOR_ETFS = ["SMH", "XLK", "UFO"]
+
 _HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -168,7 +183,13 @@ def calc_atr(bars: list[dict], period: int = 14) -> float | None:
     return sum(trs) / len(trs)
 
 
-def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
+def calc_5d_momentum(bars: list[dict]) -> float | None:
+    if len(bars) < 6:
+        return None
+    return round((bars[-1]["c"] - bars[-6]["c"]) / bars[-6]["c"] * 100, 1)
+
+
+def analyze(ticker: str, bars: list[dict], spy_map: dict, sector_momentum: float | None = None) -> dict:
     closes  = [b["c"] for b in bars]
     highs   = [b["h"] for b in bars]
     volumes = [b["v"] for b in bars]
@@ -195,6 +216,11 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
     atr_contracting = (atr_now < atr_prev * 0.85) if (atr_now and atr_prev) else False
 
     rs_10d     = calc_rs_trend(bars, spy_map, RS_PERIOD)
+
+    # ราคาขึ้นแต่ volume ต่ำกว่าค่าเฉลี่ย = สัญญาณอ่อน
+    vol_div    = gap_pct > 0 and (vol_ratio or 1.0) < 1.0
+    # sector ETF 5d trend ติดลบ = macro drag ต้าน
+    sector_warn = sector_momentum is not None and sector_momentum < 0
 
     # --- Tier classification ---
 
@@ -256,6 +282,9 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict:
         "atr_contract":   atr_contracting,
         "rs_10d":         rs_10d,
         "pth":            pth,
+        "vol_div":        vol_div,
+        "sector_warn":    sector_warn,
+        "sector_momentum": sector_momentum,
         "tier":           tier,
         "star":           star,
         "early_score":    early_score,
@@ -287,10 +316,24 @@ def main():
     if not spy_map:
         print("[warn] SPY fetch failed — RS trend unavailable")
 
+    # Fetch sector ETFs — SMH / XLK / UFO (5-day momentum)
+    sector_5d: dict[str, float | None] = {}
+    for etf in SECTOR_ETFS:
+        etf_bars = fetch_ohlcv(etf)
+        sector_5d[etf] = calc_5d_momentum(etf_bars) if etf_bars else None
+
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     print("## Universe Screen — Semicon / AI / Datacenter / Space")
     print(f"*{now}*")
     print("*Tiers: [EARLY★]=ก่อนวิ่ง+RS↑ [EARLY]=ก่อนวิ่ง [ALERT]=เริ่มวิ่ง [EXTENDED]=ไปไกลแล้ว*")
+    print()
+
+    # Sector ETF momentum summary
+    etf_parts = []
+    for etf in SECTOR_ETFS:
+        m = sector_5d.get(etf)
+        etf_parts.append(f"{etf} {m:+.1f}%" if m is not None else f"{etf} n/a")
+    print(f"Sector 5d: {' | '.join(etf_parts)}")
     print()
 
     header = (
@@ -308,7 +351,9 @@ def main():
             print(f"{ticker:<7} [fetch error]")
             continue
 
-        r = analyze(ticker, bars, spy_map)
+        etf_key  = SECTOR_MAP.get(ticker)
+        sec_mom  = sector_5d.get(etf_key) if etf_key else None
+        r = analyze(ticker, bars, spy_map, sector_momentum=sec_mom)
 
         rsi_s    = str(r["rsi"]) if r["rsi"] else "n/a"
         vol_s    = f"{r['vol_ratio']:.2f}x" if r["vol_ratio"] else "n/a"
@@ -319,7 +364,8 @@ def main():
         rs_s     = rs_label(r["rs_10d"])
         atr_s    = " coil" if r["atr_contract"] else ""
         star_s   = "★" if r["star"] else ""
-        tier_s   = f"[{r['tier']}{star_s}]{atr_s}"
+        flags    = (" ⚠vol-div" if r["vol_div"] else "") + (" ⚠sector↓" if r["sector_warn"] else "")
+        tier_s   = f"[{r['tier']}{star_s}]{atr_s}{flags}"
 
         print(
             f"{ticker:<7} {price_s:>9} {gap_s:>7} {rsi_s:>5} "
@@ -350,6 +396,11 @@ def main():
             ]
             if r["atr_contract"]:
                 notes.append("ATR contracting (coiling)")
+            if r["vol_div"]:
+                notes.append("⚠ vol-div (ราคาขึ้น volume ต่ำ)")
+            if r["sector_warn"]:
+                etf = SECTOR_MAP.get(ticker, "?")
+                notes.append(f"⚠ sector↓ ({etf} {r['sector_momentum']:+.1f}% 5d)")
             print(f"  {ticker} (${r['price']:,.2f}): {' | '.join(notes)}")
             print(f"  -> RS rising = smart money เข้าแล้ว รอ volume spike เพื่อ confirm entry")
         print()
@@ -366,6 +417,11 @@ def main():
             ]
             if r["atr_contract"]:
                 notes.append("ATR contracting (coiling)")
+            if r["vol_div"]:
+                notes.append("⚠ vol-div (ราคาขึ้น volume ต่ำ)")
+            if r["sector_warn"]:
+                etf = SECTOR_MAP.get(ticker, "?")
+                notes.append(f"⚠ sector↓ ({etf} {r['sector_momentum']:+.1f}% 5d)")
             print(f"  {ticker} (${r['price']:,.2f}): {' | '.join(notes)}")
             print(f"  -> รอ catalyst หรือ volume spike + RS ยืนยันก่อน entry")
         print()
