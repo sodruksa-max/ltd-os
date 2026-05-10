@@ -1,6 +1,6 @@
 ---
 type: knowledge-base
-updated: 2026-05-10
+updated: 2026-05-11
 ---
 
 # Insight Atoms Index
@@ -50,3 +50,11 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — IBM qLDPC 480ns decoding (10x speedup, 1yr ahead of schedule); Kookaburra 2026 + Starling 2029 = most credible fault-tolerance roadmap
 - [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — T5 valuation is primary risk: RGTI ~1,025x sales ❓, QBTS ~325x ❓ — 1-2yr timeline slip = severe multiple compression
 - [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — RGTI revenue -34% YoY FY2025 (structural laggard); QUBT cash ❓ + short-seller allegations ❓ — both lottery-ticket tier, not thesis anchors
+
+## Memory Semiconductors MU+WDC (memory-semiconductors-2026-05-11.md)
+- [2026-05-11] [T1,T2] memory-semiconductors-2026-05-11 — HBM oligopoly: 3 producers only (SK Hynix/Samsung/MU), capacity sold out 2026, price 5-8x commodity DRAM — pricing power intact
+- [2026-05-11] [T2] memory-semiconductors-2026-05-11 — MU HBM ~$8B annualized = only ~11% of FY2026 revenue ($74-76B) — commodity DRAM/NAND still dominates; not a pure HBM play
+- [2026-05-11] [T2] memory-semiconductors-2026-05-11 — WDC post-Sandisk spinoff: 89% hyperscaler revenue, 46.1% gross margin, HAMR 44TB→100TB+ roadmap — cleaner thesis than MU
+- [2026-05-11] [T2] memory-semiconductors-2026-05-11 — Memory oversupply 2027-2028 already building: SK Hynix+Samsung mega-fabs start 2027, industry capex $58B+ 2026 — exit window is 2026
+- [2026-05-11] [T1,T2] memory-semiconductors-2026-05-11 — MU Vera Rubin 0% HBM share ❓ (single source, unverified) — binary risk; watch Q3-Q4 FY2026 earnings for confirmation
+- [2026-05-11] [T1,T2] memory-semiconductors-2026-05-11 — AI datacenter flips majority of memory TAM for first time; capex cycle 3-5yr may elongate boom vs typical 12-18mo consumer cycle
