@@ -44,6 +44,14 @@ MACRO_TICKERS = [
     ("DX-Y.NYB", "DXY",        "idx",   "up=USD strong -> pressures EM"),
 ]
 
+# Bubble Risk Pulse tickers
+BUBBLE_TICKERS = [
+    ("^TNX",   "10Y Yield",      "%",   4.75, "high", "P/E compression zone"),
+    ("^IRX",   "2Y Yield",       "%",   None, None,   "for 10Y-2Y spread"),
+    ("^VIX9D", "VIX 9-Day",      "pts", None, None,   "short-term fear"),
+    ("JPY=X",  "USD/JPY",        "idx", 145,  "low",  "carry unwind zone if <145"),
+]
+
 FUTURES_TICKERS = [
     ("ES=F",  "S&P 500 Futures", "idx", "implied S&P open direction"),
     ("NQ=F",  "Nasdaq Futures",  "idx", "implied Nasdaq open direction"),
@@ -239,6 +247,62 @@ def print_futures_section(data):
     print()
 
 
+def print_bubble_pulse(macro_data: dict):
+    """Bubble Risk Pulse — derived from 4 vectors available via Yahoo Finance."""
+    print("### Bubble Risk Pulse")
+
+    alerts = []
+
+    # 1. Long-end Yield
+    tnx = macro_data.get("^TNX", {}).get("current")
+    irx = macro_data.get("^IRX", {}).get("current")
+    if tnx is not None:
+        flag = " [!] P/E compression zone" if tnx > 4.75 else ""
+        print(f"- 10Y Yield: **{tnx:.3f}%**{flag}")
+        if tnx > 4.75:
+            alerts.append("10Y>4.75%")
+    if tnx is not None and irx is not None:
+        irx_pct = irx / 100 if irx > 10 else irx
+        spread = tnx - irx_pct
+        flag = " [!] term premium rising" if spread > 0.5 else ""
+        print(f"- 10Y-2Y Spread: **{spread:+.2f}%**{flag}")
+        if spread > 0.5:
+            alerts.append("spread>50bps")
+
+    # 2. Yen Carry
+    jpy = macro_data.get("JPY=X", {}).get("current")
+    if jpy is not None:
+        flag = " [!] carry unwind risk" if jpy < 145 else (" [?] watch" if jpy < 150 else "")
+        print(f"- USD/JPY: **{jpy:.2f}**{flag}")
+        if jpy < 145:
+            alerts.append("JPY<145")
+
+    # 3. VIX term structure
+    vix = macro_data.get("^VIX", {}).get("current")
+    vix9d = macro_data.get("^VIX9D", {}).get("current")
+    if vix is not None and vix9d is not None:
+        ratio = round(vix9d / vix, 3)
+        if ratio < 0.85:
+            structure = "backwardation [!] short-term fear spike"
+            alerts.append("VIX backwardation")
+        elif ratio > 1.10:
+            structure = "contango (calm)"
+        else:
+            structure = "flat"
+        print(f"- VIX term structure: VIX9D/VIX = **{ratio:.2f}** ({structure})")
+    elif vix is not None:
+        print(f"- VIX: **{vix:.1f}** (VIX9D unavailable)")
+
+    # Summary
+    print()
+    if alerts:
+        print(f"[!] Bubble Risk Alerts: {' | '.join(alerts)}")
+        print("*See vault/10_research/bubble-risk-framework.md for full vector analysis*")
+    else:
+        print("Bubble Risk Pulse: No alerts -- all vectors within normal range")
+    print()
+
+
 def print_macro_section(data, vix_rank: float | None = None, pos_multiplier: float | None = None):
     print("### Macro Indicators (direct HTTP)")
     print("| Indicator | Ticker | Value | Change | Context |")
@@ -256,7 +320,7 @@ def print_macro_section(data, vix_rank: float | None = None, pos_multiplier: flo
     if vix_rank is not None and pos_multiplier is not None:
         rank_pct = int(vix_rank * 100)
         pct_size = int(pos_multiplier * 100)
-        print(f"**Position Sizing (VIX-Rank):** VIX is at {rank_pct}th percentile of past year → size multiplier **{pos_multiplier}x** ({pct_size}% of base size)\n")
+        print(f"**Position Sizing (VIX-Rank):** VIX is at {rank_pct}th percentile of past year -> size multiplier **{pos_multiplier}x** ({pct_size}% of base size)\n")
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +350,11 @@ def main():
     vix_rank = calc_vix_rank(current_vix, vix_history)
     pos_multiplier = calc_position_multiplier(vix_rank)
     print_macro_section(macro_data, vix_rank, pos_multiplier)
+
+    # Bubble Risk Pulse — fetch extra tickers + print
+    bubble_data = fetch_direct_batch([(t, None, None, None) for t, *_ in BUBBLE_TICKERS])
+    merged = {**macro_data, **bubble_data}
+    print_bubble_pulse(merged)
 
     # Quick read summary
     reads = []
