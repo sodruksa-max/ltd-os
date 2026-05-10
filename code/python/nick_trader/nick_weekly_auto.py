@@ -173,6 +173,54 @@ def log_weekly_nav(nav: float):
         f.write(row)
 
 
+def write_nick_memory(rec_text: str, nav: float):
+    soul_path = KB_DIR / "nick-soul.md"
+    soul = soul_path.read_text(encoding="utf-8")
+    today = date.today()
+
+    # Extract Nick's note
+    note_match = re.search(r"## Nick's note\s*\n(.+?)(?=\n##|\Z)", rec_text, re.DOTALL)
+    nick_note = note_match.group(1).strip() if note_match else "(no note)"
+
+    # Extract HIGH priority KB gaps
+    gaps_match = re.search(r"## KB Gaps.*?\n(.*?)(?=\n##|\Z)", rec_text, re.DOTALL)
+    high_gaps = []
+    if gaps_match:
+        for line in gaps_match.group(1).splitlines():
+            if "| High |" in line or "| HIGH |" in line.upper():
+                parts = [p.strip() for p in line.split("|") if p.strip()]
+                if len(parts) >= 3:
+                    high_gaps.append(f"[{today}] HIGH: {parts[1]} — {parts[2]}")
+
+    # Benchmark 5-day performance
+    bench_chg = get_pct_change("QQQM") * 0.5 + get_pct_change("SOXX") * 0.5
+    inception_nav = 10000.0
+    total_pnl = (nav - inception_nav) / inception_nav * 100
+
+    # Append to Process Lessons
+    lesson_block = (
+        f"\n### [{today}] Week rec\n"
+        f"- NAV: ${nav:,.2f} ({total_pnl:+.2f}% since inception)\n"
+        f"- Benchmark (50% QQQM + 50% SOXX) 5d: {bench_chg:+.2f}%\n"
+        f"- Nick's note: {nick_note}\n"
+    )
+    soul = soul.replace(
+        "*(auto-appended ทุก /nick-weekly — Nick's note + KB gaps high priority)*",
+        "*(auto-appended ทุก /nick-weekly — Nick's note + KB gaps high priority)*" + lesson_block,
+    )
+
+    # Append HIGH priority KB gaps
+    if high_gaps:
+        gaps_block = "\n" + "\n".join(f"- {g}" for g in high_gaps) + "\n"
+        soul = soul.replace(
+            "*(auto-appended จาก KB Gaps HIGH priority ทุก /nick-weekly — human รัน /research-idea ตาม)*",
+            "*(auto-appended จาก KB Gaps HIGH priority ทุก /nick-weekly — human รัน /research-idea ตาม)*" + gaps_block,
+        )
+
+    soul_path.write_text(soul, encoding="utf-8")
+    print(f"Memory written to nick-soul.md — {len(high_gaps)} KB gaps flagged")
+
+
 def main():
     alpaca_client = TradingClient(
         os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True
@@ -213,6 +261,9 @@ def main():
     print(f"Orders found: {len(orders)}")
     for o in orders:
         print(f"  {o.get('action')} {o.get('ticker')} ({o.get('conviction')}) — {o.get('reason')}")
+
+    write_nick_memory(rec_text, nav)
+    print("Memory updated.")
 
 
 if __name__ == "__main__":
