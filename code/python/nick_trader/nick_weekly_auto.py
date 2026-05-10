@@ -1,7 +1,7 @@
 """
-nick_weekly_auto.py — auto-generate Nick weekly rec using Gemini 2.0 Flash (free).
+nick_weekly_auto.py — auto-generate Nick weekly rec using Claude Haiku.
 Runs Friday 8:30 PM Thailand (1:30 PM UTC) via GitHub Actions.
-Reads: Alpaca positions + KB files → Gemini → weekly-rec.md + ORDERS block.
+Reads: Alpaca positions + KB files → Claude → weekly-rec.md + ORDERS block.
 """
 
 import os
@@ -10,9 +10,9 @@ import re
 from datetime import date
 from pathlib import Path
 
+import anthropic
 import yfinance as yf
 from alpaca.trading.client import TradingClient
-from google import genai
 
 REPO = Path(__file__).resolve().parents[3]
 NICK_DIR = REPO / "vault/20_investment/nick"
@@ -28,13 +28,6 @@ def load_file(path: Path) -> str:
         return path.read_text(encoding="utf-8")
     except Exception:
         return f"[file not found: {path}]"
-
-
-def get_price(ticker: str) -> float:
-    try:
-        return round(float(yf.Ticker(ticker).fast_info["lastPrice"]), 2)
-    except Exception:
-        return 0.0
 
 
 def get_pct_change(ticker: str, period="5d") -> float:
@@ -65,7 +58,6 @@ def build_holdings_block(client: TradingClient) -> tuple[str, float]:
             f"P&L {pnl_pct:+.1f}% | ${mkt_val:,.0f} ({weight}% NAV)"
         )
 
-    # Benchmark performance
     lines.append("\nBenchmark (week):")
     for sym in BENCHMARK_TICKERS:
         chg = get_pct_change(sym)
@@ -91,14 +83,9 @@ def validate_orders_block(text: str) -> list:
 
 
 def build_prompt(holdings_block: str, nav: float) -> str:
-    nick_soul = load_file(NICK_DIR.parent.parent / "vault/Knowledge/nick-soul.md")
-    # Fallback path
-    if "not found" in nick_soul:
-        nick_soul = load_file(KB_DIR / "nick-soul.md")
-
+    nick_soul = load_file(KB_DIR / "nick-soul.md")
     thesis_tracker = load_file(KB_DIR / "THESIS_TRACKER.md")
     index_insights = load_file(KB_DIR / "INDEX_insights.md")
-
     today = date.today()
 
     return f"""You are Nick — a blinded thesis portfolio manager. You only know:
@@ -183,36 +170,31 @@ def main():
     alpaca_client = TradingClient(
         os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True
     )
-    gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    claude_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     print("Fetching holdings from Alpaca...")
-    holdings_block, nav = get_holdings_block(alpaca_client)
+    holdings_block, nav = build_holdings_block(alpaca_client)
 
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
 
-    for model_id in ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash-exp"]:
-        try:
-            print(f"Calling {model_id}...")
-            response = gemini_client.models.generate_content(
-                model=model_id, contents=prompt
-            )
-            print(f"Success with {model_id}")
-            break
-        except Exception as e:
-            print(f"{model_id} failed: {e}")
-            response = None
-    if response is None:
-        raise RuntimeError("All Gemini models failed — check API key quota")
-    rec_text = response.text
+    print("Calling Claude Haiku...")
+    try:
+        message = claude_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        rec_text = message.content[0].text
+        print(f"Success — {message.usage.input_tokens} in / {message.usage.output_tokens} out tokens")
+    except Exception as e:
+        raise RuntimeError(f"Claude API failed: {e}")
 
-    # Validate ORDERS block
     orders = validate_orders_block(rec_text)
     if not orders:
         print("WARNING: No valid ORDERS block found — appending empty block")
         rec_text += '\n\n## ORDERS (machine-readable — parsed by nick-execute.py)\n```json\n[]\n```\n'
 
-    # Save weekly rec
     today = date.today()
     out_file = WEEKLY_DIR / f"{today}_weekly-rec.md"
     out_file.write_text(rec_text, encoding="utf-8")
@@ -221,9 +203,6 @@ def main():
     for o in orders:
         print(f"  {o.get('action')} {o.get('ticker')} ({o.get('conviction')}) — {o.get('reason')}")
 
-
-# Fix typo in function name
-get_holdings_block = build_holdings_block
 
 if __name__ == "__main__":
     main()
