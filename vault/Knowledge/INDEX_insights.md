@@ -51,6 +51,26 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — T5 valuation is primary risk: RGTI ~1,025x sales ❓, QBTS ~325x ❓ — 1-2yr timeline slip = severe multiple compression
 - [2026-05-11] [T5] quantum-computing-t5-2026-05-11 — RGTI revenue -34% YoY FY2025 (structural laggard); QUBT cash ❓ + short-seller allegations ❓ — both lottery-ticket tier, not thesis anchors
 
+## LRCX Etch Equipment (lrcx-etch-equipment-2026-05-11.md)
+- [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — GAA architecture = 15-20% more etch intensity per wafer vs FinFET; automatic revenue lift per node transition for LRCX
+- [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — Record 50.6% gross margin + 35% op margin Q Sep 2025 — pricing power confirmed, not commodity equipment
+- [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — China export controls = -$600M revenue 2026, margin guided down to 48.5%; H2 2026 recovery is management claim, not proven
+- [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — WFE market record $145B 2026; LRCX SAM expanding mid-30s% → high-30s% = share gain on expanding base
+- [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — HBM tool revenue +50% YoY; GAA+HBM combined >$3B 2025, runway through HBM4/HBM5 era
+
+## AI Networking MRVL+CRDO (ai-networking-mrvl-crdo-2026-05-11.md)
+- [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — Ethernet rebellion: all major hyperscalers → Ethernet; UEC 1.0 June 2025; Microsoft 100% Ethernet by summer 2026
+- [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — Copper dead at 800G+ (≤5m limit); clusters >100K GPUs require all-optical; MRVL leads 800G optical — structural beneficiary of cluster scale-up
+- [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — AVGO holds 80% Ethernet switch market; real Ethernet rebellion winner is Broadcom, not MRVL — MRVL thesis must rest on optical not switch
+- [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — MRVL leads 800G optical interconnects; CPO (Co-Packaged Optics) scaling for 1.6T+ era; kill signal: AVGO enters optical directly
+- [2026-05-11] [T2] ai-networking-mrvl-crdo-2026-05-11 — CRDO 73% AEC market share ❓ (unverified source); AEC moat threatened by optical adoption before 2027; CRDO photonics roadmap unknown
+
+## SMCI AI Server (smci-ai-server-2026-05-11.md)
+- [2026-05-11] [T1] smci-ai-server-2026-05-11 — AI server gross margin structurally 12-14% (GPU pass-through); revenue growth ≠ profit growth — volume play not compounder
+- [2026-05-11] [T1] smci-ai-server-2026-05-11 — DOJ subpoena outstanding (❓ verify 2026 status); EY resigned Oct 2024, BDO filed 10-K — governance risk persists as tail risk
+- [2026-05-11] [T1] smci-ai-server-2026-05-11 — Liquid cooling (DLC) may be durable moat ❓; GPU TDP rising forces liquid cooling adoption; lead time vs Dell/HPE unquantified
+- [2026-05-11] [T1] smci-ai-server-2026-05-11 — Custom silicon (Trainium/TPU) reduces Nvidia GPU density per rack; 3-5yr structural TAM headwind, not 2026 kill condition
+
 ## Memory Semiconductors MU+WDC (memory-semiconductors-2026-05-11.md)
 - [2026-05-11] [T1,T2] memory-semiconductors-2026-05-11 — HBM oligopoly: 3 producers only (SK Hynix/Samsung/MU), capacity sold out 2026, price 5-8x commodity DRAM — pricing power intact
 - [2026-05-11] [T2] memory-semiconductors-2026-05-11 — MU HBM ~$8B annualized = only ~11% of FY2026 revenue ($74-76B) — commodity DRAM/NAND still dominates; not a pure HBM play
