@@ -22,7 +22,7 @@ TRADE_LOG = NICK_DIR / "trade-log.md"
 NAV_LOG = NICK_DIR / "performance/nav_log.md"
 STATE_FILE = NICK_DIR / "nick_state.json"
 
-CONVICTION_SIZE = {"high": 0.05, "med": 0.03, "low": 0.01}
+CONVICTION_SIZE = {"high": 0.15, "med": 0.08, "low": 0.03}
 STOP_LOSS_PCT = -0.25
 TARGET_PCT = 0.50
 MIN_CASH_PCT = 0.10
@@ -37,13 +37,18 @@ def save_state(state):
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 
-def get_nav():
-    content = NAV_LOG.read_text(encoding="utf-8")
-    rows = [l for l in content.splitlines() if "|" in l and "$" in l]
-    if not rows:
+def get_nav(client: TradingClient) -> float:
+    try:
+        account = client.get_account()
+        return round(float(account.portfolio_value), 2)
+    except Exception:
         return 10000.0
-    m = re.search(r"\$([0-9,]+)", rows[-1])
-    return float(m.group(1).replace(",", "")) if m else 10000.0
+
+
+def append_nav_log(nav: float, note: str = ""):
+    row = f"| {date.today()} | ${nav:,.2f} | - | - | {note} |\n"
+    with open(NAV_LOG, "a", encoding="utf-8") as f:
+        f.write(row)
 
 
 def get_regime():
@@ -58,7 +63,7 @@ def get_regime():
             data[name] = {"value": None, "above_50ma": None}
 
     vix = data.get("VIX", {}).get("value") or 25
-    data["tier"] = "EARLY" if vix < 20 else ("EXTENDED" if vix < 30 else "DANGER")
+    data["tier"] = "EARLY" if vix < 20 else ("EXTENDED" if vix < 28 else "DANGER")
     return data
 
 
@@ -101,19 +106,19 @@ def main():
         print(f"Already executed {rec_name} — skipping to avoid double-orders")
         return
 
-    nav = get_nav()
     regime = get_regime()
     tier = regime["tier"]
     vix = regime.get("VIX", {}).get("value", "?")
     tnx = regime.get("TNX", {}).get("value", "?")
     soxx = "above50ma" if regime.get("SOXX", {}).get("above_50ma") else "below50ma"
 
-    print(f"NAV: ${nav:,.0f}  |  Tier: {tier}  |  VIX: {vix}  |  10Y: {tnx}  |  SOXX: {soxx}")
-
     client = TradingClient(os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True)
     positions = {p.symbol: p for p in client.get_all_positions()}
     account = client.get_account()
+    nav = get_nav(client)
     cash = float(account.cash)
+
+    print(f"NAV: ${nav:,.0f}  |  Tier: {tier}  |  VIX: {vix}  |  10Y: {tnx}  |  SOXX: {soxx}")
 
     for order in orders:
         action = order.get("action", "").upper()
@@ -124,9 +129,13 @@ def main():
                         vix=vix, tnx=tnx, soxx=soxx, reason=reason, price=0, shares=0, nav_pct="-")
 
         if action == "BUY":
-            if tier != "EARLY":
-                print(f"  SKIP {ticker}: tier={tier} (EARLY-only rule)")
-                append_log({**base_row, "action": f"SKIP-{tier}", "reason": f"blocked: tier={tier}"})
+            if tier == "DANGER":
+                print(f"  SKIP {ticker}: tier=DANGER (VIX≥28 — no new entries)")
+                append_log({**base_row, "action": "SKIP-DANGER", "reason": "blocked: VIX≥28"})
+                continue
+            if tier == "EXTENDED" and conviction != "high":
+                print(f"  SKIP {ticker}: tier=EXTENDED, conviction={conviction} (high-only in EXTENDED)")
+                append_log({**base_row, "action": "SKIP-EXTENDED", "reason": f"blocked: EXTENDED requires high conviction, got {conviction}"})
                 continue
 
             if ticker in positions:
@@ -177,6 +186,13 @@ def main():
 
     state["last_executed_rec"] = rec_name
     save_state(state)
+
+    # Update NAV log with post-trade portfolio value
+    nav_after = get_nav(client)
+    orders_executed = [o for o in orders if o.get("action", "").upper() in ("BUY", "SELL", "TRIM")]
+    note = f"post-execute: {len(orders_executed)} orders from {rec_name}"
+    append_nav_log(nav_after, note)
+    print(f"NAV log updated: ${nav_after:,.2f}")
     print("Done.")
 
 

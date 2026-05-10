@@ -76,14 +76,24 @@ def validate_orders_block(text: str) -> list:
         return []
 
 
+def load_insight_atoms() -> str:
+    atoms_dir = KB_DIR / "insight-atoms"
+    parts = []
+    for f in sorted(atoms_dir.glob("*.md")):
+        if f.name == "README.md":
+            continue
+        parts.append(f.read_text(encoding="utf-8"))
+    return "\n\n---\n\n".join(parts)
+
+
 def build_prompt(holdings_block: str, nav: float) -> str:
     nick_soul = load_file(KB_DIR / "nick-soul.md")
     thesis_tracker = load_file(KB_DIR / "THESIS_TRACKER.md")
-    index_insights = load_file(KB_DIR / "INDEX_insights.md")
+    insight_atoms = load_insight_atoms()
     today = date.today()
 
     return f"""You are Nick — a blinded thesis portfolio manager. You only know:
-1. Your KB (thesis tracker, insight atoms)
+1. Your KB (thesis tracker, insight atoms with full evidence and kill conditions)
 2. Current market prices
 You do NOT know about real trades, paper bot positions, or the user's actual portfolio.
 
@@ -96,9 +106,9 @@ Read your soul and principles first:
 {thesis_tracker}
 </thesis-tracker>
 
-<recent-insights>
-{index_insights}
-</recent-insights>
+<insight-atoms>
+{insight_atoms}
+</insight-atoms>
 
 <current-holdings>
 {holdings_block}

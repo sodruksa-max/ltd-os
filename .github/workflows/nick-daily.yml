@@ -33,10 +33,10 @@ jobs:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
 
-      - name: Commit trade log back to repo
+      - name: Commit trade log + NAV log back to repo
         run: |
           git config user.name "nick-bot"
           git config user.email "nick-bot@users.noreply.github.com"
-          git add vault/20_investment/nick/trade-log.md vault/20_investment/nick/nick_state.json
+          git add vault/20_investment/nick/trade-log.md vault/20_investment/nick/nick_state.json vault/20_investment/nick/performance/nav_log.md
           git diff --staged --quiet || git commit -m "chore(nick): auto trade log $(date +%Y-%m-%d)"
           git push
