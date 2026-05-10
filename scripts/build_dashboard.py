@@ -383,6 +383,27 @@ def risk_stats_html(stats):
     </div>"""
 
 
+def get_market_data(tickers: list[str]) -> dict:
+    """Per-ticker: 52-week low/high, 5-day % change."""
+    result = {}
+    for sym in tickers:
+        entry = {"w52_low": None, "w52_high": None, "week_chg": None}
+        try:
+            t = yf.Ticker(sym)
+            fi = t.fast_info
+            for attr, key in [("fifty_two_week_low", "w52_low"), ("fifty_two_week_high", "w52_high")]:
+                val = getattr(fi, attr, None)
+                if val and val == val:  # not NaN
+                    entry[key] = round(float(val), 2)
+            hist = t.history(period="6d")["Close"]
+            if len(hist) >= 2:
+                entry["week_chg"] = round((hist.iloc[-1] - hist.iloc[0]) / hist.iloc[0] * 100, 2)
+        except Exception:
+            pass
+        result[sym] = entry
+    return result
+
+
 def get_earnings_calendar(tickers: list[str]):
     """Fetch next earnings date for each ticker. Returns sorted list of dicts."""
     today = date.today()
@@ -592,7 +613,25 @@ def build_chart_data(nav_history, benchmarks):
     }
 
 
-def holdings_rows_html(holdings, nav, cash):
+def _range_bar(price, low, high):
+    """Mini 52-week range bar HTML. Returns '' if data missing."""
+    if not low or not high or high <= low:
+        return ""
+    pct = max(0, min(100, round((price - low) / (high - low) * 100)))
+    color = "#3fb950" if pct >= 70 else ("#d29922" if pct >= 30 else "#f85149")
+    return (
+        f'<div class="range-bar-wrap">'
+        f'<div class="range-bar-bg">'
+        f'<div class="range-bar-dot" style="left:{pct}%;background:{color}"></div>'
+        f'</div>'
+        f'<div class="range-labels">'
+        f'<span>${low:,.0f}</span><span style="color:{color};font-weight:700">{pct}%</span><span>${high:,.0f}</span>'
+        f'</div></div>'
+    )
+
+
+def holdings_rows_html(holdings, nav, cash, mkt=None):
+    mkt = mkt or {}
     cash_pct = round(cash / nav * 100, 1) if nav else 0
     rows = ""
     for h in holdings:
@@ -600,16 +639,28 @@ def holdings_rows_html(holdings, nav, cash):
         sign = "+" if h["pnl_pct"] >= 0 else ""
         bar_w = min(100, h["weight"])
         label, pill_cls = status_label(h["pnl_pct"])
+        md = mkt.get(h["ticker"], {})
+
+        range_html = _range_bar(h["last"], md.get("w52_low"), md.get("w52_high"))
+
+        wk = md.get("week_chg")
+        if wk is not None:
+            wk_cls = "pnl-pos" if wk >= 0 else "pnl-neg"
+            wk_sign = "+" if wk >= 0 else ""
+            wk_html = f'<div class="week-chg {wk_cls}">{wk_sign}{wk:.2f}% สัปดาห์นี้</div>'
+        else:
+            wk_html = ""
+
         rows += f"""
         <tr onclick="selectHolding('{h['ticker']}')" id="row-{h['ticker']}">
           <td><div class="tn">{h['ticker']}</div><div class="tc">{h['company']}</div></td>
           <td><span class="{pill_cls}">{label}</span></td>
           <td>{h['shares']}</td>
           <td>${h['cost']:.2f}</td>
-          <td>${h['last']:.2f}</td>
+          <td><div>${h['last']:.2f}</div>{range_html}</td>
           <td>${h['position']:,.0f}</td>
           <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:{bar_w}%"></div></div><span>{h['weight']}%</span></div></td>
-          <td class="{pnl_class}">{sign}{h['pnl_pct']:.2f}%<br><small>${h['pnl_dollar']:+,.0f}</small></td>
+          <td class="{pnl_class}">{sign}{h['pnl_pct']:.2f}%<br><small>${h['pnl_dollar']:+,.0f}</small>{wk_html}</td>
         </tr>"""
     cb = min(100, cash_pct)
     rows += f"""
@@ -734,6 +785,45 @@ def earnings_calendar_html(earnings):
     </div>"""
 
 
+def pnl_contribution_html(holdings):
+    """Horizontal CSS bar chart — each position's dollar contribution to total P&L."""
+    if not holdings:
+        return ""
+
+    items = sorted(holdings, key=lambda h: h["pnl_dollar"], reverse=True)
+    max_abs = max(abs(h["pnl_dollar"]) for h in items) or 1
+
+    rows = ""
+    for h in items:
+        pct = round(abs(h["pnl_dollar"]) / max_abs * 100)
+        pos = h["pnl_dollar"] >= 0
+        color = "#3fb950" if pos else "#f85149"
+        sign = "+" if pos else ""
+        align = "left" if pos else "right"
+        float_dir = "left" if pos else "right"
+        rows += f"""
+        <div class="contrib-row">
+          <div class="contrib-sym">{h['ticker']}</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:{pct}%;background:{color};float:{float_dir}"></div>
+          </div>
+          <div class="contrib-val" style="color:{color}">{sign}${h['pnl_dollar']:,.0f}</div>
+        </div>"""
+
+    total_pnl = sum(h["pnl_dollar"] for h in holdings)
+    total_cls = "pnl-pos" if total_pnl >= 0 else "pnl-neg"
+    total_sign = "+" if total_pnl >= 0 else ""
+
+    return f"""<div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="card-title">P&amp;L Contribution</span>
+        <span class="card-sub">รวม: <span class="{total_cls}">{total_sign}${total_pnl:,.0f}</span></span>
+      </div>
+      <div class="card-body">{rows}</div>
+    </div>"""
+
+
 def ipo_content_html(md_text):
     if not md_text:
         return '<p class="empty-cell" style="padding:24px 0;text-align:center;">ยังไม่มีข้อมูล IPO — scanner รันทุกวันจันทร์</p>'
@@ -771,7 +861,7 @@ def ipo_content_html(md_text):
 
 def build_html(holdings, nav, cash, nav_history, benchmarks, thesis_data, clist,
                weeks, action_summary, nick_note, actions_count, vs_spy,
-               regime, trade_log, ipo_radar, kb_gaps, earnings):
+               regime, trade_log, ipo_radar, kb_gaps, earnings, mkt):
 
     cash_pct = round(cash / nav * 100, 1) if nav else 0
     total_return = round((nav - INCEPTION_NAV) / INCEPTION_NAV * 100, 2)
@@ -912,6 +1002,23 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .th-text{{font-size:12px;line-height:1.85;color:var(--text)}}
 .kill-list{{list-style:none}}
 .kill-list li{{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}}
+/* 52-week range bar */
+.range-bar-wrap{{margin-top:5px}}
+.range-bar-bg{{position:relative;height:3px;background:var(--border);border-radius:1px;margin-bottom:3px}}
+.range-bar-dot{{position:absolute;top:-3px;width:3px;height:9px;border-radius:1px;transform:translateX(-50%)}}
+.range-labels{{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);line-height:1}}
+/* 5-day momentum */
+.week-chg{{font-size:9px;margin-top:3px;opacity:.85}}
+/* P&L Contribution */
+.contrib-row{{display:grid;grid-template-columns:52px 1fr 70px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}}
+.contrib-row:last-child{{border-bottom:none}}
+.contrib-sym{{font-weight:700;font-size:12px}}
+.contrib-track{{position:relative;height:16px;background:rgba(255,255,255,.04);border-radius:1px;overflow:hidden}}
+.contrib-center{{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--border)}}
+.contrib-bar{{height:100%;max-width:50%;position:absolute;top:0}}
+.contrib-bar[style*="float:left"]{{left:50%}}
+.contrib-bar[style*="float:right"]{{right:50%}}
+.contrib-val{{text-align:right;font-weight:700;font-size:12px;white-space:nowrap}}
 /* Risk Stats Panel */
 .risk-panel{{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--border);background:var(--card);margin-bottom:16px}}
 .risk-stat{{padding:16px 20px;border-right:1px solid var(--border)}}
@@ -1062,6 +1169,8 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 
   {earnings_calendar_html(earnings)}
 
+  {pnl_contribution_html(holdings)}
+
   {thesis_exposure_html(holdings, nav, cash, thesis_data)}
 
   <div class="g2">
@@ -1077,7 +1186,7 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
             <th>ต้นทุน</th><th>ราคาล่าสุด</th><th>มูลค่า</th>
             <th>น้ำหนัก</th><th>กำไร/ขาดทุน</th>
           </tr></thead>
-          <tbody>{holdings_rows_html(holdings, nav, cash)}</tbody>
+          <tbody>{holdings_rows_html(holdings, nav, cash, mkt)}</tbody>
         </table>
       </div>
     </div>
@@ -1276,13 +1385,14 @@ def main():
 
     watch_tickers = list({h["ticker"] for h in holdings} | set(SEED_WEIGHTS.keys()))
     earnings = get_earnings_calendar(watch_tickers)
+    mkt = get_market_data(watch_tickers)
 
     print(f"NAV: ${nav:,.2f} | Holdings: {len(holdings)} | Weeks: {weeks} | VIX: {regime.get('vix')} | Earnings: {len(earnings)}")
 
     html = build_html(
         holdings, nav, cash, nav_history, benchmarks,
         thesis_data, clist, weeks, action_summary, nick_note, actions_count,
-        vs_spy, regime, trade_log, ipo_radar, kb_gaps, earnings
+        vs_spy, regime, trade_log, ipo_radar, kb_gaps, earnings, mkt
     )
 
     out = DOCS_DIR / "index.html"
