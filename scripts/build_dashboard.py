@@ -239,6 +239,43 @@ def get_ipo_radar():
     return files[0].read_text(encoding="utf-8") if files else ""
 
 
+def get_earnings_calendar(tickers: list[str]):
+    """Fetch next earnings date for each ticker. Returns sorted list of dicts."""
+    today = date.today()
+    results = []
+    for sym in tickers:
+        try:
+            info = yf.Ticker(sym).calendar
+            if info is None:
+                continue
+            if hasattr(info, "get"):
+                edate = info.get("Earnings Date")
+            else:
+                edate = None
+            if edate is None and hasattr(info, "columns"):
+                col = info.columns[0] if len(info.columns) > 0 else None
+                if col and "Earnings Date" in str(col):
+                    edate = col
+                elif hasattr(info, "iloc"):
+                    row = info[info.index == "Earnings Date"]
+                    if not row.empty:
+                        edate = row.iloc[0, 0]
+            if edate is None:
+                continue
+            if hasattr(edate, "__iter__") and not isinstance(edate, str):
+                edate = list(edate)[0]
+            if hasattr(edate, "date"):
+                edate = edate.date()
+            elif isinstance(edate, str):
+                edate = datetime.strptime(edate[:10], "%Y-%m-%d").date()
+            days_away = (edate - today).days
+            if -7 <= days_away <= 90:
+                results.append({"ticker": sym, "date": str(edate), "days": days_away})
+        except Exception:
+            pass
+    return sorted(results, key=lambda x: x["days"])
+
+
 def get_kb_gaps():
     weekly_dir = NICK_DIR / "weekly"
     files = sorted(weekly_dir.glob("*_weekly-rec.md"), reverse=True)
@@ -502,6 +539,57 @@ def kb_rows_html(gaps):
     return rows
 
 
+def earnings_calendar_html(earnings):
+    if not earnings:
+        return """<div class="card" style="margin-bottom:16px">
+      <div class="card-hdr"><span class="card-title">Earnings Calendar</span><span class="card-sub">90 วันข้างหน้า</span></div>
+      <div class="card-body"><p class="empty-cell">ไม่พบข้อมูล earnings — yfinance อาจไม่มีข้อมูลสำหรับหุ้นเหล่านี้</p></div>
+    </div>"""
+
+    today = date.today()
+    items = ""
+    for e in earnings:
+        days = e["days"]
+        sym = e["ticker"]
+        edate = e["date"]
+        company = TICKER_NAMES.get(sym, sym)
+
+        if days < 0:
+            urgency = "earn-past"
+            badge = f'<span class="earn-badge earn-done">รายงานแล้ว {abs(days)} วัน</span>'
+        elif days == 0:
+            urgency = "earn-today"
+            badge = '<span class="earn-badge earn-now">วันนี้!</span>'
+        elif days <= 7:
+            urgency = "earn-urgent"
+            badge = f'<span class="earn-badge earn-soon">อีก {days} วัน</span>'
+        elif days <= 14:
+            urgency = "earn-near"
+            badge = f'<span class="earn-badge earn-near-b">อีก {days} วัน</span>'
+        else:
+            urgency = ""
+            badge = f'<span class="earn-badge earn-far">อีก {days} วัน</span>'
+
+        bar_pct = max(0, min(100, round((1 - days / 90) * 100)))
+        items += f"""
+        <div class="earn-item {urgency}">
+          <div class="earn-sym">{sym}<div class="earn-co">{company}</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:{bar_pct}%"></div></div>
+          </div>
+          <div class="earn-date">{edate}</div>
+          {badge}
+        </div>"""
+
+    return f"""<div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="card-title">Earnings Calendar</span>
+        <span class="card-sub">90 วันข้างหน้า — {len(earnings)} หุ้น</span>
+      </div>
+      <div class="card-body" style="padding:12px 20px">{items}</div>
+    </div>"""
+
+
 def ipo_content_html(md_text):
     if not md_text:
         return '<p class="empty-cell" style="padding:24px 0;text-align:center;">ยังไม่มีข้อมูล IPO — scanner รันทุกวันจันทร์</p>'
@@ -539,7 +627,7 @@ def ipo_content_html(md_text):
 
 def build_html(holdings, nav, cash, nav_history, benchmarks, thesis_data, clist,
                weeks, action_summary, nick_note, actions_count, vs_spy,
-               regime, trade_log, ipo_radar, kb_gaps):
+               regime, trade_log, ipo_radar, kb_gaps, earnings):
 
     cash_pct = round(cash / nav * 100, 1) if nav else 0
     total_return = round((nav - INCEPTION_NAV) / INCEPTION_NAV * 100, 2)
@@ -680,6 +768,22 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .th-text{{font-size:12px;line-height:1.85;color:var(--text)}}
 .kill-list{{list-style:none}}
 .kill-list li{{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}}
+/* Earnings Calendar */
+.earn-item{{display:grid;grid-template-columns:140px 1fr 100px 110px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}}
+.earn-item:last-child{{border-bottom:none}}
+.earn-item.earn-urgent{{background:rgba(248,81,73,.04);margin:0 -20px;padding:10px 20px}}
+.earn-item.earn-today{{background:rgba(248,81,73,.10);margin:0 -20px;padding:10px 20px}}
+.earn-sym{{font-weight:700;font-size:13px;line-height:1.2}}
+.earn-co{{font-size:10px;color:var(--muted);font-weight:400;margin-top:2px}}
+.earn-bar-bg{{height:4px;background:var(--border);border-radius:1px}}
+.earn-bar-fill{{height:100%;background:var(--accent);border-radius:1px;transition:width .3s}}
+.earn-date{{font-size:11px;color:var(--muted);text-align:right}}
+.earn-badge{{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;text-align:center;white-space:nowrap}}
+.earn-done{{background:rgba(139,148,158,.15);color:var(--muted)}}
+.earn-now{{background:rgba(248,81,73,.2);color:#f85149;animation:pulse-red 1s ease-in-out infinite}}
+.earn-soon{{background:rgba(248,81,73,.15);color:#f85149}}
+.earn-near-b{{background:rgba(210,153,34,.15);color:#d29922}}
+.earn-far{{background:rgba(0,200,150,.1);color:var(--accent)}}
 /* Thesis Exposure */
 .exp-bar{{display:flex;height:18px;border-radius:2px;overflow:hidden;margin-bottom:18px;gap:2px}}
 .exp-seg{{height:100%;transition:opacity .2s;cursor:default}}
@@ -800,6 +904,8 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
       </div>
     </div>
   </div>
+
+  {earnings_calendar_html(earnings)}
 
   {thesis_exposure_html(holdings, nav, cash, thesis_data)}
 
@@ -1013,12 +1119,15 @@ def main():
     ipo_radar = get_ipo_radar()
     kb_gaps = get_kb_gaps()
 
-    print(f"NAV: ${nav:,.2f} | Holdings: {len(holdings)} | Weeks: {weeks} | VIX: {regime.get('vix')}")
+    watch_tickers = list({h["ticker"] for h in holdings} | set(SEED_WEIGHTS.keys()))
+    earnings = get_earnings_calendar(watch_tickers)
+
+    print(f"NAV: ${nav:,.2f} | Holdings: {len(holdings)} | Weeks: {weeks} | VIX: {regime.get('vix')} | Earnings: {len(earnings)}")
 
     html = build_html(
         holdings, nav, cash, nav_history, benchmarks,
         thesis_data, clist, weeks, action_summary, nick_note, actions_count,
-        vs_spy, regime, trade_log, ipo_radar, kb_gaps
+        vs_spy, regime, trade_log, ipo_radar, kb_gaps, earnings
     )
 
     out = DOCS_DIR / "index.html"
