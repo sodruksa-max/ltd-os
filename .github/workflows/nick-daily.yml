@@ -39,4 +39,5 @@ jobs:
           git config user.email "nick-bot@users.noreply.github.com"
           git add vault/20_investment/nick/trade-log.md vault/20_investment/nick/nick_state.json vault/20_investment/nick/performance/nav_log.md
           git diff --staged --quiet || git commit -m "chore(nick): auto trade log $(date +%Y-%m-%d)"
+          git pull --rebase origin main
           git push
