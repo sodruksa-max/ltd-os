@@ -39,8 +39,9 @@ Save: `vault/30_content/ideas/<slug>-<date>.md`
 
 ## STEP 2 — KB SWEEP
 
-ก่อนวิจัยใหม่ → ค้นหาที่มีอยู่แล้วก่อน:
+ก่อนวิจัยใหม่ → ค้นหาที่มีอยู่แล้วก่อน (vault + NotebookLM พร้อมกัน):
 
+**2A — Vault grep:**
 ```bash
 grep -ri "<topic>" vault/Knowledge/ vault/10_research/ --include="*.md" -l
 ```
@@ -51,7 +52,15 @@ grep -ri "<topic>" vault/Knowledge/ vault/10_research/ --include="*.md" -l
 - Papers ที่มีอยู่ใน vault/10_research/
 - Contradictions ที่รู้แล้ว (จาก vault/Knowledge/contradiction-registry.md)
 
-**ถ้ามี context เพียงพอ** → แจ้ง user และ skip บางส่วนของ step 3 เพื่อประหยัด searches
+**2B — NotebookLM auto-query (ถ้ามี notebook ที่ตรงกับ topic):**
+1. เรียก `mcp__notebooklm-mcp__notebook_list` ดู notebook ทั้งหมด
+2. ถ้าชื่อ notebook ตรงกับ topic (keyword match) → query ทันทีด้วย sub-questions จาก Minnie
+3. ใช้ `mcp__notebooklm-mcp__notebook_query` — ถามรวดเดียว 2-3 ข้อ เช่น:
+   - "Key findings on [topic] from these papers?"
+   - "What do these papers say about bull/bear case for [topic]?"
+4. ผลจาก NotebookLM → รวมใน context brief เหมือน vault (ไม่ต้อง save แยก)
+
+**ถ้า 2A + 2B มี context เพียงพอ** → แจ้ง user และ skip บางส่วนของ step 3 เพื่อประหยัด searches
 
 ---
 
