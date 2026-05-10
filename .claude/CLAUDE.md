@@ -1,13 +1,13 @@
 # LTD-OS — Project Memory for Claude Code
 
 ## What this is
-Personal knowledge base + workflow OS for: research, note-taking, investment analysis, content creation, and small coding projects. Owner does not write code — Claude Code is the executor, with 8 specialized agents + Obsidian vault as memory.
+Personal knowledge base + workflow OS for: research, note-taking, investment analysis, content creation, and small coding projects. Owner does not write code — Claude Code is the executor, with specialized agents + Obsidian vault as memory.
 
 ## Core principles
 1. **Markdown-first** — everything in `vault/` is plain markdown. No proprietary formats.
 2. **Git is source of truth** — commit early via `safe-commit.sh`, only when reviewer passes.
 3. **Secrets never leave `.secrets/`** — never echo, never commit, never paste in chat.
-4. **8-agent workflow** — planner routes, specialist does, reviewer gates.
+4. **Multi-agent workflow** — planner routes, specialist does, reviewer gates. Content pipeline: Minnie→Reese→Chris+Vera→Indie→Rae. Portfolio: Nick (blinded).
 5. **Owner doesn't code** — explain in plain Thai/English. No jargon dumps.
 6. **Memory is the vault** — Claude reads `vault/_memory/` every session to know the user.
 
@@ -24,9 +24,10 @@ Before doing any task, planner must:
 ## Folder map
 - `vault/00_inbox/` — drop new ideas/links here, sort weekly
 - `vault/daily/` — daily notes (auto-created)
-- `vault/10_research/` — papers, articles, video summaries
-- `vault/20_investment/` — stock/macro research + `_journal/` for trades
-- `vault/30_content/` — drafts for posts/scripts/videos
+- `vault/10_research/` — papers, articles, video summaries; Reese research docs
+- `vault/Knowledge/` — KB: THESIS_TRACKER, topic-map, contradiction-registry, INDEX_insights, insight-atoms/, nick-soul.md
+- `vault/20_investment/` — stock/macro research + `_journal/` for trades + `nick/` for Nick portfolio
+- `vault/30_content/` — drafts for posts/scripts/videos; `ideas/` for Minnie idea cards
 - `vault/40_projects/` — high-level project notes (code lives in `code/`)
 - `vault/_assets/` — images, PDFs, audio (embedded in notes)
 - `vault/90_archive/` — condensed originals, weekly reviews, challenges, failures, security log
@@ -39,6 +40,7 @@ Before doing any task, planner must:
 
 ## Agent roster
 
+Core agents:
 - `planner` — breaks down tasks, routes to specialists, writes plan.md
 - `researcher` — web + vault info gathering, cross-reference (cap 5 searches)
 - `writer` — drafts content with format param (thread/longform/hook/newsletter)
@@ -47,6 +49,17 @@ Before doing any task, planner must:
 - `reviewer` — QA + security gate before commit
 - `analyst` — cost/performance insights (MANUAL via `/analyst`)
 - `devils_advocate` — steelman opposition (MANUAL via `/challenge`)
+
+Content pipeline personas (used inside /research-idea):
+- `Minnie` — shapes idea into card: central question, sub-questions, hook angles, blind spots
+- `Reese` — synthesizes research doc: narrative, bull/bear, kill conditions, data gaps
+- `Chris` — critic: reviews research + script for logic, argument quality, kill condition measurability
+- `Vera` — fact audit: flags ⚠️ unverified claims, marks ❓, logs contradictions to KB
+- `Indie` — extracts atomic insights from research doc → saves to vault/Knowledge/insight-atoms/
+- `Rae` — writer: produces YouTube script / Substack / X thread / slides (follows PREFERENCES voice)
+
+Portfolio persona:
+- `Nick` — blinded thesis portfolio manager: reads KB only, no real trades, no paper bot positions
 
 ## Default workflow (pipeline)
 
@@ -66,7 +79,11 @@ user prompt → planner → specialist (researcher/writer/coder/executor)
 - `/weekly-learnings` → distill week's key learnings from daily notes + commits
 - `/daily-brief` → morning briefing from vault context (manual, or via cron)
 - `/import-notebooklm` → paste NotebookLM summary, save to vault
-- `/stock-research <TICKER>` → chain researcher + stock template
+- `/stock-research <TICKER>` → chain researcher + stock template (with KB lookup + kill conditions)
+- `/research-idea <topic> [—angle] [—output: yt|substack|x|slides]` → 7-step pipeline: Minnie→Reese→Chris+Vera→Indie→Rae → KB grows
+- `/nick-init` → ONE-TIME: Nick seeds $10K blinded paper portfolio from KB theses
+- `/nick-weekly` → Nick reviews holdings, checks kill conditions, recommends hold/add/trim/sell
+- `/nick-quarterly` → Nick full thesis audit post-earnings season
 - `/weekly-calibration [N]` → self-improving layer: อ่าน N วันของ review → หา pattern → เสนอ update กฎ (user approve ก่อนทุกครั้ง)
 
 ## Token economics policy
@@ -115,7 +132,8 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 (From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)
 - **Trading tasks** (pre-market, post-market, stock-research, eod): โหลดแค่ PREFERENCES.md + OUTCOMES.md
 - **Code/project tasks** (coder, executor, planner สำหรับ code): โหลดแค่ PROJECTS.md + DECISIONS.md
-- **Content tasks** (writer): โหลดแค่ PREFERENCES.md
+- **Content tasks** (/research-idea, writer): โหลด PREFERENCES.md + vault/Knowledge/THESIS_TRACKER.md
+- **Nick tasks** (/nick-init, /nick-weekly, /nick-quarterly): โหลด vault/Knowledge/ เท่านั้น (THESIS_TRACKER + INDEX_insights) — ห้ามโหลด PREFERENCES หรือ OUTCOMES
 - **Full load** (PROJECTS + DECISIONS + PREFERENCES): เฉพาะ session start ครั้งแรก, /council, หรือ task ที่ span หลาย domain
 
 ## Memory system

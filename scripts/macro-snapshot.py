@@ -109,6 +109,34 @@ def signal_alpaca(ticker, pct):
 # Direct Yahoo Finance v8 fetch (no yfinance library)
 # ---------------------------------------------------------------------------
 
+def fetch_vix_history(days: int = 252) -> list[float]:
+    """Fetch VIX daily closes for the past `days` calendar days."""
+    import requests
+    try:
+        url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1y"
+        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+        resp.raise_for_status()
+        closes = resp.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+        return [c for c in closes if c is not None]
+    except Exception:
+        return []
+
+
+def calc_vix_rank(current: float, history: list[float]) -> float | None:
+    """Return VIX percentile rank (0.0–1.0) vs past year."""
+    if not history or current is None:
+        return None
+    below = sum(1 for v in history if v <= current)
+    return round(below / len(history), 3)
+
+
+def calc_position_multiplier(vix_rank: float | None) -> float:
+    """Kelly-VIX hybrid: continuous size multiplier from vix_rank. Range [0.20, 1.00]."""
+    if vix_rank is None:
+        return 0.5
+    return round(max(0.20, 1.0 - 0.80 * vix_rank), 2)
+
+
 def fetch_direct(ticker: str):
     """Fetch (current_price, pct_change) via Yahoo Finance v8 chart API."""
     import requests
@@ -211,7 +239,7 @@ def print_futures_section(data):
     print()
 
 
-def print_macro_section(data):
+def print_macro_section(data, vix_rank: float | None = None, pos_multiplier: float | None = None):
     print("### Macro Indicators (direct HTTP)")
     print("| Indicator | Ticker | Value | Change | Context |")
     print("|---|---|---|---|---|")
@@ -219,8 +247,16 @@ def print_macro_section(data):
         d = data.get(ticker, {})
         val = price_str(d.get("current"), unit)
         ch = pct_str(d.get("pct"))
-        print(f"| **{label}** | {ticker} | {val} | {ch} | {meaning} |")
+        if ticker == "^VIX" and vix_rank is not None:
+            rank_pct = int(vix_rank * 100)
+            print(f"| **{label}** | {ticker} | {val} | {ch} | {meaning} — VIX-Rank {rank_pct}th pct |")
+        else:
+            print(f"| **{label}** | {ticker} | {val} | {ch} | {meaning} |")
     print()
+    if vix_rank is not None and pos_multiplier is not None:
+        rank_pct = int(vix_rank * 100)
+        pct_size = int(pos_multiplier * 100)
+        print(f"**Position Sizing (VIX-Rank):** VIX is at {rank_pct}th percentile of past year → size multiplier **{pos_multiplier}x** ({pct_size}% of base size)\n")
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +281,11 @@ def main():
 
     # Macro via direct HTTP
     macro_data = fetch_direct_batch(MACRO_TICKERS)
-    print_macro_section(macro_data)
+    vix_history = fetch_vix_history()
+    current_vix = macro_data.get("^VIX", {}).get("current")
+    vix_rank = calc_vix_rank(current_vix, vix_history)
+    pos_multiplier = calc_position_multiplier(vix_rank)
+    print_macro_section(macro_data, vix_rank, pos_multiplier)
 
     # Quick read summary
     reads = []

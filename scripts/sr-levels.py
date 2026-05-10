@@ -115,6 +115,20 @@ def find_swings(bars, lookback: int = 30, window: int = 3) -> list[dict]:
     return sorted(deduped, key=lambda x: x["price"], reverse=True)[:8]
 
 
+def calc_atr(bars, period: int = 14) -> float | None:
+    """Average True Range over `period` bars."""
+    if len(bars) < period + 1:
+        return None
+    recent = bars[-(period + 1):]
+    trs = []
+    for i in range(1, len(recent)):
+        h = _get(recent[i], "high")
+        l = _get(recent[i], "low")
+        pc = _get(recent[i - 1], "close")
+        trs.append(max(h - l, abs(h - pc), abs(l - pc)))
+    return round(sum(trs) / len(trs), 4)
+
+
 def fmt_price(p: float) -> str:
     return f"${p:,.2f}"
 
@@ -164,6 +178,20 @@ def print_ticker(ticker: str, bars, days: int):
         pct = diff / last_close * 100
         arrow = "+" if diff >= 0 else ""
         print(f"| Swing {s['type']} | {fmt_price(s['price'])} | {s['date']} | {arrow}{pct:.1f}% |")
+
+    # ATR section
+    atr = calc_atr(bars)
+    if atr is not None:
+        atr_pct = atr / last_close * 100
+        long_stop = round(last_close - 2 * atr, 2)
+        short_stop = round(last_close + 2 * atr, 2)
+        print(f"**ATR14 (volatility-adjusted stops)**\n")
+        print(f"| | Value | Note |")
+        print(f"|---|---|---|")
+        print(f"| ATR14 | {fmt_price(atr)} ({atr_pct:.1f}% of price) | avg daily range 14 days |")
+        print(f"| Long stop (2×ATR below) | {fmt_price(long_stop)} | exit long if breaks here |")
+        print(f"| Short stop (2×ATR above) | {fmt_price(short_stop)} | exit short if breaks here |")
+        print()
 
     print()
 

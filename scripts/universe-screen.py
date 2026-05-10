@@ -43,7 +43,11 @@ UNIVERSE = [
     ("MRVL",  "Marvell"),
     ("ARM",   "ARM Holdings"),
     ("ASML",  "ASML"),
-    # Memory
+    # Semicon Small-Cap
+    ("CRDO",  "Credo Technology"),
+    ("AEIS",  "Advanced Energy"),
+    ("UCTT",  "Ultra Clean Holdings"),
+    # Memory / WFE
     ("LRCX",  "Lam Research"),
     ("WDC",   "Western Digital"),
     ("ONTO",  "Onto Innovation"),
@@ -57,11 +61,15 @@ UNIVERSE = [
     ("GOOGL", "Alphabet"),
     ("META",  "Meta"),
     ("PLTR",  "Palantir"),
+    # Datacenter Small-Cap
+    ("MOD",   "Modine Manufacturing"),
     # Space
     ("RKLB",  "Rocket Lab"),
     ("ASTS",  "AST SpaceMobile"),
     ("LUNR",  "Intuitive Machines"),
     ("KTOS",  "Kratos Defense"),
+    # Defense AI Small-Cap
+    ("BBAI",  "BigBear.ai"),
 ]
 
 _HEADERS = {

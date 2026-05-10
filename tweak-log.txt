@@ -82,3 +82,59 @@
 [19:14:06][INFO] Ping AFTER: min=17 avg=17 max=18 | delta=no change
 [19:14:06][INFO] === Summary ===
 [19:14:06][INFO] === Session end | OK=5 Skip=8 Err=0 ===
+[17:25:25][INFO] === Session start | DryRun=True Force=False ===
+[17:25:25][INFO] === Baseline Ping -- 1.1.1.1 (10 packets) ===
+[17:25:34][INFO] Ping BEFORE: min=24 avg=25 max=25
+[17:25:34][INFO] === Detect Active Network Adapters ===
+[17:25:36][INFO] Adapter: Ethernet GUID={6C20AA7D-FAD9-49F6-8F78-A61F5E7991D1}
+[17:25:36][INFO] === Registry Backup ===
+[17:25:36][DRY] DRY -- would backup to C:\Users\sodru\Desktop\valorant-tweak-backup-20260506-172525.reg
+[17:25:36][INFO] === [1] Network -- Nagle's Algorithm (per-adapter) ===
+[17:25:36][INFO] SKIP  TcpAckFrequency=1 [Ethernet]
+[17:25:36][INFO] SKIP  TCPNoDelay=1 [Ethernet]
+[17:25:36][INFO] === [2] Network -- Multimedia System Profile ===
+[17:25:36][INFO] SKIP  NetworkThrottlingIndex=0xFFFFFFFF (disable throttle)
+[17:25:36][INFO] SKIP  SystemResponsiveness=0 (max foreground CPU)
+[17:25:36][INFO] === [3] Network -- TCP Autotuning ===
+[17:25:36][INFO] SKIP  TCP autotuning (already normal)
+[17:25:36][INFO] === [4] GPU -- Hardware-Accelerated GPU Scheduling ===
+[17:25:36][INFO] SKIP  HwSchMode=2 (enable HAGS)
+[17:25:36][INFO] === [5] Power Plan -- Ultimate Performance + USB/PCIe ===
+[17:25:36][DRY] DRY -- power plan changes
+[17:25:36][INFO] === [6] Game DVR / Game Bar ===
+[17:25:36][INFO] SKIP  GameDVR_Enabled=0
+[17:25:36][INFO] SKIP  GameDVR_FSEBehaviorMode=2
+[17:25:36][INFO] SKIP  AllowGameDVR=0 (policy)
+[17:25:36][INFO] === [7] Valorant EXE Compatibility Flags ===
+[17:25:36][INFO] SKIP  Disable fullscreen opt + DPI aware
+[17:25:36][INFO] === Summary ===
+[17:25:36][INFO] === Session end | OK=0 Skip=13 Err=0 ===
+[17:26:04][INFO] === Session start | DryRun=False Force=True ===
+[17:26:04][INFO] === Baseline Ping -- 1.1.1.1 (10 packets) ===
+[17:26:14][INFO] Ping BEFORE: min=24 avg=25 max=25
+[17:26:14][INFO] === Detect Active Network Adapters ===
+[17:26:15][INFO] Adapter: Ethernet GUID={6C20AA7D-FAD9-49F6-8F78-A61F5E7991D1}
+[17:26:15][INFO] === Registry Backup ===
+[17:26:15][OK] Backup saved: C:\Users\sodru\Desktop\valorant-tweak-backup-20260506-172604.reg
+[17:26:15][INFO] === [1] Network -- Nagle's Algorithm (per-adapter) ===
+[17:26:15][INFO] SKIP  TcpAckFrequency=1 [Ethernet]
+[17:26:15][INFO] SKIP  TCPNoDelay=1 [Ethernet]
+[17:26:15][INFO] === [2] Network -- Multimedia System Profile ===
+[17:26:15][INFO] SKIP  NetworkThrottlingIndex=0xFFFFFFFF (disable throttle)
+[17:26:15][INFO] SKIP  SystemResponsiveness=0 (max foreground CPU)
+[17:26:15][INFO] === [3] Network -- TCP Autotuning ===
+[17:26:15][INFO] SKIP  TCP autotuning (already normal)
+[17:26:15][INFO] === [4] GPU -- Hardware-Accelerated GPU Scheduling ===
+[17:26:15][INFO] SKIP  HwSchMode=2 (enable HAGS)
+[17:26:15][INFO] === [5] Power Plan -- Ultimate Performance + USB/PCIe ===
+[17:26:15][OK] OK    Power: Ultimate Performance + USB off + PCIe off
+[17:26:15][INFO] === [6] Game DVR / Game Bar ===
+[17:26:15][INFO] SKIP  GameDVR_Enabled=0
+[17:26:15][INFO] SKIP  GameDVR_FSEBehaviorMode=2
+[17:26:15][INFO] SKIP  AllowGameDVR=0 (policy)
+[17:26:15][INFO] === [7] Valorant EXE Compatibility Flags ===
+[17:26:16][INFO] SKIP  Disable fullscreen opt + DPI aware
+[17:26:16][INFO] === Post-Tweak Ping -- 1.1.1.1 (10 packets) ===
+[17:26:27][INFO] Ping AFTER: min=24 avg=25 max=25 | delta=no change
+[17:26:27][INFO] === Summary ===
+[17:26:27][INFO] === Session end | OK=3 Skip=10 Err=0 ===

@@ -84,6 +84,8 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 2. SSRN (finance/econ empirical)
 3. Google Scholar / Semantic Scholar
 4. Journal of Finance, Journal of Portfolio Management, Quantitative Finance
+5. **GitHub** — หา implementation repo, backtesting code, alternative data pipeline ที่คนทำแล้ว (`<topic> site:github.com trading strategy implementation`)
+6. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
 
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
 - Title, Authors, Year, Source (arXiv ID หรือ DOI)

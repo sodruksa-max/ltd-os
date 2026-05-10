@@ -30,10 +30,16 @@ ls vault/20_investment/ | grep -i <TICKER>
 - ถ้ามี: ถาม user "มี note อยู่แล้วที่ `<path>` — อัปเดต หรือสร้าง version ใหม่?"
 - ถ้าไม่มี: ดำเนินต่อ
 
-**2b. ตรวจ sector/macro notes ที่เกี่ยวข้อง:**
+**2b. ตรวจ KB + sector notes ที่เกี่ยวข้อง:**
 ```bash
-grep -ri "<TICKER>\|<SECTOR_KEYWORD>" vault/10_research/ vault/20_investment/ --include="*.md" -l
+grep -ri "<TICKER>\|<SECTOR_KEYWORD>" vault/Knowledge/ vault/10_research/ vault/20_investment/ --include="*.md" -l
 ```
+ตรวจเป็นลำดับ:
+1. `vault/Knowledge/THESIS_TRACKER.md` — TICKER นี้อยู่ใน active thesis ไหม?
+2. `vault/Knowledge/INDEX_insights.md` — มี insight atoms เกี่ยวข้องไหม?
+3. `vault/Knowledge/contradiction-registry.md` — มี contradiction ที่รู้แล้วไหม?
+4. `vault/10_research/` + `vault/20_investment/` — papers และ notes ที่มีอยู่
+
 ถ้าพบ → โหลดเป็น context ก่อนวิจัย (อย่า re-research สิ่งที่มีอยู่แล้ว)
 
 ### 3. Invoke researcher
@@ -51,6 +57,14 @@ grep -ri "<TICKER>\|<SECTOR_KEYWORD>" vault/10_research/ vault/20_investment/ --
 | Earnings call | `<TICKER> earnings call transcript latest` |
 | Bear case + short thesis | `<TICKER> bear case short thesis risks` |
 | Valuation + peers | `<TICKER> valuation P/E EV/EBITDA sector peers` |
+| Reddit DD | `<TICKER> site:reddit.com/r/wallstreetbets OR site:reddit.com/r/stocks DD analysis` |
+| Reddit bear | `<TICKER> site:reddit.com short thesis bear case` |
+| GitHub analysis | `<TICKER> site:github.com analysis financial model` |
+
+**แหล่งข้อมูลเพิ่มเติม (รันควบคู่กับ search หลัก):**
+- **Reddit** — r/wallstreetbets, r/stocks, r/SecurityAnalysis, r/investing: ดู retail sentiment, DD ที่คนทำเอง, bear thesis ที่อาจพลาดจาก mainstream
+- **GitHub** — หา financial model, DCF spreadsheet, alternative data scraper, หรือ analysis repo ที่คนทำเกี่ยวกับ ticker นั้น
+- ถ้า Reddit หรือ GitHub ให้ข้อมูลขัดแย้งกับ mainstream → flag ⚠️ และแสดงทั้งสองมุม
 
 **ข้อมูลที่ต้องดึงมา (ครบทุกข้อ หรือใส่ ❓ verify):**
 
@@ -73,6 +87,8 @@ grep -ri "<TICKER>\|<SECTOR_KEYWORD>" vault/10_research/ vault/20_investment/ --
 - กรอกทุก section ด้วยข้อมูลจาก researcher
 - **ห้ามเขียน Thesis ให้ user** — เว้นไว้ว่างๆ พร้อม note ว่าเป็นของ user
 - ใส่ `❓ verify` ทุกที่ที่ไม่มีข้อมูลยืนยัน
+- **Kill conditions:** กรอกเงื่อนไขที่ชัดเจน (metric/event) จากข้อมูล bear case + risk — ต้องวัดได้ ไม่ใช่ vague
+- **ถ้า TICKER อยู่ใน THESIS_TRACKER:** note thesis link ใน Decision log
 
 ### 5. Report back
 

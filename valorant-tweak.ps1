@@ -106,33 +106,39 @@ function tweak([string]$label, [string]$path, [string]$name, $val, [string]$type
 }
 
 function pingStats([string]$h = "1.1.1.1", [int]$n = 10) {
-    $out = ping.exe -n $n $h 2>&1
-    $ln  = $out | Where-Object { $_ -match "Minimum" } | Select-Object -First 1
-    if ($ln -match "Minimum = (\d+)ms.*Maximum = (\d+)ms.*Average = (\d+)ms") {
-        return [pscustomobject]@{ Min=[int]$Matches[1]; Max=[int]$Matches[2]; Avg=[int]$Matches[3] }
+    try {
+        $r = Test-Connection -ComputerName $h -Count $n -EA Stop
+        $t = $r | ForEach-Object { $_.ResponseTime }
+        return [pscustomobject]@{
+            Min = [int]($t | Measure-Object -Minimum).Minimum
+            Max = [int]($t | Measure-Object -Maximum).Maximum
+            Avg = [int]($t | Measure-Object -Average).Average
+        }
+    } catch {
+        wLog "Ping failed: $_" "WARN"
+        return $null
     }
-    return $null
 }
 
-function getAdapterGuid {
-    $r = Get-NetRoute -DestinationPrefix "0.0.0.0/0" -EA SilentlyContinue |
-         Sort-Object RouteMetric | Select-Object -First 1
-    if (-not $r) { return $null }
-    $a = Get-NetAdapter -InterfaceIndex $r.InterfaceIndex -EA SilentlyContinue
-    if (-not $a) { return $null }
-    Write-Host "  Adapter : $($a.Name) [$($a.InterfaceDescription)]" -ForegroundColor Gray
-    Write-Host "  GUID    : $($a.InterfaceGuid)" -ForegroundColor Gray
-    wLog "Adapter: $($a.Name) GUID=$($a.InterfaceGuid)"
-    return $a.InterfaceGuid
+function getPhysicalAdapters {
+    # Return all physical adapters that are Up (handles WiFi + Ethernet + multiple NICs)
+    $all = Get-NetAdapter -Physical -EA SilentlyContinue | Where-Object { $_.Status -eq "Up" }
+    if (-not $all) { return $null }
+    foreach ($a in $all) {
+        Write-Host "  Adapter : $($a.Name) [$($a.InterfaceDescription)]" -ForegroundColor Gray
+        Write-Host "  GUID    : $($a.InterfaceGuid)" -ForegroundColor Gray
+        wLog "Adapter: $($a.Name) GUID=$($a.InterfaceGuid)"
+    }
+    return $all
 }
 
 function getValorantExe {
-    $paths = @(
-        "C:\Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe"
-        "D:\Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe"
-        "E:\Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe"
-    )
-    foreach ($p in $paths) { if (Test-Path $p) { return $p } }
+    $sub = "Riot Games\VALORANT\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe"
+    $drives = (Get-PSDrive -PSProvider FileSystem -EA SilentlyContinue).Root | Where-Object { $_ }
+    foreach ($d in $drives) {
+        $p = Join-Path $d $sub
+        if (Test-Path $p) { return $p }
+    }
     return $null
 }
 
@@ -177,9 +183,9 @@ if ($pb) {
 
 # ---- detect adapter ---------------------------------------------------------
 
-hdr "Detect Active Network Adapter"
-$guid = getAdapterGuid
-if (-not $guid) { Write-Host "  WARN: No active adapter detected -- Nagle tweaks skipped" -ForegroundColor Yellow }
+hdr "Detect Active Network Adapters"
+$adapters = getPhysicalAdapters
+if (-not $adapters) { Write-Host "  WARN: No physical adapters Up -- Nagle tweaks skipped" -ForegroundColor Yellow }
 
 # ---- backup -----------------------------------------------------------------
 
@@ -192,7 +198,11 @@ $keysToBackup = @(
     "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
     "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
 )
-if ($guid) { $keysToBackup += "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$guid" }
+if ($adapters) {
+    foreach ($a in $adapters) {
+        $keysToBackup += "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($a.InterfaceGuid)"
+    }
+}
 
 if ($DryRun) {
     Write-Host "  [DRY-RUN] Would backup to : $BackupReg" -ForegroundColor Cyan
@@ -207,12 +217,14 @@ if ($DryRun) {
 
 hdr "[1] Network -- Nagle's Algorithm (per-adapter)"
 
-if ($guid) {
-    $tcpIf = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$guid"
-    tweak "TcpAckFrequency=1 (send ACK immediately)" $tcpIf "TcpAckFrequency" 1
-    tweak "TCPNoDelay=1 (disable Nagle batching)"    $tcpIf "TCPNoDelay"      1
+if ($adapters) {
+    foreach ($a in $adapters) {
+        $tcpIf = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($a.InterfaceGuid)"
+        tweak "TcpAckFrequency=1 [$($a.Name)]" $tcpIf "TcpAckFrequency" 1
+        tweak "TCPNoDelay=1 [$($a.Name)]"       $tcpIf "TCPNoDelay"      1
+    }
 } else {
-    Write-Host "  Skipped -- adapter GUID not found" -ForegroundColor Yellow
+    Write-Host "  Skipped -- no physical adapters found" -ForegroundColor Yellow
     $script:nSkip += 2
     $script:results.Add("SKIP   TcpAckFrequency (no adapter)")
     $script:results.Add("SKIP   TCPNoDelay (no adapter)")
@@ -268,8 +280,9 @@ if ($curTuning -eq "normal") {
 # ============================================================================
 
 hdr "[4] GPU -- Hardware-Accelerated GPU Scheduling"
+$nOK_before_hags = $script:nOK
 tweak "HwSchMode=2 (enable HAGS)" "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" "HwSchMode" 2
-$script:needsBoot = $true
+if ($script:nOK -gt $nOK_before_hags) { $script:needsBoot = $true }
 
 # ============================================================================
 #  [5] POWER PLAN

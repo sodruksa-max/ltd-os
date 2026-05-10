@@ -31,12 +31,22 @@ outcome: open # open | win | loss | breakeven
 ### What I think the market is missing
 
 
+## Position sizing (quant checks)
+- **ATR14**: $ (from sr-levels.py output)
+- **ATR stop (2×ATR)**: Long stop $___  / Short stop $___
+- **VIX-Rank**: ___th percentile → size multiplier: ___x
+- **Signal type**: <momentum / value / mean-reversion>
+- **Momentum decay check**: entry date ____ → re-evaluate by ____ (momentum: +7 days; value: +30 days)
+- **Is this entry planned or FOMO?**: <planned / FOMO — if FOMO, reduce size 50%>
+
 ## Risk management
-- **Stop plan**: <price / condition / no stop>
+- **Stop plan**: ATR-based: $___  OR  thesis-break: <condition>
 - **Max loss acceptable**: $ / %
 - **Exit triggers**:
+  - [ ] ATR stop hit: $
   - [ ] Thesis breaks (specific event): 
   - [ ] Price target hit: $
+  - [ ] Momentum re-evaluate date: (max 7 days for momentum trades)
   - [ ] Time-based: if nothing in X months, reassess
 
 ## Counter-arguments I'm aware of

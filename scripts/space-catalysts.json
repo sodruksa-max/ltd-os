@@ -1,0 +1,19 @@
+{
+  "_note": "อัปเดตด้วยตัวเองเมื่อมีข่าวใหม่ — ลบ event ที่ผ่านไปแล้ว | verified: 2026-05-06",
+  "RKLB": [
+    {"date": "2026-05-07", "event": "Q1 2026 Earnings (after close) — revenue guide $185-200M, backlog $1.85B", "type": "earnings", "confirmed": true},
+    {"date": "2026-Q4", "event": "Neutron rocket first launch window (pushed back from earlier — tank rupture during testing)", "type": "launch", "confirmed": false}
+  ],
+  "ASTS": [
+    {"date": "2026-05-11", "event": "Q1 2026 Earnings — key update on BB7 loss recovery + BB8-10 timeline", "type": "earnings", "confirmed": true},
+    {"date": "2026-05-20", "event": "BlueBird 8-10 ready to ship est. (~30 days from Apr 19 disclosure)", "type": "deployment", "confirmed": false},
+    {"date": "2026-06-15", "event": "Next orbital launch BB8-10 est. (45-60 day cadence after BB7 loss Apr 19)", "type": "launch", "confirmed": false}
+  ],
+  "LUNR": [
+    {"date": "2026-05-14", "event": "Q1 2026 Earnings (pre-market 8:30am ET) — revenue guide $900M-$1B FY2026", "type": "earnings", "confirmed": true},
+    {"date": "2026-TBD", "event": "IM-3 mission launch — date unconfirmed (planning phase)", "type": "mission", "confirmed": false}
+  ],
+  "KTOS": [
+    {"date": "2026-05-06", "event": "Q1 2026 Earnings (after close TODAY) — guide $335-345M revenue, EPS est. $0.13", "type": "earnings", "confirmed": true}
+  ]
+}

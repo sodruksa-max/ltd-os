@@ -90,6 +90,23 @@ position: none
 
 ---
 
+## Kill conditions
+
+*(เงื่อนไขที่วัดได้ — ถ้าเกิดขึ้น = exit โดยไม่ต้องคิดเพิ่ม)*
+
+| # | Condition | Metric / Event | Action |
+|---|---|---|---|
+| 1 | | | Exit / Trim |
+| 2 | | | Exit / Trim |
+| 3 | | | Exit / Trim |
+
+## Hold horizon
+
+- **Target horizon:** (เช่น 6m / 12m / 24m)
+- **ROI driver:** (catalyst ชัดเจนที่จะทำให้ราคาขึ้น)
+
+---
+
 ## Catalysts (6-12 เดือนข้างหน้า)
 
 - 
