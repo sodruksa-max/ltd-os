@@ -17,3 +17,4 @@ Append-only. อัปเดตทุกครั้งที่รัน /nick-
 | Date | Nick NAV | SPY price | Delta (since inception) | Note |
 |---|---|---|---|---|
 | 2026-05-10 | $10,000 | $737.83 | +0.0% | Inception — 4 positions: NVDA 30% / AVGO 25% / ASML 20% / PLTR 15% / Cash 10% |
+| 2026-05-10 | $10,000.00 | - | - | weekly snapshot (Friday close) |
