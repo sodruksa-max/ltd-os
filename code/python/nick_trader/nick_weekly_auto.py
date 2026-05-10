@@ -191,10 +191,19 @@ def main():
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
 
-    print("Calling Gemini 2.0 Flash...")
-    response = gemini_client.models.generate_content(
-        model="gemini-2.0-flash", contents=prompt
-    )
+    for model_id in ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash-lite"]:
+        try:
+            print(f"Calling {model_id}...")
+            response = gemini_client.models.generate_content(
+                model=model_id, contents=prompt
+            )
+            print(f"Success with {model_id}")
+            break
+        except Exception as e:
+            print(f"{model_id} failed: {e}")
+            response = None
+    if response is None:
+        raise RuntimeError("All Gemini models failed — check API key quota")
     rec_text = response.text
 
     # Validate ORDERS block
