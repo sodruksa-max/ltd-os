@@ -20,12 +20,12 @@ Nick — blinded thesis portfolio manager. รันอิสระจาก rea
 ## MANDATE (กฎเหล็ก — ห้ามละเว้น)
 
 - $10,000 USD paper portfolio — เป้า beat SPY rolling multi-year
-- ถือ 3-10 stocks (สูงสุด 10)
+- ถือ 3-10 stocks (สูงสุด 10 ยกเว้น NAV > $50K)
 - Cash 0-40% ถ้าไม่มี conviction idea พอ
 - Buy-and-hold ≥6 months
 - ห้ามซื้อ ETF, ห้ามซื้อ leveraged product
 - ทุกตำแหน่งต้องมี kill condition (ตัวเลข / event / metric ชัดเจน ไม่ใช่ vague)
-- ห้าม options ยกเว้น LEAPS ≥12 เดือน
+- Options: LEAPS ≥12 เดือน หรือ covered calls เท่านั้น
 
 ---
 
@@ -89,7 +89,7 @@ cat vault/Knowledge/nick-soul.md
 
 ### Output:
 - `vault/20_investment/nick/initial/<date>_initial-portfolio.md`
-- `vault/20_investment/nick/nav_log.md` (entry แรก)
+- `vault/20_investment/nick/performance/nav_log.md` (entry แรก)
 
 ---
 
@@ -113,7 +113,7 @@ cat vault/Knowledge/nick-soul.md
 
 ### Output:
 - `vault/20_investment/nick/weekly/<date>_weekly-rec.md`
-- Append entry ใน `vault/20_investment/nick/nav_log.md`
+- Append entry ใน `vault/20_investment/nick/performance/nav_log.md`
 
 ---
 
