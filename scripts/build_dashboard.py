@@ -169,6 +169,9 @@ def parse_thesis_data():
         status_m = re.search(r'\*\*Status:\*\*\s*(.*?)(?=\n\*\*|\Z)', block)
         t_status = status_m.group(1).strip() if status_m else ""
 
+        reviewed_m = re.search(r'\*\*Last reviewed:\*\*\s*(\d{4}-\d{2}-\d{2})', block)
+        last_reviewed = reviewed_m.group(1) if reviewed_m else ""
+
         for ticker in tickers:
             if ticker and ticker not in result:
                 result[ticker] = {
@@ -177,6 +180,7 @@ def parse_thesis_data():
                     "thesis_id": thesis_id,
                     "thesis_title": thesis_title,
                     "status": t_status,
+                    "last_reviewed": last_reviewed,
                     "seed_weight": SEED_WEIGHTS.get(ticker, "N/A"),
                 }
 
@@ -381,6 +385,60 @@ def risk_stats_html(stats):
         <div class="risk-sub">{hhi_sub}</div>
       </div>
     </div>"""
+
+
+def compute_coverage(thesis_data: dict, holdings: list) -> list:
+    """For each key ticker: check what KB coverage exists."""
+    research_dir = REPO / "vault/10_research"
+    investment_dir = REPO / "vault/20_investment"
+    index_path = KB_DIR / "INDEX_insights.md"
+    index_text = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
+
+    tickers = list(dict.fromkeys(
+        list(SEED_WEIGHTS.keys()) + [h["ticker"] for h in holdings]
+    ))
+
+    rows = []
+    today = date.today()
+    for sym in tickers:
+        td = thesis_data.get(sym, {})
+
+        # Research doc (Reese) — any .md in vault/10_research/ mentioning the ticker
+        reese_docs = [f for f in research_dir.glob("*.md")
+                      if sym.upper() in f.read_text(encoding="utf-8", errors="ignore").upper()
+                      and "reese" in f.name.lower()]
+        has_reese = bool(reese_docs)
+
+        # Stock-research doc in vault/20_investment/
+        stock_docs = list(investment_dir.glob(f"**/*{sym}*.md"))
+        has_stock = bool(stock_docs)
+
+        # Insight atoms — count lines in INDEX referencing this ticker's thesis_id
+        tid = td.get("thesis_id", "")
+        insight_count = len(re.findall(
+            rf'\[{re.escape(tid)}\]', index_text
+        )) if tid else 0
+
+        # Thesis freshness
+        reviewed = td.get("last_reviewed", "")
+        days_stale = None
+        if reviewed:
+            try:
+                rev_date = datetime.strptime(reviewed, "%Y-%m-%d").date()
+                days_stale = (today - rev_date).days
+            except Exception:
+                pass
+
+        rows.append({
+            "ticker": sym,
+            "has_thesis": bool(td),
+            "has_reese": has_reese,
+            "has_stock_research": has_stock,
+            "insight_count": insight_count,
+            "last_reviewed": reviewed,
+            "days_stale": days_stale,
+        })
+    return rows
 
 
 def get_market_data(tickers: list[str]) -> dict:
@@ -785,6 +843,54 @@ def earnings_calendar_html(earnings):
     </div>"""
 
 
+def coverage_map_html(coverage: list) -> str:
+    def ck(val, warn=False):
+        if val:
+            return '<span class="cov-yes">✓</span>'
+        return '<span class="cov-warn">!</span>' if warn else '<span class="cov-no">✗</span>'
+
+    rows = ""
+    for c in coverage:
+        stale = c["days_stale"]
+        if stale is None:
+            fresh = '<span class="cov-no">ไม่มีวันที่</span>'
+        elif stale <= 14:
+            fresh = f'<span class="cov-yes">{stale}d</span>'
+        elif stale <= 30:
+            fresh = f'<span class="cov-warn">{stale}d</span>'
+        else:
+            fresh = f'<span class="cov-stale">{stale}d ⚠</span>'
+
+        rows += f"""<tr>
+          <td><strong>{c['ticker']}</strong></td>
+          <td class="cov-center">{ck(c['has_thesis'])}</td>
+          <td class="cov-center">{ck(c['has_reese'], warn=True)}</td>
+          <td class="cov-center">{ck(c['has_stock_research'], warn=True)}</td>
+          <td class="cov-center">{c['insight_count'] if c['insight_count'] else '<span class="cov-no">0</span>'}</td>
+          <td class="cov-center">{fresh}</td>
+        </tr>"""
+
+    return f"""<div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="card-title">KB Coverage Map</span>
+        <span class="card-sub">สถานะ research coverage ต่อ ticker</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="htable">
+          <thead><tr>
+            <th>หุ้น</th>
+            <th class="cov-center">Thesis</th>
+            <th class="cov-center">Research Doc</th>
+            <th class="cov-center">Stock Research</th>
+            <th class="cov-center">Insight Atoms</th>
+            <th class="cov-center">Last Reviewed</th>
+          </tr></thead>
+          <tbody>{rows}</tbody>
+        </table>
+      </div>
+    </div>"""
+
+
 def pnl_contribution_html(holdings):
     """Horizontal CSS bar chart — each position's dollar contribution to total P&L."""
     if not holdings:
@@ -861,7 +967,7 @@ def ipo_content_html(md_text):
 
 def build_html(holdings, nav, cash, nav_history, benchmarks, thesis_data, clist,
                weeks, action_summary, nick_note, actions_count, vs_spy,
-               regime, trade_log, ipo_radar, kb_gaps, earnings, mkt):
+               regime, trade_log, ipo_radar, kb_gaps, earnings, mkt, coverage):
 
     cash_pct = round(cash / nav * 100, 1) if nav else 0
     total_return = round((nav - INCEPTION_NAV) / INCEPTION_NAV * 100, 2)
@@ -1002,6 +1108,12 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .th-text{{font-size:12px;line-height:1.85;color:var(--text)}}
 .kill-list{{list-style:none}}
 .kill-list li{{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}}
+/* KB Coverage Map */
+.cov-center{{text-align:center}}
+.cov-yes{{color:#3fb950;font-weight:700}}
+.cov-no{{color:#f85149;font-weight:700}}
+.cov-warn{{color:#d29922;font-weight:700}}
+.cov-stale{{color:#f85149;font-size:11px}}
 /* 52-week range bar */
 .range-bar-wrap{{margin-top:5px}}
 .range-bar-bg{{position:relative;height:3px;background:var(--border);border-radius:1px;margin-bottom:3px}}
@@ -1210,6 +1322,7 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
           <ul class="kill-list" id="th-kills"></ul>
           <div class="th-sec" id="th-status-sec" style="display:none">สถานะ Thesis</div>
           <div class="th-text" id="th-status" style="color:var(--muted)"></div>
+          <div id="th-freshness" style="margin-top:14px;font-size:11px;padding:6px 10px;display:none"></div>
         </div>
       </div>
     </div>
@@ -1254,7 +1367,7 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
   </div>
 
   <div id="bpane-kbgaps" class="bpane">
-    <div class="card">
+    <div class="card" style="margin-bottom:16px">
       <div class="card-hdr"><span class="card-title">KB Gaps</span><span class="card-sub">Research ที่ขาด — จาก nick-weekly</span></div>
       <div class="card-body" style="padding:0">
         <table class="htable">
@@ -1263,6 +1376,7 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
         </table>
       </div>
     </div>
+    {coverage_map_html(coverage)}
   </div>
 
 </div><!-- pane-dash -->
@@ -1329,6 +1443,22 @@ function selectHolding(ticker) {{
   const sta = document.getElementById('th-status');
   if (t.status) {{ sec.style.display = ''; sta.style.display = ''; sta.textContent = t.status; }}
   else {{ sec.style.display = 'none'; sta.style.display = 'none'; }}
+
+  const fresh = document.getElementById('th-freshness');
+  if (t.last_reviewed) {{
+    const rev = new Date(t.last_reviewed);
+    const days = Math.floor((Date.now() - rev) / 86400000);
+    let bg, color, msg;
+    if (days <= 14) {{ bg='rgba(63,185,80,.12)'; color='#3fb950'; msg=`KB อัปเดตเมื่อ ${{days}} วันที่แล้ว`; }}
+    else if (days <= 30) {{ bg='rgba(210,153,34,.12)'; color='#d29922'; msg=`KB อัปเดตเมื่อ ${{days}} วันที่แล้ว — ควร review`; }}
+    else {{ bg='rgba(248,81,73,.12)'; color='#f85149'; msg=`⚠ KB ไม่ได้อัปเดต ${{days}} วัน — thesis อาจล้าสมัย`; }}
+    fresh.style.display='';
+    fresh.style.background=bg;
+    fresh.style.color=color;
+    fresh.textContent=msg;
+  }} else {{
+    fresh.style.display='none';
+  }}
 }}
 
 let chart;
@@ -1386,13 +1516,14 @@ def main():
     watch_tickers = list({h["ticker"] for h in holdings} | set(SEED_WEIGHTS.keys()))
     earnings = get_earnings_calendar(watch_tickers)
     mkt = get_market_data(watch_tickers)
+    coverage = compute_coverage(thesis_data, holdings)
 
     print(f"NAV: ${nav:,.2f} | Holdings: {len(holdings)} | Weeks: {weeks} | VIX: {regime.get('vix')} | Earnings: {len(earnings)}")
 
     html = build_html(
         holdings, nav, cash, nav_history, benchmarks,
         thesis_data, clist, weeks, action_summary, nick_note, actions_count,
-        vs_spy, regime, trade_log, ipo_radar, kb_gaps, earnings, mkt
+        vs_spy, regime, trade_log, ipo_radar, kb_gaps, earnings, mkt, coverage
     )
 
     out = DOCS_DIR / "index.html"
