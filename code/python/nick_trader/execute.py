@@ -149,12 +149,14 @@ def main():
 
             size_pct = CONVICTION_SIZE.get(conviction, 0.03)
             target_value = min(nav * size_pct, nav * MAX_POSITION_PCT)
+            available = cash * (1 - MIN_CASH_PCT)
 
-            if cash * (1 - MIN_CASH_PCT) < target_value:
-                print(f"  SKIP {ticker}: cash too low (${cash:.0f})")
+            if available < price:
+                print(f"  SKIP {ticker}: cash too low to buy even 1 share (${cash:.0f} available)")
                 continue
 
-            shares = int(target_value / price)
+            # Buy as many shares as we can afford (up to target, never below 1)
+            shares = int(min(target_value, available) / price)
             if shares < 1:
                 continue
 
