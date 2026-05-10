@@ -267,6 +267,86 @@ def weeks_alive():
 
 # ── HTML fragment builders ─────────────────────────────────────────────────────
 
+THESIS_COLORS = {
+    "T1": "#00c896",
+    "T2": "#58a6ff",
+    "T3": "#d29922",
+    "T4": "#bc8cff",
+    "Cash": "#30363d",
+    "Other": "#8b949e",
+}
+
+THESIS_SHORT = {
+    "T1": "T1 AI Capex",
+    "T2": "T2 Semis",
+    "T3": "T3 Space",
+    "T4": "T4 AI Software",
+}
+
+
+def thesis_exposure_html(holdings, nav, cash, thesis_data):
+    """Horizontal stacked bar + breakdown list for thesis exposure."""
+    clusters: dict[str, float] = {}
+
+    for h in holdings:
+        tid = thesis_data.get(h["ticker"], {}).get("thesis_id", "Other")
+        clusters[tid] = clusters.get(tid, 0) + h["weight"]
+
+    cash_pct = round(cash / nav * 100, 1) if nav else 0
+    if cash_pct > 0:
+        clusters["Cash"] = cash_pct
+
+    if not clusters:
+        clusters = {"T1": 30.0, "T2": 45.0, "T4": 15.0, "Cash": 10.0}
+        seed_mode = True
+    else:
+        seed_mode = False
+
+    total = sum(clusters.values())
+    if total == 0:
+        return ""
+
+    seg_html = ""
+    for tid, pct in sorted(clusters.items(), key=lambda x: -x[1]):
+        color = THESIS_COLORS.get(tid, THESIS_COLORS["Other"])
+        w = round(pct / total * 100, 1)
+        label = THESIS_SHORT.get(tid, tid)
+        seg_html += (
+            f'<div class="exp-seg" style="width:{w}%;background:{color}" '
+            f'title="{label}: {pct:.1f}%"></div>'
+        )
+
+    rows_html = ""
+    for tid, pct in sorted(clusters.items(), key=lambda x: -x[1]):
+        color = THESIS_COLORS.get(tid, THESIS_COLORS["Other"])
+        label = THESIS_SHORT.get(tid, tid)
+        warn = ' <span class="exp-warn">⚠ Concentration</span>' if pct >= 50 and tid != "Cash" else ""
+        rows_html += (
+            f'<div class="exp-row">'
+            f'<span class="exp-dot" style="background:{color}"></span>'
+            f'<span class="exp-name">{label}</span>'
+            f'<span class="exp-bar-wrap"><div class="exp-mini-bg">'
+            f'<div class="exp-mini-fill" style="width:{min(pct,100)}%;background:{color}"></div>'
+            f'</div></span>'
+            f'<span class="exp-pct">{pct:.1f}%</span>{warn}'
+            f'</div>'
+        )
+
+    seed_note = '<div class="exp-seed-note">* Seed weights — Alpaca positions ยังไม่มี</div>' if seed_mode else ""
+
+    return f"""<div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="card-title">Thesis Exposure</span>
+        <span class="card-sub">% NAV ต่อ thesis cluster</span>
+      </div>
+      <div class="card-body">
+        <div class="exp-bar">{seg_html}</div>
+        <div class="exp-list">{rows_html}</div>
+        {seed_note}
+      </div>
+    </div>"""
+
+
 def status_label(pnl_pct):
     if pnl_pct >= 50:
         return ("ถึงเป้า", "pill pill-target")
@@ -600,6 +680,20 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
 .th-text{{font-size:12px;line-height:1.85;color:var(--text)}}
 .kill-list{{list-style:none}}
 .kill-list li{{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}}
+/* Thesis Exposure */
+.exp-bar{{display:flex;height:18px;border-radius:2px;overflow:hidden;margin-bottom:18px;gap:2px}}
+.exp-seg{{height:100%;transition:opacity .2s;cursor:default}}
+.exp-seg:hover{{opacity:.75}}
+.exp-list{{display:flex;flex-direction:column;gap:8px}}
+.exp-row{{display:grid;grid-template-columns:12px 120px 1fr 52px auto;align-items:center;gap:8px;font-size:12px}}
+.exp-dot{{width:10px;height:10px;border-radius:1px;flex-shrink:0}}
+.exp-name{{color:var(--text);font-weight:600}}
+.exp-bar-wrap{{flex:1}}
+.exp-mini-bg{{height:4px;background:var(--border);border-radius:1px}}
+.exp-mini-fill{{height:100%;border-radius:1px}}
+.exp-pct{{text-align:right;font-weight:700;font-size:13px;white-space:nowrap}}
+.exp-warn{{font-size:9px;color:#f85149;white-space:nowrap}}
+.exp-seed-note{{font-size:10px;color:var(--muted);margin-top:12px;border-top:1px solid var(--border);padding-top:8px}}
 /* Bottom tabs */
 .btabs{{display:flex;margin-top:24px;border-bottom:2px solid var(--border)}}
 .btab{{padding:8px 20px;font-family:inherit;font-size:12px;font-weight:700;background:transparent;color:var(--muted);border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}}
@@ -706,6 +800,8 @@ body{{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);c
       </div>
     </div>
   </div>
+
+  {thesis_exposure_html(holdings, nav, cash, thesis_data)}
 
   <div class="g2">
     <div class="card">
