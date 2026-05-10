@@ -30,6 +30,32 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
 .mc-val{font-size:24px;font-weight:700;letter-spacing:-1px;color:#0d1117}
 .mc-sub{font-size:11px;opacity:.8;margin-top:3px;color:#0d1117}
 .mc-badge{display:inline-block;background:rgba(0,0,0,.15);padding:2px 9px;font-size:11px;margin-top:5px;color:#0d1117}
+/* EARLY Gate Banner */
+.gate{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0;padding:14px 28px;border:2px solid var(--border);margin-bottom:0;border-bottom:none}
+.gate-open{background:rgba(0,200,150,.10);border-color:#00c896}
+.gate-caution{background:rgba(210,153,34,.10);border-color:#d29922}
+.gate-closed{background:rgba(248,81,73,.10);border-color:#f85149}
+.gate-panic{background:rgba(248,81,73,.18);border-color:#f85149;animation:pulse-red 1.8s ease-in-out infinite}
+.gate-unknown{background:rgba(139,148,158,.08);border-color:var(--border);grid-template-columns:auto 1fr auto}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(248,81,73,0)}50%{box-shadow:0 0 0 6px rgba(248,81,73,.15)}}
+.gate-left{padding-right:32px;border-right:1px solid rgba(255,255,255,.08)}
+.gate-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:3px}
+.gate-status{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.gate-open .gate-status{color:#00c896}
+.gate-caution .gate-status{color:#d29922}
+.gate-closed .gate-status,.gate-panic .gate-status{color:#f85149}
+.gate-icon{font-style:normal}
+.gate-center{text-align:center;padding:0 32px;border-right:1px solid rgba(255,255,255,.08)}
+.gate-vix-num{font-size:36px;font-weight:700;letter-spacing:-2px;line-height:1}
+.gate-open .gate-vix-num{color:#00c896}
+.gate-caution .gate-vix-num{color:#d29922}
+.gate-closed .gate-vix-num,.gate-panic .gate-vix-num{color:#f85149}
+.gate-vix-label{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1px}
+.gate-vix-chg{margin-left:6px;font-size:11px}
+.gate-chg-up{color:#f85149}.gate-chg-down{color:#00c896}
+.gate-right{padding-left:32px}
+.gate-note{font-size:13px;font-weight:600;margin-bottom:4px}
+.gate-rule{font-size:11px;color:var(--muted)}
 /* Regime */
 .regime-bar{border:2px solid var(--border);border-top:none;padding:10px 24px;display:flex;align-items:center;gap:20px;background:var(--card)}
 .regime-item{display:flex;align-items:center;gap:8px}
@@ -114,6 +140,9 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
   .metrics{grid-template-columns:1fr}
   .mc{border-right:none;border-bottom:1px solid rgba(255,255,255,.18)}
   .regime-bar{flex-wrap:wrap;gap:12px}
+  .gate{grid-template-columns:1fr;gap:12px;text-align:center}
+  .gate-left,.gate-center,.gate-right{border:none;padding:0}
+  .gate-vix-num{font-size:28px}
 }
 </style>
 </head>
@@ -136,6 +165,21 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
 
 <div id="pane-dash">
 
+  <div class="gate gate-open">
+    <div class="gate-left">
+      <div class="gate-label">EARLY GATE</div>
+      <div class="gate-status">เปิด <span class="gate-icon">✓</span></div>
+    </div>
+    <div class="gate-center">
+      <div class="gate-vix-num">17.19</div>
+      <div class="gate-vix-label">VIX <span class="gate-vix-chg gate-chg-up">↑ +0.11 จากเมื่อวาน</span></div>
+    </div>
+    <div class="gate-right">
+      <div class="gate-note">ซื้อหุ้นใหม่ได้</div>
+      <div class="gate-rule">กฎ: ซื้อใหม่เมื่อ VIX &lt; 20 เท่านั้น</div>
+    </div>
+  </div>
+
   <div class="metrics">
     <div class="mc">
       <div class="mc-lbl">วันที่</div>
@@ -157,8 +201,6 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
   </div>
 
   <div class="regime-bar">
-    <div class="regime-item"><span class="regime-lbl">VIX</span><span class="regime-val vix-low">17.2</span><span class="regime-note ok">EARLY เปิด ✓</span></div>
-    <span class="regime-sep">|</span>
     <div class="regime-item"><span class="regime-lbl">10Y Yield</span><span class="regime-val">4.36%</span></div>
     <span class="regime-sep">|</span>
     <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span><span class="regime-val pnl-pos">+12.6%</span></div>
