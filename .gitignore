@@ -104,3 +104,4 @@ vault/.obsidian/*
 !vault/.obsidian/core-plugins.json
 !vault/.obsidian/hotkeys.json
 !vault/.obsidian/graph.json
+.streamlit/secrets.toml
