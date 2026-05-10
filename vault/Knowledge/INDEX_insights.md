@@ -36,3 +36,10 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — KTOS: $1.35B revenue, 16.6% organic growth, Valkyrie 8→40 units/yr, $447M Space Force contract — T3's only compounder
 - [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — LUNR: $210M→$900M 2026 guidance = extreme execution risk; entire thesis depends on NASA Artemis budget intact
 - [2026-05-11] [T3] space-defense-ai-t3-2026-05-11 — BBAI: insufficient conviction; $13.2M contracts too small vs PLTR/Booz Allen competition; needs $50M+ sole-source win first
+
+## AI Software Monetization T4 (ai-software-monetization-t4-2026-05-11.md)
+- [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — PLTR AIP is governance layer for agentic AI; Q1 2026 +85% revenue, U.S. commercial +133% YoY — strongest T4 fundamental momentum
+- [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — PLTR trades 80-115x revenue ❓; peer-group normalization = ~80% downside even with intact fundamentals — valuation is primary risk
+- [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — CRM Agentforce AWU model decouples revenue from headcount; $800M ARR +169% YoY; right architecture for AI workforce transition
+- [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — SNOW data gravity + $200M OpenAI deal = AI runs where enterprise data already lives; AI workloads +200% linked to 50% of new bookings
+- [2026-05-11] [T4] ai-software-monetization-t4-2026-05-11 — T4 cross-thesis: hyperscaler/OpenAI partnerships are defensive signals not pure upside; talent leakage to AI labs is leading displacement indicator
