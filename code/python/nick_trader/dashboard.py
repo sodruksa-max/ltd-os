@@ -148,6 +148,44 @@ def load_latest_ipo():
     return files[0].read_text(encoding="utf-8")
 
 
+@st.cache_data(ttl=60)
+def parse_holdings_review(weekly_text: str) -> dict:
+    """Extract per-ticker thesis/kill/status/rec/reason from Holdings Review section."""
+    result = {}
+    section = re.search(r"## Holdings Review(.*?)(?=\n## |\Z)", weekly_text, re.DOTALL)
+    if not section:
+        return result
+    blocks = re.split(r"\n### ", section.group(1))
+    for block in blocks:
+        if not block.strip():
+            continue
+        header = block.splitlines()[0]
+        ticker_match = re.match(r"([A-Z]+)\s*[—–-]\s*(.*)", header)
+        if not ticker_match:
+            continue
+        ticker = ticker_match.group(1)
+        verdict = ticker_match.group(2).strip()
+        fields = {}
+        for line in block.splitlines()[1:]:
+            for key in ("Thesis", "Kill condition", "Status this week", "Rec", "Reason"):
+                if f"**{key}:**" in line:
+                    fields[key] = re.sub(r"\*\*.*?\*\*:\s*", "", line).strip("- ").strip()
+        result[ticker] = {"verdict": verdict, **fields}
+    return result
+
+
+@st.cache_data(ttl=60)
+def get_entry_reasons(trade_log_df: pd.DataFrame) -> dict:
+    """First BUY reason per ticker from trade log."""
+    if trade_log_df.empty:
+        return {}
+    buys = trade_log_df[trade_log_df["Action"] == "BUY"]
+    return {
+        row["Ticker"]: f"{row['Reason']}  (entry {row['Date']} @ {row['Price']})"
+        for _, row in buys.drop_duplicates("Ticker", keep="first").iterrows()
+    }
+
+
 # ── Status helpers ────────────────────────────────────────────────────────────
 
 def status_badge(pnl):
@@ -243,6 +281,44 @@ with col_right:
         )
         fig.update_layout(margin=dict(t=0, b=0, l=0, r=0), paper_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig, use_container_width=True)
+
+# ── Why Nick holds these ──────────────────────────────────────────────────────
+
+if not df_holdings.empty:
+    st.subheader("Why Nick holds these")
+    weekly_text = load_latest_weekly()
+    holdings_review = parse_holdings_review(weekly_text)
+    trade_log_df = load_trade_log()
+    entry_reasons = get_entry_reasons(trade_log_df)
+
+    cols = st.columns(2)
+    for i, ticker in enumerate(df_holdings["Ticker"].tolist()):
+        review = holdings_review.get(ticker, {})
+        entry = entry_reasons.get(ticker, "")
+        verdict = review.get("verdict", "—")
+        verdict_color = (
+            "🟢" if "Intact" in verdict else
+            "🟡" if "Evolving" in verdict else
+            "🔴" if "Invalidated" in verdict else "⚪"
+        )
+        with cols[i % 2]:
+            with st.expander(f"{verdict_color} **{ticker}** — {verdict}", expanded=False):
+                if review.get("Thesis"):
+                    st.markdown(f"**Thesis:** {review['Thesis']}")
+                if review.get("Kill condition"):
+                    st.markdown(f"**Kill condition:** {review['Kill condition']}")
+                if review.get("Status this week"):
+                    st.markdown(f"**Status:** {review['Status this week']}")
+                if review.get("Rec"):
+                    st.markdown(f"**Nick's rec:** {review['Rec']}")
+                if review.get("Reason"):
+                    st.markdown(f"**Reason:** {review['Reason']}")
+                if entry:
+                    st.caption(f"Entry: {entry}")
+                if not review and not entry:
+                    st.info("No review data yet — runs every Friday")
+
+    st.divider()
 
 # ── Row 3: NAV History ────────────────────────────────────────────────────────
 
