@@ -125,6 +125,15 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
 .th-text{font-size:12px;line-height:1.85;color:var(--text)}
 .kill-list{list-style:none}
 .kill-list li{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}
+/* Risk Stats Panel */
+.risk-panel{display:grid;grid-template-columns:repeat(4,1fr);border:2px solid var(--border);background:var(--card);margin-bottom:16px}
+.risk-stat{padding:16px 20px;border-right:1px solid var(--border)}
+.risk-stat:last-child{border-right:none}
+.risk-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:6px}
+.risk-val{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:3px}
+.risk-sub{font-size:10px;color:var(--muted);line-height:1.4}
+.stat-ok{color:#3fb950}.stat-warn{color:#d29922}.stat-danger{color:#f85149}.stat-muted{color:var(--muted)}
+@media(max-width:760px){.risk-panel{grid-template-columns:repeat(2,1fr)}.risk-stat{border-bottom:1px solid var(--border)}}
 /* Earnings Calendar */
 .earn-item{display:grid;grid-template-columns:140px 1fr 100px 110px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
 .earn-item:last-child{border-bottom:none}
@@ -235,6 +244,29 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
     <span class="regime-sep">|</span>
     <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span><span class="regime-val pnl-pos">+12.6%</span></div>
   </div>
+
+  <div class="risk-panel">
+      <div class="risk-stat">
+        <div class="risk-lbl">Max Drawdown</div>
+        <div class="risk-val stat-muted">N/A</div>
+        <div class="risk-sub">จาก peak ตั้งแต่เริ่ม</div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Sharpe Ratio</div>
+        <div class="risk-val stat-muted">—</div>
+        <div class="risk-sub"></div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Largest Position</div>
+        <div class="risk-val stat-muted">N/A</div>
+        <div class="risk-sub"></div>
+      </div>
+      <div class="risk-stat">
+        <div class="risk-lbl">Thesis HHI</div>
+        <div class="risk-val stat-muted">N/A</div>
+        <div class="risk-sub"></div>
+      </div>
+    </div>
 
   <div class="tl">
     <span class="tl-lbl">ไทม์ไลน์</span>
