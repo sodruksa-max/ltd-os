@@ -7,111 +7,118 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #0d1117; --accent: #00c896; --accent-l: #00a87e;
-  --text: #e6edf3; --muted: #8b949e; --border: #30363d;
-  --card: #161b22; --white: #e6edf3;
+  --bg:#0d1117; --accent:#00c896; --text:#e6edf3;
+  --muted:#8b949e; --border:#30363d; --card:#161b22;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'IBM Plex Mono', 'Courier New', monospace; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
-a { color: inherit; text-decoration: none; }
-.wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px 60px; }
-
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);color:var(--text);font-size:15px;line-height:1.7}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px 60px}
 /* Header */
-.hdr { border-bottom: 2px solid var(--border); padding: 22px 0 0; margin-bottom: 24px; }
-.hdr-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-.site-title { font-size: 24px; font-weight: 700; letter-spacing: -.5px; }
-.site-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
-.hdr-meta { font-size: 13px; color: var(--muted); text-align: right; line-height: 1.9; }
-.tabs { display: flex; }
-.tab { padding: 10px 26px; border: 2px solid var(--border); border-bottom: none; font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: .5px; background: transparent; color: var(--muted); cursor: pointer; margin-right: -2px; }
-.tab.on { background: var(--accent); color: #0d1117; border-color: var(--accent); }
-
+.hdr{border-bottom:2px solid var(--border);padding:22px 0 0;margin-bottom:24px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.site-title{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.site-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.hdr-meta{font-size:13px;color:var(--muted);text-align:right;line-height:1.9}
+.tabs{display:flex}
+.tab{padding:10px 26px;border:2px solid var(--border);border-bottom:none;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.5px;background:transparent;color:var(--muted);cursor:pointer;margin-right:-2px}
+.tab.on{background:var(--accent);color:#0d1117;border-color:var(--accent)}
 /* Metrics */
-.metrics { background: var(--accent); color: var(--white); border: 2px solid var(--border); display: grid; grid-template-columns: repeat(3,1fr); margin-bottom: 0; }
-.mc { padding: 18px 24px; border-right: 1px solid rgba(255,255,255,.18); }
-.mc:last-child { border-right: none; }
-.mc-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: .65; margin-bottom: 5px; }
-.mc-val { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
-.mc-sub { font-size: 11px; opacity: .8; margin-top: 3px; }
-.mc-badge { display: inline-block; background: rgba(255,255,255,.15); padding: 2px 9px; font-size: 11px; margin-top: 5px; }
-
+.metrics{background:var(--accent);color:var(--text);border:2px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr)}
+.mc{padding:18px 24px;border-right:1px solid rgba(255,255,255,.18)}
+.mc:last-child{border-right:none}
+.mc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:.65;margin-bottom:5px}
+.mc-val{font-size:24px;font-weight:700;letter-spacing:-1px;color:#0d1117}
+.mc-sub{font-size:11px;opacity:.8;margin-top:3px;color:#0d1117}
+.mc-badge{display:inline-block;background:rgba(0,0,0,.15);padding:2px 9px;font-size:11px;margin-top:5px;color:#0d1117}
+/* Regime */
+.regime-bar{border:2px solid var(--border);border-top:none;padding:10px 24px;display:flex;align-items:center;gap:20px;background:var(--card)}
+.regime-item{display:flex;align-items:center;gap:8px}
+.regime-sep{color:var(--border);font-size:18px}
+.regime-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.regime-val{font-size:16px;font-weight:700}
+.regime-note{font-size:11px;padding:1px 8px}
+.regime-note.ok{background:rgba(0,200,150,.15);color:var(--accent)}
+.regime-note.warn{background:rgba(255,180,0,.12);color:#d29922}
+.regime-note.danger{background:rgba(248,81,73,.15);color:#f85149}
+.vix-low{color:var(--accent)}.vix-mid{color:#d29922}.vix-high{color:#f85149}
 /* Timeline */
-.tl { border: 2px solid var(--border); border-top: none; padding: 11px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
-.tl-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }
-.tl-track { flex: 1; height: 4px; background: var(--border); }
-.tl-fill { height: 100%; background: var(--accent); }
-.tl-steps { display: flex; }
-.timeline-step { font-size: 10px; padding: 4px 10px; border: 1px solid var(--border); margin-left: -1px; color: var(--muted); font-weight: 600; }
-.timeline-step.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-/* Grid */
-.g2 { display: grid; grid-template-columns: 60fr 40fr; gap: 16px; margin-bottom: 16px; }
-
-/* Card */
-.card { background: var(--card); border: 2px solid var(--border); }
-.card-hdr { padding: 12px 20px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-.card-sub { font-size: 11px; color: var(--muted); }
-.card-body { padding: 20px; }
-
-/* Benchmark btns */
-.bbtns { display: flex; margin-bottom: 16px; }
-.bbtn { padding: 5px 13px; border: 1px solid var(--border); margin-right: -1px; font-family: inherit; font-size: 11px; font-weight: 600; background: transparent; color: var(--muted); cursor: pointer; }
-.bbtn.on { background: var(--accent); color: white; border-color: var(--accent); }
-.chart-wrap { height: 230px; position: relative; }
-
+.tl{border:2px solid var(--border);border-top:none;padding:11px 24px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+.tl-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);white-space:nowrap}
+.tl-track{flex:1;height:4px;background:var(--border)}
+.tl-fill{height:100%;background:var(--accent)}
+.tl-steps{display:flex}
+.timeline-step{font-size:10px;padding:4px 10px;border:1px solid var(--border);margin-left:-1px;color:var(--muted);font-weight:600}
+.timeline-step.active{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+/* Grid & Card */
+.g2{display:grid;grid-template-columns:60fr 40fr;gap:16px;margin-bottom:16px}
+.card{background:var(--card);border:2px solid var(--border)}
+.card-hdr{padding:12px 20px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.card-sub{font-size:11px;color:var(--muted)}
+.card-body{padding:20px}
+/* Bench buttons */
+.bbtns{display:flex;margin-bottom:16px}
+.bbtn{padding:5px 13px;border:1px solid var(--border);margin-right:-1px;font-family:inherit;font-size:11px;font-weight:600;background:transparent;color:var(--muted);cursor:pointer}
+.bbtn.on{background:var(--accent);color:#0d1117;border-color:var(--accent)}
+.chart-wrap{height:230px;position:relative}
 /* Actions */
-.act-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-.act-sum { font-size: 13px; font-weight: 600; line-height: 1.4; max-width: 200px; }
-.act-badge { background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; white-space: nowrap; }
-.act-feed { max-height: 260px; overflow-y: auto; border-top: 1px solid var(--border); padding-top: 14px; }
-.ab { margin-bottom: 16px; }
-.ab-title { font-weight: 700; font-size: 12px; margin-bottom: 4px; }
-.ab-text { color: var(--muted); font-size: 12px; line-height: 1.75; }
-
+.act-feed{max-height:260px;overflow-y:auto;border-top:1px solid var(--border);padding-top:14px}
+.ab{margin-bottom:16px}
+.ab-title{font-weight:700;font-size:12px;margin-bottom:4px}
+.ab-text{color:var(--muted);font-size:12px;line-height:1.75}
+.act-badge{background:var(--accent);color:#0d1117;font-size:10px;font-weight:700;padding:3px 10px}
+/* Pills */
+.pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;letter-spacing:.4px;text-transform:uppercase}
+.pill-ok{background:rgba(0,200,150,.15);color:var(--accent)}
+.pill-target{background:rgba(88,166,255,.15);color:#58a6ff}
+.pill-stop{background:rgba(248,81,73,.15);color:#f85149}
+.pill-loss{background:rgba(210,153,34,.15);color:#d29922}
 /* Table */
-.htable { width: 100%; border-collapse: collapse; }
-.htable th { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600; }
-.htable td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 12px; }
-.htable tbody tr { cursor: pointer; }
-.htable tbody tr:hover { background: #1f2937; }
-.htable tbody tr.sel { background: #243447; outline: 2px solid var(--accent); }
-.tn { font-weight: 700; font-size: 13px; }
-.tc { font-size: 10px; color: var(--muted); margin-top: 1px; }
-.pill { display: inline-block; background: var(--accent); color: white; font-size: 9px; font-weight: 700; padding: 2px 8px; letter-spacing: .4px; text-transform: uppercase; }
-.wbar-wrap { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.wbar-bg { width: 52px; height: 5px; background: var(--border); flex-shrink: 0; }
-.wbar-fill { height: 100%; background: var(--accent); }
-.pnl-pos { color: #2d6a2d; font-weight: 600; }
-.pnl-neg { color: #8b2222; font-weight: 600; }
-
-/* Thesis */
-.th-empty { text-align: center; padding: 56px 16px; color: var(--muted); }
-.th-empty-t { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-.th-empty-s { font-size: 12px; line-height: 1.7; }
-.th-ticker { font-size: 22px; font-weight: 700; letter-spacing: -1px; }
-.th-co { color: var(--muted); font-size: 12px; margin: 4px 0 12px; }
-.th-seed { display: inline-block; border: 1px solid var(--border); padding: 2px 10px; font-size: 11px; margin-bottom: 18px; }
-.th-sec { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin: 16px 0 8px; }
-.th-text { font-size: 12px; line-height: 1.85; color: var(--text); }
-.kill-list { list-style: none; }
-.kill-list li { padding: 8px 12px; border-left: 3px solid var(--accent); margin-bottom: 8px; font-size: 12px; background: rgba(0,200,150,.05); line-height: 1.65; }
-
+.htable{width:100%;border-collapse:collapse}
+.htable th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);font-weight:600}
+.htable td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px}
+.htable tbody tr{cursor:pointer}
+.htable tbody tr:hover{background:#1f2937}
+.htable tbody tr.sel{background:#243447;outline:2px solid var(--accent)}
+.tn{font-weight:700;font-size:13px}.tc{font-size:10px;color:var(--muted);margin-top:1px}
+.wbar-wrap{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wbar-bg{width:52px;height:5px;background:var(--border);flex-shrink:0}
+.wbar-fill{height:100%;background:var(--accent)}
+.pnl-pos{color:#3fb950;font-weight:600}.pnl-neg{color:#f85149;font-weight:600}
+.empty-cell{text-align:center;color:var(--muted);padding:24px}
+.muted-cell{color:var(--muted);font-size:12px}.small-cell{font-size:11px}
+/* Thesis panel */
+.th-empty{text-align:center;padding:56px 16px;color:var(--muted)}
+.th-empty-t{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.th-empty-s{font-size:12px;line-height:1.7}
+.th-ticker{font-size:22px;font-weight:700;letter-spacing:-1px}
+.th-co{color:var(--muted);font-size:12px;margin:4px 0 12px}
+.th-seed{display:inline-block;border:1px solid var(--border);padding:2px 10px;font-size:11px;margin-bottom:8px}
+.th-tid{display:inline-block;border:1px solid var(--accent);padding:2px 10px;font-size:11px;color:var(--accent);margin-bottom:8px;margin-left:6px}
+.th-sec{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--muted);margin:16px 0 8px}
+.th-text{font-size:12px;line-height:1.85;color:var(--text)}
+.kill-list{list-style:none}
+.kill-list li{padding:8px 12px;border-left:3px solid var(--accent);margin-bottom:8px;font-size:12px;background:rgba(0,200,150,.05);line-height:1.65}
+/* Bottom tabs */
+.btabs{display:flex;margin-top:24px;border-bottom:2px solid var(--border)}
+.btab{padding:8px 20px;font-family:inherit;font-size:12px;font-weight:700;background:transparent;color:var(--muted);border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.btab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.bpane{display:none;padding:20px 0}.bpane.on{display:block}
 /* About */
-.about { max-width: 620px; padding: 36px 0; }
-.about h2 { font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-.about p { font-size: 12px; line-height: 1.9; color: var(--text); margin-bottom: 14px; }
-.about ul { margin: 0 0 14px 16px; font-size: 12px; line-height: 2; color: var(--text); }
-
-@media(max-width:760px) {
-  .g2 { grid-template-columns: 1fr; }
-  .metrics { grid-template-columns: 1fr; }
-  .mc { border-right: none; border-bottom: 1px solid rgba(255,255,255,.18); }
+.about{max-width:620px;padding:36px 0}
+.about h2{font-size:15px;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.about p{font-size:12px;line-height:1.9;color:var(--text);margin-bottom:14px}
+.about ul{margin:0 0 14px 16px;font-size:12px;line-height:2;color:var(--text)}
+@media(max-width:760px){
+  .g2{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr}
+  .mc{border-right:none;border-bottom:1px solid rgba(255,255,255,.18)}
+  .regime-bar{flex-wrap:wrap;gap:12px}
 }
 </style>
 </head>
 <body>
-<div class="wrap" style="padding-top:22px;">
+<div class="wrap" style="padding-top:22px">
 
 <div class="hdr">
   <div class="hdr-top">
@@ -119,10 +126,7 @@ a { color: inherit; text-decoration: none; }
       <div class="site-title">พอร์ตของ Nick</div>
       <div class="site-sub">พอร์ตทดลอง $10K &bull; วินัยสไตล์ Nick Sleep</div>
     </div>
-    <div class="hdr-meta">
-      วันเริ่ม: 2026-05-10<br>
-      อัปเดตล่าสุด: 2026-05-10
-    </div>
+    <div class="hdr-meta">วันเริ่ม: 2026-05-10<br>อัปเดตล่าสุด: 2026-05-10</div>
   </div>
   <div class="tabs">
     <button class="tab on" onclick="showTab('dash',this)">แดชบอร์ด</button>
@@ -152,6 +156,14 @@ a { color: inherit; text-decoration: none; }
     </div>
   </div>
 
+  <div class="regime-bar">
+    <div class="regime-item"><span class="regime-lbl">VIX</span><span class="regime-val vix-low">17.2</span><span class="regime-note ok">EARLY เปิด ✓</span></div>
+    <span class="regime-sep">|</span>
+    <div class="regime-item"><span class="regime-lbl">10Y Yield</span><span class="regime-val">4.36%</span></div>
+    <span class="regime-sep">|</span>
+    <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span><span class="regime-val pnl-pos">+12.6%</span></div>
+  </div>
+
   <div class="tl">
     <span class="tl-lbl">ไทม์ไลน์</span>
     <div class="tl-track"><div class="tl-fill" style="width:0%"></div></div>
@@ -173,16 +185,13 @@ a { color: inherit; text-decoration: none; }
         <div class="chart-wrap"><canvas id="perf"></canvas></div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-hdr">
         <span class="card-title">คำแนะนำสัปดาห์นี้</span>
-        <span class="act-badge" style="font-size:10px;background:var(--accent);color:white;padding:3px 10px;">0 รายการ</span>
+        <span class="act-badge">0 รายการ</span>
       </div>
       <div class="card-body">
-        <div class="act-hdr">
-          <div class="act-sum">No weekly rec yet — runs automatically every Friday.</div>
-        </div>
+        <div style="font-size:13px;font-weight:600;line-height:1.4;margin-bottom:14px">ยังไม่มีคำแนะนำ — รันอัตโนมัติทุกวันศุกร์</div>
         <div class="act-feed">
           <div class="ab">
             <div class="ab-title">Kill Conditions</div>
@@ -204,32 +213,24 @@ a { color: inherit; text-decoration: none; }
         <span class="card-title">พอร์ตหุ้น</span>
         <span class="card-sub">0 หุ้น + เงินสด</span>
       </div>
-      <div class="card-body" style="padding:0;">
+      <div class="card-body" style="padding:0">
         <table class="htable">
-          <thead>
-            <tr>
-              <th>หุ้น</th><th>สถานะ</th><th>จำนวน</th>
-              <th>ต้นทุน</th><th>ราคาล่าสุด</th><th>มูลค่า</th>
-              <th>น้ำหนัก</th><th>กำไร/ขาดทุน</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>หุ้น</th><th>สถานะ</th><th>จำนวน</th>
+            <th>ต้นทุน</th><th>ราคาล่าสุด</th><th>มูลค่า</th>
+            <th>น้ำหนัก</th><th>กำไร/ขาดทุน</th>
+          </tr></thead>
           <tbody>
         <tr style="opacity:0.6;">
-          <td><div class="ticker-name">CASH</div></td>
+          <td><div class="tn">CASH</div></td>
           <td>—</td><td>—</td><td>—</td><td>—</td>
           <td>$10,000</td>
-          <td>
-            <div class="wbar-wrap">
-              <div class="wbar-bg"><div class="wbar-fill" style="width:100%"></div></div>
-              <span>100.0%</span>
-            </div>
-          </td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:100%"></div></div><span>100.0%</span></div></td>
           <td>—</td>
         </tr></tbody>
         </table>
       </div>
     </div>
-
     <div class="card">
       <div class="card-hdr">
         <span class="card-title">Thesis &amp; Kill Conditions</span>
@@ -240,22 +241,74 @@ a { color: inherit; text-decoration: none; }
           <div class="th-empty-t">เลือกหุ้น</div>
           <div class="th-empty-s">คลิกแถวในตารางเพื่อดู thesis<br>และ kill conditions ของ Nick</div>
         </div>
-        <div id="th-content" style="display:none;">
+        <div id="th-content" style="display:none">
           <div class="th-ticker" id="th-ticker"></div>
           <div class="th-co" id="th-co"></div>
-          <div class="th-seed" id="th-seed"></div>
+          <span class="th-seed" id="th-seed"></span><span class="th-tid" id="th-tid"></span>
           <div class="th-sec">Thesis เดิม</div>
           <div class="th-text" id="th-thesis"></div>
           <div class="th-sec">Kill Conditions</div>
           <ul class="kill-list" id="th-kills"></ul>
+          <div class="th-sec" id="th-status-sec" style="display:none">สถานะ Thesis</div>
+          <div class="th-text" id="th-status" style="color:var(--muted)"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btabs">
+    <button class="btab on" onclick="showBtab('clist',this)">C-List (Watchlist)</button>
+    <button class="btab" onclick="showBtab('tradelog',this)">Trade Log</button>
+    <button class="btab" onclick="showBtab('ipo',this)">IPO Radar</button>
+    <button class="btab" onclick="showBtab('kbgaps',this)">KB Gaps</button>
+  </div>
+
+  <div id="bpane-clist" class="bpane on">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">C-List — รอ Trigger</span><span class="card-sub">จาก THESIS_TRACKER.md</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="htable">
+          <thead><tr><th>หุ้น</th><th>เหตุผลที่ดู</th><th>Trigger ที่รอ</th></tr></thead>
+          <tbody><tr><td><strong>TSM</strong></td><td class="muted-cell">Foundry monopoly; geopolitical risk headwind</td><td class="small-cell">US fab progress reduces Taiwan risk premium</td></tr><tr><td><strong>GOOGL</strong></td><td class="muted-cell">Capex play + search moat under AI pressure</td><td class="small-cell">Gemini wins measurable market share back</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="bpane-tradelog" class="bpane">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Trade Log</span><span class="card-sub">20 รายการล่าสุด</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="htable">
+          <thead><tr><th>วันที่</th><th>หุ้น</th><th>Action</th><th>จำนวน</th><th>ราคา</th><th>Conviction</th><th>VIX</th><th>เหตุผล</th></tr></thead>
+          <tbody><tr><td colspan="8" class="empty-cell">ยังไม่มีการเทรด — execute.py จะบันทึกที่นี่หลัง order แรก</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="bpane-ipo" class="bpane">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">IPO Radar</span><span class="card-sub">$500M+ / buzz detection</span></div>
+      <div class="card-body"><p class="empty-cell" style="padding:24px 0;text-align:center;">ยังไม่มีข้อมูล IPO — scanner รันทุกวันจันทร์</p></div>
+    </div>
+  </div>
+
+  <div id="bpane-kbgaps" class="bpane">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">KB Gaps</span><span class="card-sub">Research ที่ขาด — จาก nick-weekly</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="htable">
+          <thead><tr><th>Priority</th><th>หัวข้อ</th><th>เหตุผล</th><th>คำสั่ง</th></tr></thead>
+          <tbody><tr><td colspan="4" class="empty-cell">ยังไม่มี KB gaps — จะแสดงหลัง nick-weekly รันครั้งแรก</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
 
 </div><!-- pane-dash -->
 
-<div id="pane-about" style="display:none;">
+<div id="pane-about" style="display:none">
   <div class="about">
     <h2>Nick คือใคร?</h2>
     <p>Nick คือ AI portfolio manager ที่อ่านได้เฉพาะ knowledge base — thesis tracker, insight atoms และราคาปัจจุบัน ไม่รู้เกี่ยวกับการเทรดจริงหรือพอร์ตจริง</p>
@@ -271,16 +324,15 @@ a { color: inherit; text-decoration: none; }
     </ul>
     <h2>วงจรพัฒนาตนเอง</h2>
     <p>Nick Weekly รันทุกวันศุกร์ผ่าน GitHub Actions (Gemini 2.0 Flash) Trade log บันทึก regime tags (VIX, 10Y, sector ETF trend) ทุก entry หลัง 30+ trade ที่ปิดแล้ว pattern จะป้อนกลับเข้า KB</p>
-    <p style="color:var(--muted); font-size:11px;">ที่มา: github.com/sodruksa-max/ltd-os &bull; เทรดจำลองเท่านั้น &bull; ไม่ใช่คำแนะนำทางการเงิน</p>
+    <p style="color:var(--muted);font-size:11px">ที่มา: github.com/sodruksa-max/ltd-os &bull; เทรดจำลองเท่านั้น &bull; ไม่ใช่คำแนะนำทางการเงิน</p>
   </div>
 </div>
 
 <script>
 const CD = {"dates": ["2026-05-10"], "nick": [10000.0], "SPY": [10000.0], "QQQ": [10000.0], "SOXX": [10000.0]};
-const TD = {};
+const TD = {"NVDA": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "30%"}, "AMD": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "N/A"}, "AVGO": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "25%"}, "SMCI": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "N/A"}, "DELL": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "N/A"}, "HPE": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "N/A"}, "MU": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "seed_weight": "N/A"}, "ASML": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "seed_weight": "20%"}, "ARM": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "seed_weight": "N/A"}, "AMD (challenger)": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "seed_weight": "N/A"}, "RKLB": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. Early innings, high execution risk.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; LUNR program cancelled."], "thesis_id": "T3", "thesis_title": "Space Commercialization", "status": "Active \u2014 speculative tier", "seed_weight": "N/A"}, "ASTS": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. Early innings, high execution risk.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; LUNR program cancelled."], "thesis_id": "T3", "thesis_title": "Space Commercialization", "status": "Active \u2014 speculative tier", "seed_weight": "N/A"}, "LUNR": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. Early innings, high execution risk.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; LUNR program cancelled."], "thesis_id": "T3", "thesis_title": "Space Commercialization", "status": "Active \u2014 speculative tier", "seed_weight": "N/A"}, "KTOS": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. Early innings, high execution risk.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; LUNR program cancelled."], "thesis_id": "T3", "thesis_title": "Space Commercialization", "status": "Active \u2014 speculative tier", "seed_weight": "N/A"}, "PLTR": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "seed_weight": "15%"}, "CRM": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "seed_weight": "N/A"}, "SNOW": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "seed_weight": "N/A"}};
 const HD = [];
 
-// Tabs
 function showTab(name, btn) {
   document.getElementById('pane-dash').style.display = name==='dash' ? '' : 'none';
   document.getElementById('pane-about').style.display = name==='about' ? '' : 'none';
@@ -288,7 +340,13 @@ function showTab(name, btn) {
   btn.classList.add('on');
 }
 
-// Holdings row select
+function showBtab(name, btn) {
+  document.querySelectorAll('.bpane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.btab').forEach(t => t.classList.remove('on'));
+  document.getElementById('bpane-'+name).classList.add('on');
+  btn.classList.add('on');
+}
+
 function selectHolding(ticker) {
   document.querySelectorAll('.htable tbody tr').forEach(r => r.classList.remove('sel'));
   const row = document.getElementById('row-'+ticker);
@@ -301,38 +359,37 @@ function selectHolding(ticker) {
   document.getElementById('th-ticker').textContent = ticker;
   document.getElementById('th-co').textContent = h.company || '';
   document.getElementById('th-seed').textContent = 'น้ำหนักเริ่มต้น: ' + (t.seed_weight || 'N/A');
-  document.getElementById('th-thesis').textContent = t.thesis || 'รัน /stock-research '+ticker+' เพื่อบันทึก thesis ใน KB';
+  const tid = t.thesis_id ? t.thesis_id + (t.thesis_title ? ' — ' + t.thesis_title : '') : '';
+  document.getElementById('th-tid').textContent = tid;
+  document.getElementById('th-thesis').textContent = t.thesis || 'รัน /stock-research ' + ticker + ' เพื่อบันทึก thesis ใน KB';
   const ul = document.getElementById('th-kills');
   ul.innerHTML = '';
-  (t.kill_conditions || []).forEach(k => {
-    const li = document.createElement('li');
-    li.textContent = k;
-    ul.appendChild(li);
-  });
-  if (!t.kill_conditions || !t.kill_conditions.length) {
-    ul.innerHTML = '<li>รัน /stock-research '+ticker+' เพื่อบันทึก kill conditions</li>';
-  }
+  (t.kill_conditions || []).forEach(k => { const li = document.createElement('li'); li.textContent = k; ul.appendChild(li); });
+  if (!t.kill_conditions || !t.kill_conditions.length) ul.innerHTML = '<li>รัน /stock-research ' + ticker + ' เพื่อบันทึก kill conditions</li>';
+  const sec = document.getElementById('th-status-sec');
+  const sta = document.getElementById('th-status');
+  if (t.status) { sec.style.display = ''; sta.style.display = ''; sta.textContent = t.status; }
+  else { sec.style.display = 'none'; sta.style.display = 'none'; }
 }
 
-// Chart
 let chart;
 const COLORS = {nick:'#00c896', SPY:'#8b949e', QQQ:'#58a6ff', SOXX:'#d29922'};
 function initChart() {
   chart = new Chart(document.getElementById('perf').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: CD.dates,
-      datasets: [
-        { label:'Nick', data:CD.nick, borderColor:COLORS.nick, backgroundColor:'rgba(0,200,150,.08)', borderWidth:2.5, fill:true, tension:.3, pointRadius:3 },
-        { label:'SPY', data:CD.SPY, borderColor:COLORS.SPY, borderWidth:1.5, borderDash:[5,4], fill:false, tension:.3, pointRadius:0 }
+    type:'line',
+    data:{
+      labels:CD.dates,
+      datasets:[
+        {label:'Nick',data:CD.nick,borderColor:COLORS.nick,backgroundColor:'rgba(0,200,150,.08)',borderWidth:2.5,fill:true,tension:.3,pointRadius:3},
+        {label:'SPY',data:CD.SPY,borderColor:COLORS.SPY,borderWidth:1.5,borderDash:[5,4],fill:false,tension:.3,pointRadius:0}
       ]
     },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ font:{family:'monospace',size:11}, color:'#e6edf3' } }, tooltip:{ mode:'index', intersect:false } },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{family:'monospace',size:11},color:'#e6edf3'}},tooltip:{mode:'index',intersect:false}},
       scales:{
-        x:{ grid:{color:'#30363d'}, ticks:{font:{family:'monospace',size:10}, color:'#8b949e'} },
-        y:{ grid:{color:'#30363d'}, ticks:{font:{family:'monospace',size:10}, color:'#8b949e', callback:v=>'$'+v.toLocaleString()} }
+        x:{grid:{color:'#30363d'},ticks:{font:{family:'monospace',size:10},color:'#8b949e'}},
+        y:{grid:{color:'#30363d'},ticks:{font:{family:'monospace',size:10},color:'#8b949e',callback:v=>'$'+v.toLocaleString()}}
       }
     }
   });
