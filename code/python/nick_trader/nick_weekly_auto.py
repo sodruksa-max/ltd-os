@@ -1,7 +1,7 @@
 """
-nick_weekly_auto.py — auto-generate Nick weekly rec using Gemini Flash (free).
+nick_weekly_auto.py — auto-generate Nick weekly rec using Groq (free).
 Runs Friday 8:30 PM Thailand (1:30 PM UTC) via GitHub Actions.
-Reads: Alpaca positions + KB files → Gemini → weekly-rec.md + ORDERS block.
+Reads: Alpaca positions + KB files → Groq → weekly-rec.md + ORDERS block.
 """
 
 import os
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yfinance as yf
 from alpaca.trading.client import TradingClient
-from google import genai
+from groq import Groq
 
 REPO = Path(__file__).resolve().parents[3]
 NICK_DIR = REPO / "vault/20_investment/nick"
@@ -39,7 +39,6 @@ def get_pct_change(ticker: str, period="5d") -> float:
 
 
 def build_holdings_block(client: TradingClient) -> tuple[str, float]:
-    """Returns formatted holdings text + current NAV"""
     account = client.get_account()
     nav = round(float(account.portfolio_value), 2)
     positions = client.get_all_positions()
@@ -67,17 +66,12 @@ def build_holdings_block(client: TradingClient) -> tuple[str, float]:
 
 
 def validate_orders_block(text: str) -> list:
-    """Extract and validate ORDERS JSON from response. Returns list or empty."""
     m = re.search(r"## ORDERS.*?```json\s*\n(\[.*?\])\s*\n```", text, re.DOTALL)
     if not m:
         return []
     try:
         orders = json.loads(m.group(1))
-        valid = []
-        for o in orders:
-            if o.get("action", "").upper() in ("BUY", "SELL", "TRIM", "NONE") and o.get("ticker"):
-                valid.append(o)
-        return valid
+        return [o for o in orders if o.get("action", "").upper() in ("BUY", "SELL", "TRIM", "NONE") and o.get("ticker")]
     except json.JSONDecodeError:
         return []
 
@@ -170,7 +164,7 @@ def main():
     alpaca_client = TradingClient(
         os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True
     )
-    gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
     print("Fetching holdings from Alpaca...")
     holdings_block, nav = build_holdings_block(alpaca_client)
@@ -178,21 +172,18 @@ def main():
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
 
-    for model_id in ["gemini-2.0-flash", "gemini-2.0-flash-lite"]:
-        try:
-            print(f"Calling {model_id}...")
-            response = gemini_client.models.generate_content(
-                model=model_id, contents=prompt
-            )
-            print(f"Success with {model_id}")
-            break
-        except Exception as e:
-            print(f"{model_id} failed: {e}")
-            response = None
-
-    if response is None:
-        raise RuntimeError("All Gemini models failed — check API key quota")
-    rec_text = response.text
+    print("Calling Groq llama-3.3-70b...")
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4096,
+        )
+        rec_text = response.choices[0].message.content
+        usage = response.usage
+        print(f"Success — {usage.prompt_tokens} in / {usage.completion_tokens} out tokens")
+    except Exception as e:
+        raise RuntimeError(f"Groq API failed: {e}")
 
     orders = validate_orders_block(rec_text)
     if not orders:
