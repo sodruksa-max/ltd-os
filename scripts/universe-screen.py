@@ -102,6 +102,12 @@ UNIVERSE = [
     ("KTOS",  "Kratos Defense"),
     # Defense AI Small-Cap
     ("BBAI",  "BigBear.ai"),
+    # Quantum Computing
+    ("IONQ",  "IonQ"),
+    ("RGTI",  "Rigetti Computing"),
+    ("QBTS",  "D-Wave Quantum"),
+    ("QUBT",  "Quantum Computing Inc"),
+    ("IBM",   "IBM"),
 ]
 
 SECTOR_MAP = {
@@ -115,6 +121,8 @@ SECTOR_MAP = {
     "PLTR": "XLK", "MOD": "XLK",
     # Space / Defense → UFO
     "RKLB": "UFO", "ASTS": "UFO", "LUNR": "UFO", "KTOS": "UFO", "BBAI": "UFO",
+    # Quantum → QTUM
+    "IONQ": "QTUM", "RGTI": "QTUM", "QBTS": "QTUM", "QUBT": "QTUM", "IBM": "QTUM",
 }
 
 SECTOR_ETFS = ["SMH", "XLK", "UFO"]
