@@ -185,7 +185,20 @@ col1, col2, col3, col4, col5 = st.columns(5)
 inception_nav = 10000.0
 total_pnl = round((nav - inception_nav) / inception_nav * 100, 2)
 blended_week = benchmark["Blended"]
-week_pnl = round(df_holdings["P&L %"].mean(), 2) if not df_holdings.empty else 0.0
+
+# Week P&L: weight-averaged 5-day price change across holdings (not avg-cost-based P&L)
+if not df_holdings.empty:
+    weekly_changes = []
+    for _, row in df_holdings.iterrows():
+        try:
+            hist = yf.Ticker(row["Ticker"]).history(period="5d")["Close"]
+            chg = (hist.iloc[-1] - hist.iloc[0]) / hist.iloc[0] * 100
+            weekly_changes.append(chg * (row["Weight %"] / 100))
+        except Exception:
+            pass
+    week_pnl = round(sum(weekly_changes), 2) if weekly_changes else 0.0
+else:
+    week_pnl = 0.0
 alpha = round(week_pnl - blended_week, 2)
 cash_pct = round(cash / nav * 100, 1)
 

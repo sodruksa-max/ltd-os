@@ -20,14 +20,28 @@ STATE_FILE = NICK_DIR / "nick_state.json"
 
 STOP_LOSS_PCT = -0.25
 TARGET_PCT = 0.50
+NAV_LOG = NICK_DIR / "performance/nav_log.md"
 
 
 def load_state():
+    if not STATE_FILE.exists():
+        return {"positions": {}, "last_executed_rec": None}
     return json.loads(STATE_FILE.read_text())
 
 
 def save_state(state):
     STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+def append_nav_log(client, note: str = ""):
+    try:
+        account = client.get_account()
+        nav = round(float(account.portfolio_value), 2)
+        row = f"| {date.today()} | ${nav:,.2f} | - | - | {note} |\n"
+        with open(NAV_LOG, "a", encoding="utf-8") as f:
+            f.write(row)
+    except Exception as e:
+        print(f"  NAV log update failed: {e}")
 
 
 def append_log(ticker, action, shares, price, pnl_pct, reason):
@@ -47,6 +61,8 @@ def main():
         print("No open positions.")
         return
 
+    exits_fired = False
+
     for pos in positions:
         ticker = pos.symbol
         qty = int(float(pos.qty))
@@ -63,6 +79,7 @@ def main():
             print(f"  STOP EXIT: {ticker} all {qty} shares")
             append_log(ticker, "STOP-EXIT", qty, current, pnl_pct * 100, "stop -25% triggered")
             state["positions"].pop(ticker, None)
+            exits_fired = True
 
         elif pnl_pct >= TARGET_PCT:
             pos_state = state["positions"].get(ticker, {})
@@ -77,8 +94,13 @@ def main():
             print(f"  TARGET PARTIAL: {ticker} sell {half}/{qty}")
             append_log(ticker, "TARGET-PARTIAL", half, current, pnl_pct * 100, "target +50% hit, sell half")
             state["positions"].setdefault(ticker, {})["partial_taken"] = True
+            exits_fired = True
 
     save_state(state)
+
+    if exits_fired:
+        append_nav_log(client, "post-exit: stop or target triggered")
+
     print("Exit check done.")
 
 

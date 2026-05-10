@@ -18,6 +18,7 @@ REPO = Path(__file__).resolve().parents[3]
 NICK_DIR = REPO / "vault/20_investment/nick"
 KB_DIR = REPO / "vault/Knowledge"
 WEEKLY_DIR = NICK_DIR / "weekly"
+NAV_LOG = NICK_DIR / "performance/nav_log.md"
 WEEKLY_DIR.mkdir(parents=True, exist_ok=True)
 
 BENCHMARK_TICKERS = ["QQQM", "SOXX", "SPY"]
@@ -171,6 +172,12 @@ Rules:
 """
 
 
+def log_weekly_nav(nav: float):
+    row = f"| {date.today()} | ${nav:,.2f} | - | - | weekly snapshot (Friday close) |\n"
+    with open(NAV_LOG, "a", encoding="utf-8") as f:
+        f.write(row)
+
+
 def main():
     alpaca_client = TradingClient(
         os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True
@@ -179,6 +186,9 @@ def main():
 
     print("Fetching holdings from Alpaca...")
     holdings_block, nav = build_holdings_block(alpaca_client)
+
+    log_weekly_nav(nav)
+    print(f"NAV snapshot logged: ${nav:,.2f}")
 
     print("Building prompt...")
     prompt = build_prompt(holdings_block, nav)
