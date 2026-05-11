@@ -15,11 +15,14 @@ Output: markdown table ready to paste into premarket brief.
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 """
 
+import io
 import os
 import sys
 import argparse
 from datetime import datetime, date, timedelta
 from pathlib import Path
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 
 def load_env():
@@ -133,81 +136,110 @@ def fmt_price(p: float) -> str:
     return f"${p:,.2f}"
 
 
-def print_ticker(ticker: str, bars, days: int):
+def get_ticker_data(ticker: str, bars, days: int) -> dict | None:
+    """Return computed data dict for a ticker (used by both full and brief modes)."""
     if not bars or len(bars) < 2:
-        print(f"\n### {ticker}\n  [warn] Insufficient data\n")
-        return
-
-    prev = bars[-2]      # previous trading day
-    last = bars[-1]      # most recent bar
+        return None
+    prev = bars[-2]
+    last = bars[-1]
     year_bars = bars[-252:] if len(bars) >= 252 else bars
-
+    last_c = _get(last, "close")
     pivots = calc_pivots(_get(prev, "high"), _get(prev, "low"), _get(prev, "close"))
     swings = find_swings(bars, lookback=days)
-    last_c = _get(last, "close")
-    # Filter out obvious bad data points (must be within 50% of last close)
     valid_bars = [b for b in year_bars if _get(b, "low") > last_c * 0.5 and _get(b, "high") < last_c * 2.0]
     week52_high = max(_get(b, "high") for b in valid_bars) if valid_bars else last_c
     week52_low = min(_get(b, "low") for b in valid_bars) if valid_bars else last_c
-
+    atr = calc_atr(bars)
     prev_ts = _get(prev, "timestamp")
-    prev_date = prev_ts.strftime("%Y-%m-%d") if hasattr(prev_ts, "strftime") else str(prev_ts)[:10]
-    last_close = _get(last, "close")
+    return {
+        "ticker": ticker,
+        "last": last_c,
+        "prev_date": prev_ts.strftime("%Y-%m-%d") if hasattr(prev_ts, "strftime") else str(prev_ts)[:10],
+        "prev_ohlc": (_get(prev, "open"), _get(prev, "high"), _get(prev, "low"), _get(prev, "close")),
+        "pivots": pivots,
+        "swings": swings,
+        "week52_high": week52_high,
+        "week52_low": week52_low,
+        "atr": atr,
+        "atr_pct": round(atr / last_c * 100, 1) if atr else None,
+    }
 
+
+def print_ticker_full(d: dict, days: int):
+    """Original full output — all pivots, swings, ATR."""
+    ticker, last_close = d["ticker"], d["last"]
+    o, h, l, c = d["prev_ohlc"]
     print(f"\n### {ticker}")
-    print(f"*Prev day ({prev_date}): O={fmt_price(_get(prev,'open'))} H={fmt_price(_get(prev,'high'))} L={fmt_price(_get(prev,'low'))} C={fmt_price(_get(prev,'close'))} | Last close: {fmt_price(last_close)}*")
-    print(f"*52W: H={fmt_price(week52_high)} / L={fmt_price(week52_low)}*\n")
+    print(f"*Prev day ({d['prev_date']}): O={fmt_price(o)} H={fmt_price(h)} L={fmt_price(l)} C={fmt_price(c)} | Last close: {fmt_price(last_close)}*")
+    print(f"*52W: H={fmt_price(d['week52_high'])} / L={fmt_price(d['week52_low'])}*\n")
 
-    # Pivot table
     print("**Pivot Points (Classic)**\n")
     print("| Level | Price | vs Last Close |")
     print("|---|---|---|")
     for label in ["R3", "R2", "R1", "PP", "S1", "S2", "S3"]:
-        price = pivots[label]
-        diff = price - last_close
-        pct = diff / last_close * 100
-        arrow = "+" if diff >= 0 else ""
+        price = d["pivots"][label]
+        pct = (price - last_close) / last_close * 100
+        arrow = "+" if pct >= 0 else ""
         print(f"| **{label}** | {fmt_price(price)} | {arrow}{pct:.1f}% |")
 
-    # Swing levels
     print(f"\n**Swing Highs/Lows (last {days} days)**\n")
     print("| Type | Price | Date | vs Last Close |")
     print("|---|---|---|---|")
-    for s in swings:
-        diff = s["price"] - last_close
-        pct = diff / last_close * 100
-        arrow = "+" if diff >= 0 else ""
+    for s in d["swings"]:
+        pct = (s["price"] - last_close) / last_close * 100
+        arrow = "+" if pct >= 0 else ""
         print(f"| Swing {s['type']} | {fmt_price(s['price'])} | {s['date']} | {arrow}{pct:.1f}% |")
 
-    # ATR section
-    atr = calc_atr(bars)
-    if atr is not None:
-        atr_pct = atr / last_close * 100
-        long_stop = round(last_close - 2 * atr, 2)
-        short_stop = round(last_close + 2 * atr, 2)
+    if d["atr"] is not None:
+        atr, last_c = d["atr"], d["last"]
         print(f"**ATR14 (volatility-adjusted stops)**\n")
         print(f"| | Value | Note |")
         print(f"|---|---|---|")
-        print(f"| ATR14 | {fmt_price(atr)} ({atr_pct:.1f}% of price) | avg daily range 14 days |")
-        print(f"| Long stop (2×ATR below) | {fmt_price(long_stop)} | exit long if breaks here |")
-        print(f"| Short stop (2×ATR above) | {fmt_price(short_stop)} | exit short if breaks here |")
+        print(f"| ATR14 | {fmt_price(atr)} ({d['atr_pct']:.1f}% of price) | avg daily range 14 days |")
+        print(f"| Long stop (2×ATR below) | {fmt_price(round(last_c - 2*atr, 2))} | exit long if breaks here |")
+        print(f"| Short stop (2×ATR above) | {fmt_price(round(last_c + 2*atr, 2))} | exit short if breaks here |")
         print()
-
     print()
+
+
+def print_brief_table(data_list: list[dict]):
+    """
+    --brief mode: single compact table — S1/S2/R1/R2 + ATR% + distance from S1.
+    ~600 words vs ~2500 in full mode. Use for pre-market brief embedding.
+    """
+    print("| Ticker | Last | S2 | S1 | R1 | R2 | ATR% | vs S1 | Zone |")
+    print("|--------|------|----|----|----|----|------|-------|------|")
+    for d in data_list:
+        last = d["last"]
+        p = d["pivots"]
+        s1, s2 = p["S1"], p["S2"]
+        r1, r2 = p["R1"], p["R2"]
+        vs_s1 = (last - s1) / s1 * 100
+        atr_str = f"{d['atr_pct']:.1f}%" if d["atr_pct"] else "?"
+        if vs_s1 <= 5.0:
+            zone = "NEAR★"
+        elif vs_s1 <= 15.0:
+            zone = "MID"
+        else:
+            zone = "EXTENDED"
+        print(
+            f"| {d['ticker']} | {fmt_price(last)} | {fmt_price(s2)} | {fmt_price(s1)} "
+            f"| {fmt_price(r1)} | {fmt_price(r2)} | {atr_str} | +{vs_s1:.1f}% | {zone} |"
+        )
 
 
 def main():
     parser = argparse.ArgumentParser(description="S/R levels from Alpaca data")
     parser.add_argument("tickers", nargs="+", help="Ticker symbols (e.g. AAPL SPY)")
     parser.add_argument("--days", type=int, default=30, help="Lookback days for swing levels (default: 30)")
+    parser.add_argument("--brief", action="store_true", help="Compact single-table output (~75%% fewer tokens)")
     args = parser.parse_args()
 
     load_env()
     tickers = [t.upper() for t in args.tickers]
 
-    print(f"# S/R Levels - {date.today()}")
-    print(f"*Pivot points = previous trading day OHLC | Swings = last {args.days} days | Source: Alpaca*\n")
-    print("---")
+    print(f"# S/R Levels — {date.today()}" + (" (brief)" if args.brief else ""))
+    print(f"*Source: Alpaca | Pivots = prev day OHLC | Swings = last {args.days} days*\n")
 
     try:
         all_bars = get_bars(tickers, args.days)
@@ -215,11 +247,24 @@ def main():
         print(f"ERROR: {e}")
         sys.exit(1)
 
+    data_list = []
     for ticker in tickers:
         if ticker in all_bars:
-            print_ticker(ticker, all_bars[ticker], args.days)
+            d = get_ticker_data(ticker, all_bars[ticker], args.days)
+            if d:
+                data_list.append(d)
+            else:
+                print(f"  [warn] {ticker}: insufficient data")
         else:
-            print(f"\n### {ticker}\n  [warn] No data returned\n")
+            print(f"  [warn] {ticker}: no data returned")
+
+    if args.brief:
+        print_brief_table(data_list)
+        print(f"\n*NEAR★ = ≤5% above S1 (good entry zone) | MID = 5-15% | EXTENDED = >15%*")
+    else:
+        print("---")
+        for d in data_list:
+            print_ticker_full(d, args.days)
 
 
 if __name__ == "__main__":

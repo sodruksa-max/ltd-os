@@ -12,6 +12,9 @@
 - [Research sources — GitHub + Reddit](feedback_research_sources.md) — เวลาหาข้อมูล ให้รวม GitHub และ Reddit เป็น source เสมอ ไม่ใช่แค่ mainstream news
 - [NotebookLM URL fallback](feedback_notebooklm_url_fallback.md) — URL blocked → WebFetch content → source_type=text ทันที; auth error ต่างจาก block error
 
+## Trading (load for trading tasks instead of full WORKFLOWS.md)
+- [Trading Rules](../../../vault/_memory/TRADING_RULES.md) — confidence calibration, Polymarket rule, Presidential Action Risk, setup discipline, pre-commit rules
+
 ## Project (load for code/project tasks)
 - [Bubble Risk System — 3 Ideas](project_bubble_risk_ideas.md) — 3 ทิศทาง: Risk Monitor script, vault framework doc, macro-snapshot extension. แนะนำทำทิศ 2 ก่อน
 - [Trading bot direction](project_trading_bot_direction.md) — เพิ่ม crypto bot (Binance/ccxt) ต่อจาก stock screener ที่เก็บไว้ครบ | related: vault/20_investment/_journal/

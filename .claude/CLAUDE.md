@@ -130,7 +130,7 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 
 ### 8. Task-scoped memory loading
 (From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)
-- **Trading tasks** (pre-market, post-market, stock-research, eod): โหลดแค่ PREFERENCES.md + OUTCOMES.md
+- **Trading tasks** (pre-market, post-market, stock-research, eod, weekly-calibration): โหลด PREFERENCES.md + OUTCOMES.md (Trading Calibration Log section only) + TRADING_RULES.md — ห้ามโหลด WORKFLOWS.md เต็ม
 - **Code/project tasks** (coder, executor, planner สำหรับ code): โหลดแค่ PROJECTS.md + DECISIONS.md
 - **Content tasks** (/research-idea, writer): โหลด PREFERENCES.md + vault/Knowledge/THESIS_TRACKER.md
 - **Nick tasks** (/nick-init, /nick-weekly, /nick-quarterly): โหลด vault/Knowledge/ เท่านั้น (THESIS_TRACKER + INDEX_insights) — ห้ามโหลด PREFERENCES หรือ OUTCOMES

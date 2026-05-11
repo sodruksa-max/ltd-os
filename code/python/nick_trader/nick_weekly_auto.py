@@ -39,14 +39,16 @@ def get_pct_change(ticker: str, period="5d") -> float:
         return 0.0
 
 
-def build_holdings_block(client: TradingClient) -> tuple[str, float]:
+def build_holdings_block(client: TradingClient) -> tuple[str, float, list[str]]:
     account = client.get_account()
     nav = round(float(account.portfolio_value), 2)
     positions = client.get_all_positions()
 
     lines = [f"Current NAV: ${nav:,.2f}\n", "Holdings:"]
+    held_tickers = []
     for p in positions:
         ticker = p.symbol
+        held_tickers.append(ticker)
         qty = float(p.qty)
         avg_cost = float(p.avg_entry_price)
         current = float(p.current_price)
@@ -63,7 +65,7 @@ def build_holdings_block(client: TradingClient) -> tuple[str, float]:
         chg = get_pct_change(sym)
         lines.append(f"  {sym}: {chg:+.2f}%")
 
-    return "\n".join(lines), nav
+    return "\n".join(lines), nav, held_tickers
 
 
 def validate_orders_block(text: str) -> list:
@@ -77,14 +79,46 @@ def validate_orders_block(text: str) -> list:
         return []
 
 
-def load_insight_atoms() -> str:
+def load_insight_atoms(held_tickers: list[str]) -> str:
+    """
+    Load insight atoms selectively:
+    1. Always load INDEX_insights.md (cluster summaries ~1200 words)
+    2. Load full atom files only for clusters matching held tickers
+    3. If portfolio empty: load all atoms (Nick needs full KB to seed portfolio)
+    """
     atoms_dir = KB_DIR / "insight-atoms"
-    parts = []
+    index_path = KB_DIR / "INDEX_insights.md"
+
+    index_text = ""
+    if index_path.exists():
+        index_text = f"## KB Index (all clusters)\n\n{index_path.read_text(encoding='utf-8')}\n\n"
+
+    if not held_tickers:
+        # Empty portfolio — load everything so Nick can pick initial positions
+        parts = []
+        for f in sorted(atoms_dir.glob("*.md")):
+            if f.name == "README.md":
+                continue
+            parts.append(f.read_text(encoding="utf-8"))
+        return index_text + "\n\n---\n\n".join(parts)
+
+    # Selective: load atom files whose name contains any held ticker (case-insensitive)
+    tickers_lower = [t.lower() for t in held_tickers]
+    relevant, other = [], []
     for f in sorted(atoms_dir.glob("*.md")):
         if f.name == "README.md":
             continue
-        parts.append(f.read_text(encoding="utf-8"))
-    return "\n\n---\n\n".join(parts)
+        fname = f.stem.lower()
+        if any(t in fname for t in tickers_lower):
+            relevant.append(f.read_text(encoding="utf-8"))
+        else:
+            # Include first 3 lines (title + claim) of non-relevant files as stub
+            lines = f.read_text(encoding="utf-8").splitlines()
+            stub = "\n".join(lines[:4]) + f"\n*[full detail omitted — not in current holdings]*"
+            other.append(stub)
+
+    parts = relevant + (["---\n## Other thesis stubs (index above for detail)\n"] + other if other else [])
+    return index_text + "\n\n---\n\n".join(parts)
 
 
 def load_nick_signals() -> str:
@@ -95,9 +129,9 @@ def load_nick_signals() -> str:
         return "[nick-signals.md not found — run scripts/nick-signal.py first]"
 
 
-def build_prompt(holdings_block: str, nav: float) -> str:
+def build_prompt(holdings_block: str, nav: float, held_tickers: list[str]) -> str:
     nick_soul = load_file(KB_DIR / "nick-soul.md")
-    insight_atoms = load_insight_atoms()
+    insight_atoms = load_insight_atoms(held_tickers)
     market_signals = load_nick_signals()
     today = date.today()
 
@@ -248,13 +282,14 @@ def main():
     groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
     print("Fetching holdings from Alpaca...")
-    holdings_block, nav = build_holdings_block(alpaca_client)
+    holdings_block, nav, held_tickers = build_holdings_block(alpaca_client)
 
     log_weekly_nav(nav)
     print(f"NAV snapshot logged: ${nav:,.2f}")
+    print(f"Holdings: {held_tickers if held_tickers else '(empty — will load full KB)'}")
 
     print("Building prompt...")
-    prompt = build_prompt(holdings_block, nav)
+    prompt = build_prompt(holdings_block, nav, held_tickers)
 
     print("Calling Groq llama-3.3-70b...")
     try:

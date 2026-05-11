@@ -117,6 +117,8 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ## STEP 5 — CHRIS + VERA: Review + Audit
 
+> **Observation masking:** Reese doc อยู่ใน context แล้ว (สร้างใน step 4) — ห้าม re-read ไฟล์จาก disk ซ้ำ ทำงานจาก content ที่อยู่ใน context เลย (arXiv:2508.21433)
+
 **Chris (critic) — อ่าน research doc → verdict:**
 - ✅ Pass: ไปต่อได้
 - ⚠️ Revise: ระบุ 3 จุดอ่อน → Reese แก้ (max 1 round แล้วบังคับ pass)
@@ -136,6 +138,8 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 ---
 
 ## STEP 6 — INDIE: Extract Insight Atoms
+
+> **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ (arXiv:2508.21433)
 
 จาก research doc ที่ผ่าน Chris+Vera → extract 3-7 atomic insights
 

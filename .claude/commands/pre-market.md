@@ -86,7 +86,7 @@ While web searches are running, execute all three in parallel:
 ```bash
 code/python/.venv/Scripts/python scripts/macro-snapshot.py
 code/python/.venv/Scripts/python scripts/news-snapshot.py
-code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD
+code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD --brief
 code/python/.venv/Scripts/python scripts/universe-screen.py
 code/python/.venv/Scripts/python scripts/sector-flow.py
 code/python/.venv/Scripts/python scripts/catalyst-calendar.py
@@ -97,10 +97,10 @@ code/python/.venv/Scripts/python scripts/etf-discovery.py --top 10
 `sector-flow.py` ดูว่า sector ไหนดูด money เข้า/ออก — ใช้ประกอบ setup selection
 `catalyst-calendar.py` แสดง earnings + space events 21 วันข้างหน้า — ใช้เป็น trigger reference ใน setups
 
-เพิ่ม SMCI MRVL ARM ใน sr-levels ถ้ามีข่าว/catalyst วันนั้น:
+เพิ่ม SMCI MRVL ARM ใน sr-levels ถ้ามีข่าว/catalyst วันนั้น (ยังคงใช้ --brief):
 
 ```bash
-code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD SMCI MRVL
+code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD SMCI MRVL --brief
 ```
 
 **How to use the output:**
