@@ -217,7 +217,7 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
       <div class="site-title">พอร์ตของ Nick</div>
       <div class="site-sub">พอร์ตทดลอง $10K &bull; วินัยสไตล์ Nick Sleep</div>
     </div>
-    <div class="hdr-meta">วันเริ่ม: 2026-05-10<br>อัปเดตล่าสุด: 2026-05-10</div>
+    <div class="hdr-meta">วันเริ่ม: 2026-05-10<br>อัปเดตล่าสุด: 2026-05-11</div>
   </div>
   <div class="tabs">
     <button class="tab on" onclick="showTab('dash',this)">แดชบอร์ด</button>
@@ -227,17 +227,17 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
 
 <div id="pane-dash">
 
-  <div class="gate gate-open">
+  <div class="gate gate-caution">
     <div class="gate-left">
       <div class="gate-label">EARLY GATE</div>
-      <div class="gate-status">เปิด <span class="gate-icon">✓</span></div>
+      <div class="gate-status">เปิด — ใกล้เส้น <span class="gate-icon">⚠</span></div>
     </div>
     <div class="gate-center">
-      <div class="gate-vix-num">17.19</div>
-      <div class="gate-vix-label">VIX <span class="gate-vix-chg gate-chg-up">↑ +0.11 จากเมื่อวาน</span></div>
+      <div class="gate-vix-num">18.23</div>
+      <div class="gate-vix-label">VIX <span class="gate-vix-chg gate-chg-up">↑ +1.04 จากเมื่อวาน</span></div>
     </div>
     <div class="gate-right">
-      <div class="gate-note">ซื้อหุ้นใหม่ได้</div>
+      <div class="gate-note">VIX ห่างจากเส้น 1.8 จุด — ระวังกลับตัว</div>
       <div class="gate-rule">กฎ: ซื้อใหม่เมื่อ VIX &lt; 20 เท่านั้น</div>
     </div>
   </div>
@@ -245,27 +245,27 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
   <div class="metrics">
     <div class="mc">
       <div class="mc-lbl">วันที่</div>
-      <div class="mc-val">2026-05-10</div>
+      <div class="mc-val">2026-05-11</div>
       <div class="mc-sub">สัปดาห์ที่ 0 นับจากเริ่ม</div>
     </div>
     <div class="mc">
       <div class="mc-lbl">มูลค่าพอร์ต</div>
-      <div class="mc-val">$10,000.00</div>
-      <div class="mc-sub">+0.00% นับจากเริ่ม</div>
-      <div class="mc-badge">เทียบ SPY: N/A</div>
+      <div class="mc-val">$10,168.22</div>
+      <div class="mc-sub">+1.68% นับจากเริ่ม</div>
+      <div class="mc-badge">เทียบ SPY: +1.68pp</div>
     </div>
     <div class="mc">
       <div class="mc-lbl">สถานะ</div>
       <div class="mc-val">0 สัปดาห์</div>
       <div class="mc-sub">10 รายการสัปดาห์นี้</div>
-      <div class="mc-badge">0 หุ้นในพอร์ต</div>
+      <div class="mc-badge">8 หุ้นในพอร์ต</div>
     </div>
   </div>
 
   <div class="regime-bar">
-    <div class="regime-item"><span class="regime-lbl">10Y Yield</span><span class="regime-val">4.36%</span></div>
+    <div class="regime-item"><span class="regime-lbl">10Y Yield</span><span class="regime-val">4.38%</span></div>
     <span class="regime-sep">|</span>
-    <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span><span class="regime-val pnl-pos">+12.6%</span></div>
+    <div class="regime-item"><span class="regime-lbl">SOXX (5 วัน)</span><span class="regime-val pnl-pos">+9.42%</span></div>
   </div>
 
   <div class="risk-panel">
@@ -281,13 +281,13 @@ body{font-family:'IBM Plex Mono','Courier New',monospace;background:var(--bg);co
       </div>
       <div class="risk-stat">
         <div class="risk-lbl">Largest Position</div>
-        <div class="risk-val stat-muted">N/A</div>
-        <div class="risk-sub"></div>
+        <div class="risk-val stat-ok">15.5%</div>
+        <div class="risk-sub">RKLB</div>
       </div>
       <div class="risk-stat">
         <div class="risk-lbl">Thesis HHI</div>
-        <div class="risk-val stat-muted">N/A</div>
-        <div class="risk-sub"></div>
+        <div class="risk-val stat-warn">3053</div>
+        <div class="risk-sub">Moderately concentrated</div>
       </div>
     </div>
 
@@ -327,7 +327,7 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
           </div>
           <div class="ab">
             <div class="ab-title">เงินสด</div>
-            <div class="ab-text">เงินสด 100.0% ของ NAV รอโอกาส — กฎ EARLY-only ซื้อใหม่ได้เมื่อ VIX &lt; 20 เท่านั้น</div>
+            <div class="ab-text">เงินสด 0.1% ของ NAV รอโอกาส — กฎ EARLY-only ซื้อใหม่ได้เมื่อ VIX &lt; 20 เท่านั้น</div>
           </div>
           <div class="ab"><div class="ab-title">บันทึกของ Nick</div><div class="ab-text">Initial portfolio seeding with high-conviction tickers from each active thesis. Will continue to monitor and adjust holdings based on thesis validity and market developments.</div></div>
         </div>
@@ -338,44 +338,162 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
   <div class="card" style="margin-bottom:16px">
       <div class="card-hdr">
         <span class="card-title">Earnings Calendar</span>
-        <span class="card-sub">90 วันข้างหน้า — 4 หุ้น</span>
+        <span class="card-sub">90 วันข้างหน้า — 10 หุ้น</span>
       </div>
       <div class="card-body" style="padding:12px 20px">
+        <div class="earn-item earn-today">
+          <div class="earn-sym">ASTS<div class="earn-co">AST SpaceMobile</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:100%"></div></div>
+          </div>
+          <div class="earn-date">2026-05-11</div>
+          <span class="earn-badge earn-now">วันนี้!</span>
+        </div>
         <div class="earn-item earn-near">
           <div class="earn-sym">NVDA<div class="earn-co">NVIDIA Corporation</div></div>
           <div class="earn-timeline">
-            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:89%"></div></div>
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:90%"></div></div>
           </div>
           <div class="earn-date">2026-05-20</div>
-          <span class="earn-badge earn-near-b">อีก 10 วัน</span>
+          <span class="earn-badge earn-near-b">อีก 9 วัน</span>
+        </div>
+        <div class="earn-item ">
+          <div class="earn-sym">CRM<div class="earn-co">CRM</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:82%"></div></div>
+          </div>
+          <div class="earn-date">2026-05-27</div>
+          <span class="earn-badge earn-far">อีก 16 วัน</span>
+        </div>
+        <div class="earn-item ">
+          <div class="earn-sym">SNOW<div class="earn-co">SNOW</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:82%"></div></div>
+          </div>
+          <div class="earn-date">2026-05-27</div>
+          <span class="earn-badge earn-far">อีก 16 วัน</span>
         </div>
         <div class="earn-item ">
           <div class="earn-sym">AVGO<div class="earn-co">Broadcom Inc.</div></div>
           <div class="earn-timeline">
-            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:73%"></div></div>
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:74%"></div></div>
           </div>
           <div class="earn-date">2026-06-03</div>
-          <span class="earn-badge earn-far">อีก 24 วัน</span>
+          <span class="earn-badge earn-far">อีก 23 วัน</span>
         </div>
         <div class="earn-item ">
           <div class="earn-sym">ASML<div class="earn-co">ASML Holding</div></div>
           <div class="earn-timeline">
-            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:27%"></div></div>
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:28%"></div></div>
           </div>
           <div class="earn-date">2026-07-15</div>
-          <span class="earn-badge earn-far">อีก 66 วัน</span>
+          <span class="earn-badge earn-far">อีก 65 วัน</span>
         </div>
         <div class="earn-item ">
           <div class="earn-sym">PLTR<div class="earn-co">Palantir Technologies</div></div>
           <div class="earn-timeline">
-            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:6%"></div></div>
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:7%"></div></div>
           </div>
           <div class="earn-date">2026-08-03</div>
-          <span class="earn-badge earn-far">อีก 85 วัน</span>
+          <span class="earn-badge earn-far">อีก 84 วัน</span>
+        </div>
+        <div class="earn-item ">
+          <div class="earn-sym">IONQ<div class="earn-co">IONQ</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:4%"></div></div>
+          </div>
+          <div class="earn-date">2026-08-05</div>
+          <span class="earn-badge earn-far">อีก 86 วัน</span>
+        </div>
+        <div class="earn-item ">
+          <div class="earn-sym">RKLB<div class="earn-co">Rocket Lab USA</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:3%"></div></div>
+          </div>
+          <div class="earn-date">2026-08-06</div>
+          <span class="earn-badge earn-far">อีก 87 วัน</span>
+        </div>
+        <div class="earn-item ">
+          <div class="earn-sym">KTOS<div class="earn-co">KTOS</div></div>
+          <div class="earn-timeline">
+            <div class="earn-bar-bg"><div class="earn-bar-fill" style="width:3%"></div></div>
+          </div>
+          <div class="earn-date">2026-08-06</div>
+          <span class="earn-badge earn-far">อีก 87 วัน</span>
         </div></div>
     </div>
 
-  
+  <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="card-title">P&amp;L Contribution</span>
+        <span class="card-sub">รวม: <span class="pnl-pos">+$169</span></span>
+      </div>
+      <div class="card-body">
+        <div class="contrib-row">
+          <div class="contrib-sym">RKLB</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:100%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$75</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">IONQ</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:56%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$42</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">ASTS</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:46%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$34</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">SNOW</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:26%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$19</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">AVGO</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:7%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$6</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">CRM</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:7%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$5</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">KTOS</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:0%;background:#3fb950;float:left"></div>
+          </div>
+          <div class="contrib-val" style="color:#3fb950">+$0</div>
+        </div>
+        <div class="contrib-row">
+          <div class="contrib-sym">PLTR</div>
+          <div class="contrib-track">
+            <div class="contrib-center"></div>
+            <div class="contrib-bar" style="width:17%;background:#f85149;float:right"></div>
+          </div>
+          <div class="contrib-val" style="color:#f85149">$-13</div>
+        </div></div>
+    </div>
 
   <div class="card" style="margin-bottom:16px">
       <div class="card-hdr">
@@ -383,8 +501,8 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
         <span class="card-sub">% NAV ต่อ thesis cluster</span>
       </div>
       <div class="card-body">
-        <div class="exp-bar"><div class="exp-seg" style="width:100.0%;background:#30363d" title="Cash: 100.0%"></div></div>
-        <div class="exp-list"><div class="exp-row"><span class="exp-dot" style="background:#30363d"></span><span class="exp-name">Cash</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:100.0%;background:#30363d"></div></div></span><span class="exp-pct">100.0%</span></div></div>
+        <div class="exp-bar"><div class="exp-seg" style="width:41.0%;background:#bc8cff" title="T4 AI Software: 41.0%"></div><div class="exp-seg" style="width:31.4%;background:#d29922" title="T3 Space: 31.4%"></div><div class="exp-seg" style="width:14.8%;background:#8b949e" title="T5: 14.8%"></div><div class="exp-seg" style="width:12.7%;background:#00c896" title="T1 AI Capex: 12.7%"></div><div class="exp-seg" style="width:0.1%;background:#30363d" title="Cash: 0.1%"></div></div>
+        <div class="exp-list"><div class="exp-row"><span class="exp-dot" style="background:#bc8cff"></span><span class="exp-name">T4 AI Software</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:41.0%;background:#bc8cff"></div></div></span><span class="exp-pct">41.0%</span></div><div class="exp-row"><span class="exp-dot" style="background:#d29922"></span><span class="exp-name">T3 Space</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:31.4%;background:#d29922"></div></div></span><span class="exp-pct">31.4%</span></div><div class="exp-row"><span class="exp-dot" style="background:#8b949e"></span><span class="exp-name">T5</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:14.8%;background:#8b949e"></div></div></span><span class="exp-pct">14.8%</span></div><div class="exp-row"><span class="exp-dot" style="background:#00c896"></span><span class="exp-name">T1 AI Capex</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:12.7%;background:#00c896"></div></div></span><span class="exp-pct">12.7%</span></div><div class="exp-row"><span class="exp-dot" style="background:#30363d"></span><span class="exp-name">Cash</span><span class="exp-bar-wrap"><div class="exp-mini-bg"><div class="exp-mini-fill" style="width:0.1%;background:#30363d"></div></div></span><span class="exp-pct">0.1%</span></div></div>
         
       </div>
     </div>
@@ -393,7 +511,7 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
     <div class="card">
       <div class="card-hdr">
         <span class="card-title">พอร์ตหุ้น</span>
-        <span class="card-sub">0 หุ้น + เงินสด</span>
+        <span class="card-sub">8 หุ้น + เงินสด</span>
       </div>
       <div class="card-body" style="padding:0">
         <table class="htable">
@@ -403,11 +521,91 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
             <th>น้ำหนัก</th><th>กำไร/ขาดทุน</th>
           </tr></thead>
           <tbody>
+        <tr onclick="selectHolding('ASTS')" id="row-ASTS">
+          <td><div class="tn">ASTS</div><div class="tc">AST SpaceMobile</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>19</td>
+          <td>$77.15</td>
+          <td><div>$78.96</div></td>
+          <td>$1,500</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:14.8%"></div></div><span>14.8%</span></div></td>
+          <td class="pnl-pos">+2.35%<br><small>$+34</small><div class="week-chg pnl-pos">+15.53% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('AVGO')" id="row-AVGO">
+          <td><div class="tn">AVGO</div><div class="tc">Broadcom Inc.</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>3</td>
+          <td>$429.37</td>
+          <td><div>$431.24</div></td>
+          <td>$1,294</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:12.7%"></div></div><span>12.7%</span></div></td>
+          <td class="pnl-pos">+0.44%<br><small>$+6</small><div class="week-chg pnl-pos">+3.57% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('CRM')" id="row-CRM">
+          <td><div class="tn">CRM</div><div class="tc">CRM</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>8</td>
+          <td>$180.64</td>
+          <td><div>$181.30</div></td>
+          <td>$1,450</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:14.3%"></div></div><span>14.3%</span></div></td>
+          <td class="pnl-pos">+0.37%<br><small>$+5</small><div class="week-chg pnl-neg">-2.29% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('IONQ')" id="row-IONQ">
+          <td><div class="tn">IONQ</div><div class="tc">IONQ</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>30</td>
+          <td>$48.81</td>
+          <td><div>$50.20</div></td>
+          <td>$1,506</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:14.8%"></div></div><span>14.8%</span></div></td>
+          <td class="pnl-pos">+2.85%<br><small>$+42</small><div class="week-chg pnl-pos">+9.74% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('KTOS')" id="row-KTOS">
+          <td><div class="tn">KTOS</div><div class="tc">KTOS</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>2</td>
+          <td>$55.72</td>
+          <td><div>$55.89</div></td>
+          <td>$112</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:1.1%"></div></div><span>1.1%</span></div></td>
+          <td class="pnl-pos">+0.31%<br><small>$+0</small><div class="week-chg pnl-neg">-9.75% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('PLTR')" id="row-PLTR">
+          <td><div class="tn">PLTR</div><div class="tc">Palantir Technologies</div></td>
+          <td><span class="pill pill-loss">ขาดทุน</span></td>
+          <td>10</td>
+          <td>$134.64</td>
+          <td><div>$133.34</div></td>
+          <td>$1,333</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:13.1%"></div></div><span>13.1%</span></div></td>
+          <td class="pnl-neg">-0.97%<br><small>$-13</small><div class="week-chg pnl-neg">-8.75% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('RKLB')" id="row-RKLB">
+          <td><div class="tn">RKLB</div><div class="tc">Rocket Lab USA</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>14</td>
+          <td>$107.37</td>
+          <td><div>$112.73</div></td>
+          <td>$1,578</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:15.5%"></div></div><span>15.5%</span></div></td>
+          <td class="pnl-pos">+4.99%<br><small>$+75</small><div class="week-chg pnl-pos">+40.61% สัปดาห์นี้</div></td>
+        </tr>
+        <tr onclick="selectHolding('SNOW')" id="row-SNOW">
+          <td><div class="tn">SNOW</div><div class="tc">SNOW</div></td>
+          <td><span class="pill pill-ok">ปกติ</span></td>
+          <td>9</td>
+          <td>$151.42</td>
+          <td><div>$153.57</div></td>
+          <td>$1,382</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:13.6%"></div></div><span>13.6%</span></div></td>
+          <td class="pnl-pos">+1.42%<br><small>$+19</small><div class="week-chg pnl-pos">+6.49% สัปดาห์นี้</div></td>
+        </tr>
         <tr style="opacity:0.6;">
           <td><div class="tn">CASH</div></td>
           <td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>$10,000</td>
-          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:100%"></div></div><span>100.0%</span></div></td>
+          <td>$13</td>
+          <td><div class="wbar-wrap"><div class="wbar-bg"><div class="wbar-fill" style="width:0.1%"></div></div><span>0.1%</span></div></td>
           <td>—</td>
         </tr></tbody>
         </table>
@@ -507,29 +705,71 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-warn">!</span></td>
-          <td class="cov-center">2</td>
-          <td class="cov-center"><span class="cov-yes">-1d</span></td>
+          <td class="cov-center">6</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
         </tr><tr>
           <td><strong>AVGO</strong></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-warn">!</span></td>
-          <td class="cov-center">2</td>
-          <td class="cov-center"><span class="cov-yes">-1d</span></td>
+          <td class="cov-center">6</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
         </tr><tr>
           <td><strong>ASML</strong></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-warn">!</span></td>
-          <td class="cov-center">7</td>
-          <td class="cov-center"><span class="cov-yes">-1d</span></td>
+          <td class="cov-center">11</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
         </tr><tr>
           <td><strong>PLTR</strong></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-yes">✓</span></td>
           <td class="cov-center"><span class="cov-warn">!</span></td>
           <td class="cov-center">5</td>
-          <td class="cov-center"><span class="cov-yes">-1d</span></td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>ASTS</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>CRM</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>IONQ</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>KTOS</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>RKLB</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
+        </tr><tr>
+          <td><strong>SNOW</strong></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-yes">✓</span></td>
+          <td class="cov-center"><span class="cov-warn">!</span></td>
+          <td class="cov-center">5</td>
+          <td class="cov-center"><span class="cov-yes">0d</span></td>
         </tr></tbody>
         </table>
       </div>
@@ -561,7 +801,7 @@ Sizing: 10-20% NAV for each ticker, depending on convicti</div>
 <script>
 const CD = {"dates": ["2026-05-10"], "nick": [10000.0], "SPY": [10000.0], "QQQ": [10000.0], "SOXX": [10000.0]};
 const TD = {"NVDA": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "30%"}, "AMD": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "AVGO": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "25%"}, "SMCI": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "DELL": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "HPE": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "MU": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "MRVL": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "LRCX": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "MOD": {"thesis": "Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated \u2192 semicon + datacenter = direct beneficiary for 3-5 years.", "kill_conditions": ["Hyperscaler capex guidance 2 consecutive quarters below prior year \u2192 thesis broken."], "thesis_id": "T1", "thesis_title": "AI Capex Supercycle", "status": "Active \u2014 early innings", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "ASML": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "20%"}, "ARM": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "CRDO": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "AEIS": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "UCTT": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "WDC": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "ONTO": {"thesis": "NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.", "kill_conditions": ["Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend."], "thesis_id": "T2", "thesis_title": "Semiconductor Moats", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "RKLB": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals."], "thesis_id": "T3", "thesis_title": "Space & Defense AI", "status": "Active \u2014 speculative tier", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "ASTS": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals."], "thesis_id": "T3", "thesis_title": "Space & Defense AI", "status": "Active \u2014 speculative tier", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "LUNR": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals."], "thesis_id": "T3", "thesis_title": "Space & Defense AI", "status": "Active \u2014 speculative tier", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "KTOS": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals."], "thesis_id": "T3", "thesis_title": "Space & Defense AI", "status": "Active \u2014 speculative tier", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "BBAI": {"thesis": "Space economy entering commercial ramp \u2014 launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.", "kill_conditions": ["RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals."], "thesis_id": "T3", "thesis_title": "Space & Defense AI", "status": "Active \u2014 speculative tier", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "PLTR": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "15%"}, "CRM": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "SNOW": {"thesis": "AI infra build-out \u2192 software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.", "kill_conditions": ["PLTR loses 2+ large government renewals; AI features fail to lift CRM/SNOW ARR meaningfully."], "thesis_id": "T4", "thesis_title": "AI Software Monetization", "status": "Active", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "IONQ": {"thesis": "Quantum computing moving from research phase to early commercial deployments \u2014 error correction breakthroughs (Google, IBM) are pulling forward timelines. Pure-play names carry high binary risk but asymmetric upside if timelines compress.", "kill_conditions": ["No commercially viable error-corrected qubit system demonstrated by 2027; pure-plays fail to win enterprise pilots; IBM quantum roadmap delayed >2 years."], "thesis_id": "T5", "thesis_title": "Quantum Computing", "status": "Active \u2014 pre-commercial, high speculation", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "RGTI": {"thesis": "Quantum computing moving from research phase to early commercial deployments \u2014 error correction breakthroughs (Google, IBM) are pulling forward timelines. Pure-play names carry high binary risk but asymmetric upside if timelines compress.", "kill_conditions": ["No commercially viable error-corrected qubit system demonstrated by 2027; pure-plays fail to win enterprise pilots; IBM quantum roadmap delayed >2 years."], "thesis_id": "T5", "thesis_title": "Quantum Computing", "status": "Active \u2014 pre-commercial, high speculation", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "QBTS": {"thesis": "Quantum computing moving from research phase to early commercial deployments \u2014 error correction breakthroughs (Google, IBM) are pulling forward timelines. Pure-play names carry high binary risk but asymmetric upside if timelines compress.", "kill_conditions": ["No commercially viable error-corrected qubit system demonstrated by 2027; pure-plays fail to win enterprise pilots; IBM quantum roadmap delayed >2 years."], "thesis_id": "T5", "thesis_title": "Quantum Computing", "status": "Active \u2014 pre-commercial, high speculation", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "QUBT": {"thesis": "Quantum computing moving from research phase to early commercial deployments \u2014 error correction breakthroughs (Google, IBM) are pulling forward timelines. Pure-play names carry high binary risk but asymmetric upside if timelines compress.", "kill_conditions": ["No commercially viable error-corrected qubit system demonstrated by 2027; pure-plays fail to win enterprise pilots; IBM quantum roadmap delayed >2 years."], "thesis_id": "T5", "thesis_title": "Quantum Computing", "status": "Active \u2014 pre-commercial, high speculation", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}, "IBM": {"thesis": "Quantum computing moving from research phase to early commercial deployments \u2014 error correction breakthroughs (Google, IBM) are pulling forward timelines. Pure-play names carry high binary risk but asymmetric upside if timelines compress.", "kill_conditions": ["No commercially viable error-corrected qubit system demonstrated by 2027; pure-plays fail to win enterprise pilots; IBM quantum roadmap delayed >2 years."], "thesis_id": "T5", "thesis_title": "Quantum Computing", "status": "Active \u2014 pre-commercial, high speculation", "last_reviewed": "2026-05-11", "seed_weight": "N/A"}};
-const HD = [];
+const HD = [{"ticker": "ASTS", "company": "AST SpaceMobile", "shares": 19, "cost": 77.15, "last": 78.96, "position": 1500.24, "weight": 14.8, "pnl_pct": 2.35, "pnl_dollar": 34.39, "seed_weight": "N/A"}, {"ticker": "AVGO", "company": "Broadcom Inc.", "shares": 3, "cost": 429.37, "last": 431.24, "position": 1293.72, "weight": 12.7, "pnl_pct": 0.44, "pnl_dollar": 5.61, "seed_weight": "25%"}, {"ticker": "CRM", "company": "CRM", "shares": 8, "cost": 180.64, "last": 181.3, "position": 1450.4, "weight": 14.3, "pnl_pct": 0.37, "pnl_dollar": 5.28, "seed_weight": "N/A"}, {"ticker": "IONQ", "company": "IONQ", "shares": 30, "cost": 48.81, "last": 50.2, "position": 1505.88, "weight": 14.8, "pnl_pct": 2.85, "pnl_dollar": 41.72, "seed_weight": "N/A"}, {"ticker": "KTOS", "company": "KTOS", "shares": 2, "cost": 55.72, "last": 55.89, "position": 111.78, "weight": 1.1, "pnl_pct": 0.31, "pnl_dollar": 0.34, "seed_weight": "N/A"}, {"ticker": "PLTR", "company": "Palantir Technologies", "shares": 10, "cost": 134.64, "last": 133.34, "position": 1333.4, "weight": 13.1, "pnl_pct": -0.97, "pnl_dollar": -13.0, "seed_weight": "15%"}, {"ticker": "RKLB", "company": "Rocket Lab USA", "shares": 14, "cost": 107.37, "last": 112.73, "position": 1578.26, "weight": 15.5, "pnl_pct": 4.99, "pnl_dollar": 75.07, "seed_weight": "N/A"}, {"ticker": "SNOW", "company": "SNOW", "shares": 9, "cost": 151.42, "last": 153.57, "position": 1382.13, "weight": 13.6, "pnl_pct": 1.42, "pnl_dollar": 19.35, "seed_weight": "N/A"}];
 
 function showTab(name, btn) {
   document.getElementById('pane-dash').style.display = name==='dash' ? '' : 'none';
