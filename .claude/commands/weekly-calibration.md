@@ -142,6 +142,19 @@ PROPOSALS (N รายการ)
 ...
 ```
 
+จากนั้นสำหรับแต่ละ proposal — **ก่อนถาม approve** ให้ตรวจ out-of-sample:
+
+**ถ้า regime tag = `all-weather`:**
+```bash
+ls vault/20_investment/_journal/*-review.md | sort | head -n -N
+```
+ดูว่ามี review นอก N-day window ที่สนับสนุน pattern เดียวกันไหม (grep blind spot / lesson keyword)
+- ถ้ามี evidence นอก window → แสดง ✅ "out-of-sample confirmed (review วันที่ X)"
+- ถ้าไม่มี หรือ window ครอบคลุมทุก review ที่มี → แสดง:
+  > ⚠️ **Out-of-sample unvalidated** — evidence ทั้งหมดอยู่ใน N-day window เดียวกัน ถ้าต้องการ validate รัน `/weekly-calibration 30` (หรือมากกว่า) ก่อน approve
+
+**ถ้า regime tag = `regime-specific`:** ข้ามขั้นตอนนี้ — ไม่ต้อง validate out-of-sample (เป็น regime-specific อยู่แล้ว)
+
 จากนั้นถามแต่ละ proposal:
 > **Proposal [N]: approve? (y/n/แก้ไข)**
 
