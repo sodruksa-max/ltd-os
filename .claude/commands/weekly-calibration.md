@@ -49,6 +49,12 @@ code/python/.venv/Scripts/python scripts/post-snapshot.py --date <MISSING_DATE>
 - **Setups:** แต่ละ setup — trigger เกิด?, ทิศทาง, ผล (win/loss/pending)
 - **Blind spots:** แต่ละ item ใน "What Was Missed"
 - **Lessons:** แต่ละ lesson ใน "Lessons for Next Brief"
+- **Regime label:** classify วันนั้นเป็น 1 ใน 4:
+  - `trending-up` — SPY +0.5%+ ต่อเนื่อง, VIX ลด, breadth กว้าง
+  - `trending-down` — SPY -0.5%+ ต่อเนื่อง, VIX สูงขึ้น
+  - `choppy` — SPY ±0.5% หรือ intraday reversal ชัดเจน
+  - `risk-off` — VIX spike >20%, sector rotation เข้า defensives, bonds bid
+  ใช้ข้อมูลจาก verdict section ของ review (SPY %, VIX ที่บันทึกไว้) — ห้าม web search เพิ่ม
 
 ### 3. Analyze patterns
 
@@ -74,6 +80,12 @@ code/python/.venv/Scripts/python scripts/post-snapshot.py --date <MISSING_DATE>
 - scenario accuracy โดยรวม (% ที่ match)
 - confidence calibration — low confidence + ถูก vs high confidence + ผิด
 
+**3f. Regime distribution — overfitting guard**
+- นับวันแต่ละ regime: trending-up X วัน / trending-down X วัน / choppy X วัน / risk-off X วัน
+- ถ้า regime ใด regime หนึ่ง > 70% ของ sample → flag:
+  > ⚠️ **Regime-homogeneous sample**: X% ของ review วันเหล่านี้เป็น `[regime]` — pattern ที่เห็นอาจใช้ได้เฉพาะ regime นี้ ไม่ใช่ all-weather rule
+- ถ้า sample มีหลาย regime → note ว่า "diverse sample — pattern น่าเชื่อถือกว่า"
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
@@ -83,6 +95,11 @@ code/python/.venv/Scripts/python scripts/post-snapshot.py --date <MISSING_DATE>
 - **การเปลี่ยนแปลง:** เดิมคืออะไร → ใหม่เป็นอะไร
 - **Evidence:** อ้างอิง review วันไหน + blind spot/lesson ไหนที่สนับสนุน
 - **Impact:** ถ้าใช้กฎนี้ในข้อมูลที่ผ่านมาจะเปลี่ยนผลอะไรได้บ้าง
+- **Regime tag:** `all-weather` หรือ `regime-specific: [trending-up/trending-down/choppy/risk-off]`
+  - `all-weather` = pattern เกิดใน ≥ 2 regime ที่ต่างกัน
+  - `regime-specific` = pattern เกิดเฉพาะใน regime เดียว — ต้องระบุให้ชัด
+- **Walk-forward check:** ถ้า regime เปลี่ยนจาก [regime ปัจจุบัน] → [regime ตรงข้าม] กฎนี้ยังใช้ได้ไหม?
+  - ถ้าคำตอบคือ "ไม่" หรือ "ไม่แน่ใจ" → tag เป็น `regime-specific` ห้าม tag เป็น `all-weather`
 
 ถ้าไม่พบ pattern ที่ชัดพอ → เขียน:
 > "ข้อมูลยังไม่เพียงพอสำหรับ proposal ที่น่าเชื่อถือ — ต้องการ review เพิ่มอีก X วัน"
@@ -119,6 +136,8 @@ PROPOSALS (N รายการ)
   ใหม่: เพิ่ม "Presidential Action Risk" เป็น standalone row ใน Risk Table
   Evidence: review 2026-04-29 — Trump naval blockade ทำ oil +7% โดยไม่ได้อยู่ใน brief
   Impact: มี alert ล่วงหน้าสำหรับ executive announcement ที่อาจ move market
+  Regime tag: all-weather (เกิดได้ทุก regime)
+  Walk-forward: ถ้าตลาดเป็น risk-off — กฎนี้ยังใช้ได้ ✅
 
 ...
 ```
@@ -171,3 +190,5 @@ Append 1 บรรทัดใต้ `## Trading Calibration Log` ใน `vault/
 - ❌ Fabricate pattern — ถ้าไม่เห็นซ้ำจาก evidence จริงๆ ห้ามเสนอ
 - ❌ Save โดยไม่ถาม — แม้ผ่าน approve แล้ว ยังต้องถาม final confirm
 - ❌ เปลี่ยน position sizing หรือ risk rules โดยไม่มี statistical evidence ชัดเจน
+- ❌ Tag rule เป็น `all-weather` ถ้า evidence มาจาก regime เดียว — ต้อง tag เป็น `regime-specific` และแจ้ง user ชัดเจน
+- ❌ Approve `regime-specific` rule โดยไม่แสดง warning ว่า "กฎนี้อาจใช้ไม่ได้ถ้า regime เปลี่ยน"
