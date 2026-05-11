@@ -81,6 +81,7 @@ Each entry follows this structure:
 
 2026-05-04 — Predicted: Base (medium), Actual: Bearish (-0.41%), Match: No, Calibration: over-confident, Top lesson: Binary geopolitical events (Iran peace→missiles) = cap confidence Low; add 10Y yield rate-of-change tracker to brief
 2026-05-05 — Predicted: Base (low), Actual: Bullish (SPY +0.78%), Match: No, Calibration: direction wrong / confidence appropriate (BS 0.09), Top lesson: Oil -3.90% crash = unlock XLK risk-on; Polymarket 84% crowd can be 180° wrong — extreme odds = potential contrarian signal
+[weekly-calibration 2026-05-11] 5 reviews analyzed (2026-04-28 ถึง 2026-05-05) — proposals: 4 approved, 0 skipped — top pattern: geopolitical binary event = over-confidence trap (2/5 reviews)
 
 ## Weekly Market Log
 

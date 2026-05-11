@@ -186,6 +186,20 @@ Each workflow:
 - 0-1 events → ดุลพินิจ | 2+ events → cap low (ห้ามใช้ medium หรือ high)
 - *Updated 2026-05-02: threshold เข้มขึ้นจาก "2 events → medium" → "2+ events → low" — evidence: Apr 28 over-confident ใน FOMC + Mag7 + Iran พร้อมกัน*
 
+**Polymarket interpretation rule** *(approved 2026-05-11)*:
+- Polymarket ผิดทิศทาง 4/5 reviews (Apr28: 67%Up→down, Apr29: 61%Up→flat, Apr30: 45%Up→+1%, May5: 84%Hormuz→oil-3.9%)
+- ถ้า odds ≥80% ในทิศทางเดียว → ระบุ **contrarian interpretation** ด้วยใน brief ไม่ใช่แค่ consensus confirmation
+- ใช้ Polymarket เป็น 1 ใน 3 เหตุผล scenario ได้ แต่ห้าม reinforce scenario ตรงๆ ถ้า odds extreme
+
+**Presidential Action Risk** *(approved 2026-05-11)*:
+- ถ้ามีเรื่อง Trump/executive action ที่ยัง active (Iran, tariff, ceasefire, blockade, sanction) → เพิ่ม row "Presidential Action Risk" ใน Risk Framework table แยกออกจาก Geopolitical
+- Format: `**Presidential Action Risk:** [สรุปสถานการณ์] → trigger: [oil / USD / defense / equities] → magnitude: [ต่ำ/กลาง/สูง]`
+- Evidence: Apr 29 Trump naval blockade กลางวัน oil +7%; May 4 Iran missile strike overnight → narrative พลิก 180°
+
+**Oil crash → sector beneficiary** *(approved 2026-05-11)*:
+- ถ้า WTI หรือ Brent ลง ≥3% → ระบุ XLK + QQQM/QQQ เป็น primary beneficiary ใน Bullish scenario เสมอ (double tailwind: cost pressure ลด + yield กด = growth unlocked)
+- Evidence: May 5 oil -3.9% → XLK +2.2%, IWM +1.69%; Apr 30 oil pressure คลาย → AAPL + Nasdaq rally
+
 **Trade setup discipline**:
 - Forward-looking เท่านั้น — if-then ไม่ใช่ already-true
 - Time-stop ทุก setup (Day = exact ET time, Swing = days)
