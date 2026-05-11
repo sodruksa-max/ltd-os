@@ -11,6 +11,7 @@
 | 2 | CompactPrompt (arXiv:2510.18043, 2025) | Prompt compression | ลด token 60% ก่อนส่งให้ agent — tested บน Claude-3.5-Sonnet จริง |
 | 3 | Memory Pointers (arXiv:2511.22729, 2025) | Context overflow | แทน raw file content ด้วย pointer — agent อ่าน vault ขนาดไหนก็ไม่ overflow |
 | 4 | A-MEM (arXiv:2502.12110, 2025) | Agent memory | Zettelkasten dynamic linking — ตรงกับ vault concept ที่มีอยู่แล้ว |
+| 5 | SheetCompressor (arXiv:2407.09025, 2024) | Tabular compression | Structural anchor principle — ใช้กับ universe-screen.py label grouping ได้ทันที |
 
 ---
 
@@ -137,3 +138,55 @@
 ---
 
 *Scope: 4 themes | Searches: 10/10 | Papers: 10 total — 4 IMPLEMENT, 6 REFERENCE, 0 SKIP*
+
+---
+
+## Appendix — 2026-05-11: Structured Data + Provider Caching
+
+*Context: LLMLingua-2 ถูก evaluate แล้วพบว่า NOT suitable สำหรับ tabular/numeric script output (trained on narrative text, not tables) → ค้นหา alternative สำหรับ compression ของ structured output เช่น sr-levels.py, universe-screen.py | 5 searches | 3 papers ใหม่*
+
+### Theme 5: Structured / Tabular Data Compression
+
+#### SpreadsheetLLM / SheetCompressor — Wang et al., Microsoft (arXiv:2407.09025, Jul 2024)
+- **Source:** [arXiv:2407.09025](https://arxiv.org/abs/2407.09025)
+- **Method:** Framework 3 โมดูล: (1) **Structural Anchor Compression** — ระบุแถว/คอลัมน์ที่ heterogeneous (มีโครงสร้างสำคัญ) และ prune แถว homogeneous ที่ซ้ำ (ข้อมูล numeric ต่อเนื่องที่มีรูปแบบเดียวกัน) ออก; (2) **Inverse Index Translation** — แทนค่า cell ด้วย inverted index JSON (cell value → list of addresses) ลด repetition; (3) **Data-Format-Aware Aggregation** — group numeric cells ที่ adjacent และมี format เดียวกัน แทนที่จะแสดงทุกค่า
+- **Key finding:** ลด token 96% (25x compression ratio) บน spreadsheet tasks; F1 score 78.9% ชนะ SOTA เดิม 12.3%; เมื่อ compress แล้ว LLM เข้าใจ structure ดีขึ้นเพราะ noise ลดลง
+- **Dataset:** SpreadsheetBench — table detection + QA บน real spreadsheets
+- **Apply to project:** Principle ของ structural anchor ตรงกับสิ่งที่ `sr-levels.py --brief` ทำอยู่ — เก็บ key levels (S1/S2/R1/R2) และ prune รายละเอียด pivot ที่ซ้ำ; ขยายต่อได้โดยใช้ **data-format aggregation** ใน `universe-screen.py`: group tickers ที่มี label เดียวกัน (เช่น EXTENDED ทั้งหมด) แทนแสดงทีละแถว → ลด output อีก 30-40%
+- **Tag:** IMPLEMENT
+
+#### TOON: Token-Oriented Object Notation vs JSON — (arXiv:2603.03306, Feb 2026)
+- **Source:** [arXiv:2603.03306](https://arxiv.org/abs/2603.03306)
+- **Method:** Format serialization ใหม่ที่แทน JSON — ใช้ indentation แทน nested braces, ตัด quotation marks / commas / brackets ออก (คล้าย YAML แต่ออกแบบสำหรับ LLM tokenization patterns); มี spec เปิดพร้อม Python library
+- **Key finding:** ลด token ~40% ใน mixed-structure benchmarks ทั้ง 4 models; แต่มี "prompt tax" overhead เมื่อ context สั้น — TOON คุ้มค่าเฉพาะเมื่อ structured payload > ~500 tokens; plain JSON ยัง generate ได้ accurate กว่าใน constrained decoding
+- **Dataset:** Mixed-structure generation benchmark, 4 LLM models
+- **Apply to project:** พิจารณาใช้กับ ORDERS block ใน `nick_weekly_auto.py` — ปัจจุบัน output เป็น JSON; แต่ **RISK: JSON parsing ที่ `validate_orders_block()` จะ break** → SKIP สำหรับ trading output ที่ต้องการ reliability; อาจใช้สำหรับ non-critical structured context (เช่น KB gaps table) แทน
+- **Tag:** REFERENCE
+
+### Theme 6: Provider-Native Prompt Caching
+
+#### Anthropic Prompt Caching — Anthropic API Feature (2024–ongoing)
+- **Source:** [Anthropic Docs](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) | [Token-saving updates](https://www.anthropic.com/news/token-saving-updates)
+- **Method:** Developer mark static content blocks ด้วย `cache_control` breakpoint; Claude cache prefix สูงสุด 4 breakpoints ต่อ request; TTL 5 min (1.25x write cost) หรือ 1 hour (2x write cost); cache read cost = 0.1x base input (ลด 90%)
+- **Key finding:** 90% cost reduction + 85% latency reduction สำหรับ long repeated prompts; agentic workflows ได้ประโยชน์เมื่อ system prompt + tool definitions static ข้าม turns; Claude Code ตัวเอง benefit จาก automatic prefix caching สำหรับ CLAUDE.md + session start context
+- **Dataset:** Production API usage (engineering feature ไม่ใช่ academic paper)
+- **Apply to project:** (1) ใน `nick_weekly_auto.py` ที่ใช้ Groq — Groq ยังไม่มี prompt caching native; ถ้า migrate ไป Claude API → wrap `nick-soul.md` + static `insight-atoms` ด้วย `cache_control` → ลด cost 90% per weekly run; (2) Claude Code เอง — CLAUDE.md ยิ่ง stable ยิ่ง cache hit rate สูง; หลีกเลี่ยงการแก้ CLAUDE.md บ่อยโดยไม่จำเป็น (ทุกครั้งที่แก้ = cache miss ใหม่)
+- **Tag:** IMPLEMENT (เมื่อ migrate Nick ไป Claude API หรือ audit CLAUDE.md stability)
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-11)
+
+6. **universe-screen.py grouping (SheetCompressor principle)** → group tickers ที่ label เดียวกัน: `EXTENDED: AMD, NVDA, AVGO` แทนแสดงทีละแถว → complexity: **low** (แก้ print logic ใน script)
+7. **Prompt caching audit (Anthropic native)** → วัด CLAUDE.md change frequency; ถ้า stable > 80% sessions → ไม่ต้องทำอะไรเพิ่ม (automatic); ถ้า nick_weekly migrate ไป Claude API → add `cache_control` breakpoints → complexity: **medium**
+
+---
+
+### Gaps — อัพเดต
+
+- **Groq prompt caching** — Groq ยังไม่มี native caching; ถ้า nick_weekly ยังใช้ Groq → token cost สูงต่อไป; ทางเลือก: cache ด้วย hash key ใน Python (ถ้า prompt ไม่เปลี่ยน → skip API call ใช้ cached response แทน)
+- **universe-screen.py label grouping** — ยังไม่มี paper เฉพาะ; ใช้ SheetCompressor principle (structural anchor + homogeneous row pruning) เป็น basis ได้
+
+---
+
+*Appendix scope: 2 themes | Searches: 5/5 | Papers: 3 — 2 IMPLEMENT, 1 REFERENCE | Total survey: 6 themes, 13 papers — 6 IMPLEMENT, 7 REFERENCE*

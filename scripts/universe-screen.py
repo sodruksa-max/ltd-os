@@ -475,21 +475,19 @@ def main():
         print()
 
     if by_tier["EXTENDED"]:
-        print("[EXTENDED] ไปไกลแล้ว — รอ pullback ก่อนเข้า:")
-        for ticker, name, r in by_tier["EXTENDED"]:
-            reason = []
-            if r["rsi"] and r["rsi"] > 72:  reason.append(f"RSI {r['rsi']} (overbought)")
-            if r["gap_pct"] > 6:             reason.append(f"gap {r['gap_pct']:+.1f}%")
-            if r["pct_vs_ma"] > 15:          reason.append(f"+{r['pct_vs_ma']:.1f}% above MA20")
-            print(f"  {ticker} (${r['price']:,.2f}): {' | '.join(reason)}")
-            print(f"  -> รอ pullback มา test MA20 (${r['ma20']:,.2f}) ก่อน")
+        ext_parts = ", ".join(
+            f"{t}(RSI {r['rsi']} | MA20=${r['ma20']:,.0f})"
+            for t, n, r in by_tier["EXTENDED"]
+        )
+        print(f"[EXTENDED] รอ pullback มา MA20 ก่อน (ไม่ entry): {ext_parts}")
         print()
 
     if by_tier["WATCH"]:
-        print("[WATCH] สัญญาณผสม — ติดตาม:")
-        for ticker, name, r in by_tier["WATCH"]:
-            rs_str = rs_label(r["rs_10d"])
-            print(f"  {ticker}: RSI {r['rsi']} | gap {r['gap_pct']:+.1f}% | vol {r['vol_ratio']:.2f}x | vs MA20 {r['pct_vs_ma']:+.1f}% | {rs_str}")
+        watch_parts = ", ".join(
+            f"{t}(RSI {r['rsi']} | {rs_label(r['rs_10d'])})"
+            for t, n, r in by_tier["WATCH"]
+        )
+        print(f"[WATCH] สัญญาณผสม: {watch_parts}")
         print()
 
     if not any(by_tier[t] for t in ["EARLY", "ALERT", "EXTENDED", "WATCH"]):
