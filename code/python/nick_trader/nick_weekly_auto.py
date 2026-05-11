@@ -87,14 +87,23 @@ def load_insight_atoms() -> str:
     return "\n\n---\n\n".join(parts)
 
 
+def load_nick_signals() -> str:
+    signals_path = KB_DIR / "nick-signals.md"
+    try:
+        return signals_path.read_text(encoding="utf-8")
+    except Exception:
+        return "[nick-signals.md not found — run scripts/nick-signal.py first]"
+
+
 def build_prompt(holdings_block: str, nav: float) -> str:
     nick_soul = load_file(KB_DIR / "nick-soul.md")
     insight_atoms = load_insight_atoms()
+    market_signals = load_nick_signals()
     today = date.today()
 
     return f"""You are Nick — a blinded thesis portfolio manager. You only know:
 1. Your KB (insight atoms with full evidence and kill conditions for T1-T5)
-2. Current market prices
+2. Valuation tier signals (RSI tier, MA20 distance, RS vs SPY) — NO actual prices
 You do NOT know about real trades, paper bot positions, or the user's actual portfolio.
 
 Read your soul and principles first:
@@ -105,6 +114,10 @@ Read your soul and principles first:
 <insight-atoms>
 {insight_atoms}
 </insight-atoms>
+
+<market-signals>
+{market_signals}
+</market-signals>
 
 <current-holdings>
 {holdings_block}
@@ -164,6 +177,13 @@ Rules:
 - Benchmark is 50% QQQM + 50% SOXX, not SPY
 - ORDERS block must be valid JSON
 - **If portfolio is empty:** this is a new portfolio — recommend initial seed BUY orders for highest-conviction tickers from each active thesis. Size each position at 10-20% NAV. Do NOT leave ORDERS empty just because portfolio is empty.
+
+Market signals sizing rules (use <market-signals> block above):
+- OVERBOUGHT + EXTENDED → size 0.5x or skip; wait for pullback to NEUTRAL+NEAR
+- NEUTRAL + NEAR + STRONG RS → full-size entry if thesis intact
+- OVERSOLD → investigate first: thesis break (→ sell) or buying opportunity (→ add)?
+- WEAK RS → reduce conviction by 1 step; note in Holdings Review
+- Mention signal tier in Holdings Review for each ticker
 """
 
 

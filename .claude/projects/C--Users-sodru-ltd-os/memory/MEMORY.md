@@ -10,6 +10,7 @@
 - [User values cost efficiency](user_cost_conscious.md) — ชอบความคุ้มค่า ใช้ token ให้หมดก่อนปิด อย่าแค่บอกให้ปิด — เสนองานเล็กๆ ที่ทำได้แทน | related: feedback_cross_apply_improvements.md
 - [Cross-apply improvements to related systems](feedback_cross_apply_improvements.md) — เมื่อ improvement ทำงานได้ดี ให้ scan และแนะนำส่วนอื่นที่ควรได้รับ pattern เดียวกัน | related: user_cost_conscious.md
 - [Research sources — GitHub + Reddit](feedback_research_sources.md) — เวลาหาข้อมูล ให้รวม GitHub และ Reddit เป็น source เสมอ ไม่ใช่แค่ mainstream news
+- [NotebookLM URL fallback](feedback_notebooklm_url_fallback.md) — URL blocked → WebFetch content → source_type=text ทันที; auth error ต่างจาก block error
 
 ## Project (load for code/project tasks)
 - [Bubble Risk System — 3 Ideas](project_bubble_risk_ideas.md) — 3 ทิศทาง: Risk Monitor script, vault framework doc, macro-snapshot extension. แนะนำทำทิศ 2 ก่อน

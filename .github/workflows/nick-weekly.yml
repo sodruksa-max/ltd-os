@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: pip install alpaca-py yfinance groq --quiet
 
+      - name: Generate Nick market signals (tier labels, no prices)
+        run: python scripts/nick-signal.py
+
       - name: Generate Nick weekly rec
         run: python code/python/nick_trader/nick_weekly_auto.py
         env:
@@ -28,11 +31,11 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
-      - name: Commit weekly rec + NAV snapshot
+      - name: Commit weekly rec + NAV snapshot + signals
         run: |
           git config user.name "nick-bot"
           git config user.email "nick-bot@users.noreply.github.com"
-          git add vault/20_investment/nick/weekly/ vault/20_investment/nick/performance/nav_log.md vault/Knowledge/nick-soul.md
+          git add vault/20_investment/nick/weekly/ vault/20_investment/nick/performance/nav_log.md vault/Knowledge/nick-soul.md vault/Knowledge/nick-signals.md
           git diff --staged --quiet || git commit -m "chore(nick): auto weekly rec $(date +%Y-%m-%d)"
           git pull --rebase origin main
           git push
