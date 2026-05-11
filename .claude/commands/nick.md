@@ -36,6 +36,7 @@ Nick อ่านได้เฉพาะ:
 - `vault/Knowledge/topic-map.md`
 - `vault/Knowledge/INDEX_insights.md`
 - `vault/Knowledge/contradiction-registry.md`
+- `vault/Knowledge/nick-signals.md` — valuation tier labels (RSI/MA20/RS) ต่อ ticker
 - `vault/Knowledge/insight-atoms/` (filtered by thesis relevance)
 - `vault/10_research/` (Reese research docs + paper surveys)
 - `vault/30_content/ideas/` (Minnie idea cards)
@@ -71,12 +72,10 @@ cat vault/Knowledge/nick-soul.md
 
 1. อ่าน nick-soul.md
 2. KB sweep: อ่าน THESIS_TRACKER.md ทั้งหมด → เข้าใจ T1-T4 + C-list
-3. Universe walk thesis-by-thesis:
-   - T1 (AI Capex): NVDA, AMD, AVGO, SMCI, DELL, HPE, MU + ชั่ง pros/cons แต่ละตัว
-   - T2 (Semicon Moats): NVDA, ASML, ARM + ชั่ง conviction
-   - T3 (Space): RKLB, ASTS, LUNR, KTOS + ชั่ง risk/reward
-   - T4 (AI Software): PLTR, CRM, SNOW + ชั่ง monetization timing
-   - C-list: TSM, GOOGL
+3. Universe walk thesis-by-thesis — **อ่าน tickers จาก THESIS_TRACKER.md โดยตรง ห้าม hardcode**:
+   - ดึง tickers จากทุก active thesis ใน THESIS_TRACKER.md
+   - ชั่ง pros/cons + nick-signals.md tier ต่อแต่ละ ticker
+   - ตรวจ contradiction-registry.md ว่ามี ticker ไหนที่มี unresolved contradiction
 4. Mandate filter: ตัดออก (ถ้าเป็น ETF / leverage / ไม่มี kill condition ที่วัดได้)
 5. ดึงราคาปัจจุบัน (web) สำหรับ candidates ที่ผ่าน filter
 6. Size by conviction: เลือก 3-10 stocks + กำหนด % weight + cash %
@@ -104,7 +103,10 @@ cat vault/Knowledge/nick-soul.md
    - **Intact:** thesis ยังดี → hold
    - **Evolving:** thesis กำลังเปลี่ยนแต่ยังไม่ break → note + monitor
    - **Invalidated:** kill condition triggered → เสนอ sell
-5. KB sweep: มี research doc ใหม่จาก /research-idea หรือ /stock-research ไหม
+5. KB sweep — ตรวจ 3 แหล่ง:
+   - insight atoms ใหม่ใน `vault/Knowledge/insight-atoms/` (ดู date ล่าสุด) จาก /stock-content, /research-idea, หรือ /stock-research
+   - contradiction-registry.md — มี contradiction ใหม่ที่กระทบ holdings ไหม?
+   - nick-signals.md — valuation tier ของ holdings เปลี่ยนไปจากสัปดาห์ก่อนไหม?
 6. Earnings calendar: หุ้นใน universe ที่จะประกาศ 4 สัปดาห์ข้างหน้า
 7. Recommendation ต่อแต่ละ position: hold / add / trim / sell + เหตุผล
 8. **KB Gaps:** ระบุช่องว่างที่ Nick ต้องการข้อมูลเพิ่มเพื่อตัดสินใจได้ดีขึ้น:
