@@ -83,3 +83,6 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T1] mod-datacenter-cooling-2026-05-11 — MOD P/E 25.8x vs. 5yr avg 16.3x (+58% premium); stock +107%/yr vs. EPS +2%/yr — entire return is narrative, not earnings ❓
 - [2026-05-11] [T1] mod-datacenter-cooling-2026-05-11 — Gentherm RMT exits Performance Technologies (-12% YoY) → pure-play Climate Solutions; comparable set shifts to datacenter infra peers
 - [2026-05-11] [T1] mod-datacenter-cooling-2026-05-11 — AI GPU rack heat density exceeds air cooling ceiling → DLC secular trend; MOD air-side moat faces long-term pressure ❓
+- [2026-05-11] [General] post-market-2026-05-11 — WTI >$95 sustained + Iran risk → XLE ขึ้นตาม oil แม้ใน Base scenario; "energy lags on rotation" narrative ไม่ valid เมื่อ oil momentum แรง
+- [2026-05-11] [T3] post-market-2026-05-11 — Quarterly run-rate vs FY guidance gap ≥ 3x → magnitude miss risk สูง; flag ใน brief แทนแค่ "miss probability กลาง"
+- [2026-05-11] [General] post-market-2026-05-11 — 10Y yield > 4.35% rising intraday → TLT likely ปิดลบแม้ pre-market TLT +; yield momentum ภายในวันมักต่อเนื่อง
