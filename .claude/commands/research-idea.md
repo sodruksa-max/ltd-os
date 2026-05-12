@@ -227,3 +227,10 @@ Used: N searches, M vault reads
 - **Indie extracts facts ไม่ใช่ opinions** — claim ต้องเป็น falsifiable ไม่ใช่ "NVDA ดีมาก"
 - **Rae ห้าม AI cliche** — ตาม voice profile ใน PREFERENCES.md
 - **Budget:** 5 searches, 10 vault reads สำหรับทั้ง pipeline
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: research-idea <topic>"
+```

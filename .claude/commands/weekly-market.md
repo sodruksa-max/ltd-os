@@ -270,3 +270,10 @@ Next week watch: [top 1 item]
 - ❌ Overwrite โดยไม่ warn — ต้องถามก่อนเสมอ
 - ❌ Fabricate earnings data — ถ้าหาไม่ได้ = [unverified]
 - ❌ ข้าม Watch List section — ต้องระบุเสมอ แม้จะบอกว่า "ยังไม่มีข้อมูล"
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: weekly-market <week>"
+```

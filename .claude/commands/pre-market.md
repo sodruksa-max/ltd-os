@@ -640,3 +640,10 @@ Decision tree saved to: vault/20_investment/_journal/YYYY-MM-DD-decision-tree.md
 - ❌ Day setup ที่ระบุแค่ "EOD" เป็น time-stop — ต้องระบุเวลาจริง เช่น "10:30am ET"
 - ❌ เขียน [unverified] สำหรับ DXY โดยไม่ลอง DX-Y.NYB / UUP proxy ก่อน
 - ❌ แสดง cash vs futures divergence โดยไม่อธิบาย implication (institutional buying / distribution)
+
+## Commit
+
+หลังสร้าง brief + decision tree → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: pre-market YYYY-MM-DD"
+```

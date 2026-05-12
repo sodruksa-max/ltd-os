@@ -49,7 +49,7 @@ fi
 
 # 4. Conventional commit format check
 echo "  [4/4] Commit message format..."
-if ! echo "$MSG" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf)(\(.+\))?: .+'; then
+if ! echo "$MSG" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|notes|vault|memory|analyst)(\(.+\))?: .+'; then
   echo "  ⚠️  Warning: message doesn't follow conventional commits"
   echo "     Expected: <type>(<scope>): <description>"
   echo "     Continue anyway? (y/N)"

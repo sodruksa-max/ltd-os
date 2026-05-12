@@ -205,3 +205,10 @@ Append 1 บรรทัดใต้ `## Trading Calibration Log` ใน `vault/
 - ❌ เปลี่ยน position sizing หรือ risk rules โดยไม่มี statistical evidence ชัดเจน
 - ❌ Tag rule เป็น `all-weather` ถ้า evidence มาจาก regime เดียว — ต้อง tag เป็น `regime-specific` และแจ้ง user ชัดเจน
 - ❌ Approve `regime-specific` rule โดยไม่แสดง warning ว่า "กฎนี้อาจใช้ไม่ได้ถ้า regime เปลี่ยน"
+
+## Commit
+
+หลัง user approve rules → รัน:
+```bash
+bash scripts/safe-commit.sh "memory: weekly-calibration YYYY-MM-DD (approved YYYY-MM-DD)"
+```

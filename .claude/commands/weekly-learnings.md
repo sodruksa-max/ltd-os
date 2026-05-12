@@ -113,3 +113,10 @@ Help user produce a "Key Learnings" section for this week's review. Not auto-arc
 - ❌ Copying full sentences from daily notes (paraphrase pattern, not content)
 - ❌ Adding rules user didn't explicitly approve
 - ❌ Running this and also `/analyst` in same session (context bloat)
+
+## Commit
+
+หลัง user approve → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: weekly-learnings <week>"
+```

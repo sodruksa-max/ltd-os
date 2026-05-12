@@ -126,3 +126,10 @@ Researcher ใช้: N searches, M vault reads
 ## When user asks follow-up questions
 
 หลัง research แล้ว ถ้า user ถามเพิ่ม เช่น "margin เป็นยังไง?" → อ่าน note ที่มีอยู่ก่อน → เพิ่ม section ถ้าจำเป็น → save. ห้าม re-research ทั้งหมดใหม่
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: stock-research <TICKER>"
+```

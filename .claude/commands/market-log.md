@@ -129,3 +129,10 @@ OUTCOMES.md updated.
 - ❌ เพิ่ม sections ที่ไม่ได้อยู่ใน template (scenario playbook, setup outcomes, blind spots)
 - ❌ ข้าม OUTCOMES.md append
 - ❌ Overwrite โดยไม่ถามก่อน
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: market-log YYYY-MM-DD [lite]"
+```

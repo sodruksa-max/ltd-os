@@ -221,3 +221,10 @@ Researcher ใช้: N searches
 - **Partial read:** file > 1000 words → ใช้ offset+limit
 - **Scope:** 1 ticker ต่อ invocation
 - **ภาษา:** ตาม language rule ด้านบน
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "vault: stock-content <TICKER>"
+```

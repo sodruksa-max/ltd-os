@@ -427,3 +427,10 @@ ls vault/20_investment/_journal/*-review.md | tail -1
 - ❌ หยุด (abort) เมื่อไม่พบ premarket.md — ต้อง switch เป็น review-only mode แทน ไม่ใช่หยุด
 - ❌ Fabricate contradiction ใน 8a — append เฉพาะถ้ามี source ขัดแย้งจริงเท่านั้น ห้ามสร้างขึ้นมา
 - ❌ Extract atom ที่เป็น opinion ใน 8b — claim ต้อง falsifiable เท่านั้น ("VIX > 20 นำ S&P ลง" ✅ / "ตลาดน่ากลัว" ❌)
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: post-market YYYY-MM-DD"
+```
