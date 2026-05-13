@@ -246,6 +246,57 @@ def fetch_sectors(tickers: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Earnings growth check (used by --elite mode)
+# ---------------------------------------------------------------------------
+
+def fetch_earnings_growth(tickers: list) -> dict:
+    """
+    Returns {ticker: {"score": 0-4, "summary": str}}.
+    score = count of: Rev↑QoQ, Rev↑YoY, NI↑QoQ, NI↑YoY (max 4).
+    Uses yfinance quarterly income statement.
+    """
+    import time
+    try:
+        import yfinance as yf
+    except ImportError:
+        return {t: {"score": -1, "summary": "yfinance missing"} for t in tickers}
+
+    result = {}
+    for ticker in tickers:
+        try:
+            tf = yf.Ticker(ticker)
+            fin = getattr(tf, "quarterly_income_stmt", None) or getattr(tf, "quarterly_financials", None)
+            if fin is None or fin.empty or fin.shape[1] < 2:
+                result[ticker] = {"score": -1, "summary": "N/A"}
+                time.sleep(0.15)
+                continue
+
+            def _check(keywords):
+                row = next((r for r in fin.index if any(k in str(r) for k in keywords)), None)
+                if row is None:
+                    return 0, []
+                vals = fin.loc[row].dropna()
+                s, pts = 0, []
+                if len(vals) >= 2 and vals.iloc[1] != 0:
+                    up = vals.iloc[0] > vals.iloc[1]
+                    s += int(up); pts.append("↑QoQ" if up else "↓QoQ")
+                if len(vals) >= 5 and vals.iloc[4] != 0:
+                    up = vals.iloc[0] > vals.iloc[4]
+                    s += int(up); pts.append("↑YoY" if up else "↓YoY")
+                return s, pts
+
+            rs, rp = _check(["Total Revenue", "Revenue"])
+            ns, np_ = _check(["Net Income"])
+            score   = rs + ns
+            summary = ("Rev" + "".join(rp) if rp else "") + (" NI" + "".join(np_) if np_ else "") or "N/A"
+            result[ticker] = {"score": score, "summary": summary.strip()}
+        except Exception:
+            result[ticker] = {"score": -1, "summary": "ERR"}
+        time.sleep(0.15)
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Pass 1 — per-ticker raw metrics
 # ---------------------------------------------------------------------------
 
@@ -329,6 +380,10 @@ def _compute_raw(ticker, bars, spy_closes):
         rs_6m      = ret_6m - spy_ret_6m
         ret_6m_pct = ret_6m * 100
 
+    # --- 52-week high and drawdown (for --elite mode) ---
+    ath_1y = max(closes[-min(252, len(closes)):])
+    drawdown_pct = (current_price - ath_1y) / ath_1y * 100  # negative = below ATH
+
     # --- MA50 ---
     above_ma50 = False; ma50_val = None
     if len(closes) >= MA_PERIOD:
@@ -379,6 +434,8 @@ def _compute_raw(ticker, bars, spy_closes):
         "amihud":          amihud,
         "avg_dollar_vol":  avg_dollar_vol,
         "reversal_score":  round(reversal_score, 4),
+        "ath_1y":          round(ath_1y, 2),
+        "drawdown_pct":    round(drawdown_pct, 2),
     }
 
 
@@ -386,7 +443,7 @@ def _compute_raw(ticker, bars, spy_closes):
 # Pass 2 — cross-sectional rank + junk filter
 # ---------------------------------------------------------------------------
 
-def screen(tickers, bars_data, fetch_fundamentals=False):
+def screen(tickers, bars_data, fetch_fundamentals=False, elite_mode=False):
     import junk_filter
 
     spy_bars    = bars_data.get(BENCHMARK, [])
@@ -403,6 +460,16 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
             fails.append((ticker, "insufficient data or price out of range"))
         else:
             raw_map[ticker] = raw
+
+    # Elite filter: keep only stocks with 15-35% drawdown from 52-week high, then check earnings
+    eg_map: dict = {}
+    if elite_mode:
+        before = len(raw_map)
+        raw_map = {t: r for t, r in raw_map.items() if -35.0 <= r["drawdown_pct"] <= -15.0}
+        print(f"Elite filter (dip 15-35% from 52w high): {before} → {len(raw_map)} stocks", file=sys.stderr)
+        if raw_map:
+            print(f"Checking earnings growth ({len(raw_map)} stocks via yfinance)...", file=sys.stderr)
+            eg_map = fetch_earnings_growth(list(raw_map.keys()))
 
     # Pass 2: sector-neutral cross-sectional percentile rank of vol_scaled_mom
     # (Asness, Moskowitz & Pedersen 2013) — rank within GICS sector, not full universe.
@@ -466,9 +533,17 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
             "avg_dollar_vol_m": round(raw["avg_dollar_vol"] / 1e6, 2),
             "cs_rank":         round(cs_rank, 4),
             "sector":          sector_map.get(ticker, "Unknown"),
+            # --- Elite mode fields ---
+            "drawdown_pct":    raw["drawdown_pct"],
+            "ath_1y":          raw["ath_1y"],
+            "eg_score":        eg_map.get(ticker, {}).get("score", -1),
+            "eg_summary":      eg_map.get(ticker, {}).get("summary", ""),
         })
 
-    results.sort(key=lambda x: x["score"], reverse=True)
+    if elite_mode:
+        results.sort(key=lambda x: (x["eg_score"], x["cs_rank"]), reverse=True)
+    else:
+        results.sort(key=lambda x: x["score"], reverse=True)
     return results, fails
 
 
@@ -476,10 +551,30 @@ def screen(tickers, bars_data, fetch_fundamentals=False):
 # Display
 # ---------------------------------------------------------------------------
 
-def print_table(results, top=None, reversal_mode=False):
+def print_table(results, top=None, reversal_mode=False, elite_mode=False):
     rows = results[:top] if top else results
     if not rows:
         print("No results.")
+        return
+
+    if elite_mode:
+        print(f"{'#':<3} {'Ticker':<8} {'Sector':<6} {'Price':>8} {'52wH':>8} {'Dip%':>6} "
+              f"{'EG':>3} {'Earnings Detail':<30} {'CS-Rank':>8}  Filter")
+        print("-" * 112)
+        for i, r in enumerate(rows, 1):
+            junk_col = f"[{r['junk_level']}] {r['junk_summary']}" if r["junk_level"] != "PASS" else "[OK]"
+            sec      = SECTOR_ABBREV.get(r.get("sector", "Unknown"), r.get("sector", "?")[:4])
+            eg_str   = f"{r['eg_score']}/4" if r["eg_score"] >= 0 else "N/A"
+            eg_det   = r.get("eg_summary", "")[:29]
+            print(
+                f"{i:<3} {r['ticker']:<8} {sec:<6} ${r['price']:>7,.2f} "
+                f"${r['ath_1y']:>7,.2f} {r['drawdown_pct']:>+5.1f}% "
+                f"{eg_str:>3} {eg_det:<30} {r['cs_rank']:>8.4f}  {junk_col}"
+            )
+        print()
+        print("Dip% = current price vs 52-week high  |  EG = earnings growth score (0-4)")
+        print("Earnings: Rev/NI × ↑QoQ + ↑YoY = 4/4 ideal  |  CS-Rank = sector-neutral momentum rank")
+        print("Sorted by EG score (desc), then CS-Rank (desc)")
         return
 
     if reversal_mode:
@@ -543,6 +638,8 @@ def main():
                              "consumer, defensive")
     parser.add_argument("--universe",     action="store_true",
                         help="Screen full S&P 500 universe instead of watchlist (~500 tickers, slower)")
+    parser.add_argument("--elite",        action="store_true",
+                        help="หุ้นหัวกะทิ mode: filter stocks 15-35%% off 52w high + earnings growth check")
     parser.add_argument("tickers",        nargs="*")
     args = parser.parse_args()
 
@@ -567,6 +664,8 @@ def main():
         print("Fundamental checks ON (yfinance — may take ~30s)...", file=sys.stderr)
     if args.reversal:
         print("Reversal mode ON — filtering overextended, sorting by reversal score...", file=sys.stderr)
+    if args.elite:
+        print("Elite mode ON — หุ้นหัวกะทิ: dip 15-35% from 52w high + earnings growth check...", file=sys.stderr)
 
     try:
         bars_data = fetch_bars(fetch_list)
@@ -574,7 +673,7 @@ def main():
         print(f"ERROR fetching data: {e}", file=sys.stderr)
         sys.exit(1)
 
-    results, fails = screen(tickers, bars_data, fetch_fundamentals=args.fundamentals)
+    results, fails = screen(tickers, bars_data, fetch_fundamentals=args.fundamentals, elite_mode=args.elite)
 
     if args.reversal:
         results = [r for r in results
@@ -587,9 +686,14 @@ def main():
         print(json.dumps(results, indent=2))
         return
 
-    mode_label = "Reversal (beginning-of-trend)" if args.reversal else "Momentum"
+    if args.elite:
+        mode_label = "Elite — หุ้นหัวกะทิ (dip from ATH + earnings growth)"
+    elif args.reversal:
+        mode_label = "Reversal (beginning-of-trend)"
+    else:
+        mode_label = "Momentum"
     print(f"\n## {mode_label} Screen — {date.today()}\n")
-    print_table(results, top=args.top, reversal_mode=args.reversal)
+    print_table(results, top=args.top, reversal_mode=args.reversal, elite_mode=args.elite)
 
     if fails:
         print(f"\n[skipped {len(fails)}]: " + ", ".join(f"{t}({r})" for t, r in fails[:8]))
