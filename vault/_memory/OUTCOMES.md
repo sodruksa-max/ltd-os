@@ -90,6 +90,7 @@ Each entry follows this structure:
 *One-line per week — appended by /weekly-market*
 
 2026-W18 — Regime: Risk-On (Mild), S&P ~+1.07% (Mon-Fri, 7,173→7,250), Best sector: XLE (+3.19% — Iran geopolitical premium), Worst: XLK [unverified], Key event: FOMC 4 dissenting votes + Trump Iran naval blockade + Mag7 sell-the-news; April best month since 2020
+2026-W20 — Regime: Flat/Indecisive (script +0.21%) ⚠️ conflict Krilogy +2.36%, Best sector: XLE (+6.76% — oil surge), Worst: XLY (-3.05% — consumer sentiment ATL), Key event: US-China 90-day tariff truce (145%→30%); consumer sentiment 48.2 ATL [unverified]
 
 <!-- Example entry (delete when adding real ones):
 
