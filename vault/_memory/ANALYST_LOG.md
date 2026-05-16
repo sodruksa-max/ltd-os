@@ -28,6 +28,56 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 
 ## Entries
 
+## 2026-05-16 — Agent-as-a-Judge rubric for Chris
+
+**Insight**: Chris gave qualitative critique only; structured scoring makes research quality visible and comparable across tickers
+**Suggested**: Add 3-dimension scorecard (KM/CV/BB, 1-5 each, pass ≥12/15) to Chris step in stock-content.md
+**Decision**: approved
+**Reason**: low effort, raises floor quality on every research doc
+**Commit**: pending
+
+---
+
+## 2026-05-16 — FAITH numerical verification for Vera
+
+**Insight**: Vera flagged unverified claims generally; numerical values (revenue, growth rate, EPS) are highest-risk when wrong
+**Suggested**: Add FAITH rule — all numbers must trace to source before ✓; else ⚠️ UNVERIFIED NUMERIC
+**Decision**: approved
+**Reason**: tightens Vera's audit on the most dangerous claim type; zero infrastructure cost
+**Commit**: pending
+
+---
+
+## 2026-05-16 — Atom theme clustering for Indie
+
+**Insight**: Indie tagged atoms by ticker only; cross-ticker macro pattern detection requires theme cluster tags
+**Suggested**: Add Theme cluster field to atom format in stock-content.md (Indie section)
+**Decision**: approved
+**Reason**: enables thesis-convergence.py and Nick KB sweep to find cross-ticker signals
+**Commit**: pending
+
+---
+
+## 2026-05-16 — HisRubric self-check for Reese
+
+**Insight**: Reese docs had no structured self-check before save; failure modes hidden until Chris critique
+**Suggested**: Add 3-dimension HisRubric check (data sourcing, reasoning quality, conclusion validity) to Step 4
+**Decision**: approved
+**Reason**: catches low-quality docs earlier, before Chris round-trip
+**Commit**: pending
+
+---
+
+## 2026-05-16 — Episodic memory index for OUTCOMES.md
+
+**Insight**: OUTCOMES.md is flat log; retrieval requires reading entire file even for single-ticker lookup
+**Suggested**: Create scripts/outcomes-index.py — parse entries → JSON index with date/ticker/outcome/pnl/tags
+**Decision**: approved
+**Reason**: enables fast filtered retrieval as OUTCOMES grows; compounds over time
+**Commit**: pending
+
+---
+
 ## 2026-05-16 — Nick kill condition reflection pass
 
 **Insight**: Nick verdicts were single-pass with no self-check; arXiv:2604.18500 shows reflection raises multi-step accuracy 74% → 99%

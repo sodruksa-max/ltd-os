@@ -110,6 +110,12 @@ Next earnings date + consensus EPS
   - คำนวณจาก context — ไม่ต้อง search เพิ่ม
 - **Data gaps:** ❓ สิ่งที่ยังไม่รู้และควรรู้
 
+**HisRubric self-check ก่อน save (3 dimensions):**
+- Data sourcing: ทุก claim มี source ชัดเจนหรือ ❓ explicit — ไม่มี bare assertion
+- Reasoning quality: bull/bear logic ไม่มี circular reasoning หรือ vague qualifier ("strong growth")
+- Conclusion validity: kill conditions วัดได้จริง (metric threshold / event / date) — ไม่ใช่ "outlook แย่ลง"
+ถ้า dimension ใดไม่ผ่าน → แก้ก่อน save
+
 Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
@@ -118,14 +124,20 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 
 > **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ
 
-**Chris (critic):**
-ตรวจ: narrative ชัดไหม, bear case steelman จริงไหม, kill conditions วัดได้ไหม, logic ไหลดีไหม
-- ✅ Pass → ไปต่อ
-- ⚠️ Revise → ระบุ 3 จุด → แก้ (max 1 round แล้วบังคับ pass)
+**Chris (critic) — structured scorecard:**
+ให้คะแนน 3 dimensions (1-5, 5=ดีที่สุด):
+- **Kill condition measurability:** kill conditions วัดได้จริง (metric/event/date) หรือยัง
+- **Claim verifiability:** claim หลักมี source หรือ ❓ ชัดเจนไหม
+- **Bull/Bear balance:** bear case เป็น steelman จริงไหม หรือ strawman
+
+Output format: `Chris score: KM=X / CV=X / BB=X (total X/15)`
+- Score ≥ 12/15 → ✅ Pass → ไปต่อ
+- Score < 12/15 → ⚠️ Revise → ระบุ dimension ที่ต่ำสุด + 2 จุดที่ต้องแก้ → แก้แล้ว pass (max 1 round)
 
 **Vera (fact audit):**
 - Flag ⚠️ ทุก claim ที่ไม่มี source ชัดเจน
 - เปลี่ยนเป็น ❓ verify ทุกจุดที่ไม่ confirmed
+- **FAITH numerical rule:** ตัวเลขทุกตัว (revenue, growth rate, EPS, market size, margin) ต้อง trace กลับ source ได้ก่อน mark ✓ — ถ้า verify ไม่ได้ → flag ⚠️ UNVERIFIED NUMERIC (ไม่ใช่แค่ ❓)
 - ถ้า 2 sources ขัดแย้งกัน → **append ใน `vault/Knowledge/contradiction-registry.md` ทันที**
 
 ---
@@ -145,6 +157,7 @@ Extract 3-7 atomic insights จาก research doc ที่ผ่าน Chris+V
 **Source:** [URL / report name]
 **Date:** YYYY-MM-DD
 **Thesis link:** T# (ถ้าเชื่อมกับ thesis ใน THESIS_TRACKER)
+**Theme cluster:** [เลือก 1 tag — macro/ai-capex | macro/rates | sector/semicon | sector/quantum | sector/defense | sector/software | risk/concentration | risk/dilution | risk/competition | catalyst/earnings | catalyst/contract | catalyst/product]
 ```
 
 **Nick-required atoms — ต้อง extract อย่างน้อย 1 atom ต่อหมวด (Nick อ่านแค่ KB — ถ้าไม่มีตรงนี้ Nick ไม่รู้):**
