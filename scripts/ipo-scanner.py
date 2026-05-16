@@ -15,6 +15,8 @@ import yfinance as yf
 REPO = Path(__file__).resolve().parent.parent
 INBOX = REPO / "vault/00_inbox"
 INBOX.mkdir(parents=True, exist_ok=True)
+KB = REPO / "vault/Knowledge"
+KB.mkdir(parents=True, exist_ok=True)
 
 MIN_DEAL_SIZE_M = 500    # $500M minimum to flag as big
 BUZZ_VOLUME_RATIO = 3.0  # first-week volume 3x+ recent avg = high buzz
@@ -192,6 +194,72 @@ def main():
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"\nSaved: {out}")
     print(f"Big priced: {len(big_priced)} | High buzz: {len(buzz_flags)} | Upcoming: {len(upcoming_big)}")
+
+    # Write KB-formatted candidates for Nick
+    kb_lines = [
+        "---",
+        "type: nick-candidates",
+        f"updated: {today}",
+        "source: ipo-scanner.py",
+        "---",
+        "",
+        "# Nick Candidates — IPO & Discovery Pipeline",
+        f"*Auto-generated {today} | Nick: evaluate each against active theses before recommending add to THESIS_TRACKER*",
+        "",
+        "---",
+        "",
+        "## Already Trading (deal ≥ $500M)",
+        "",
+    ]
+
+    if big_priced:
+        kb_lines += [
+            "| Ticker | Company | IPO Date | Deal Size | Price Change | Buzz |",
+            "|---|---|---|---|---|---|",
+        ]
+        for r in big_priced:
+            buzz = f"{r.get('volume_ratio')}x vol" if r.get("volume_ratio", 0) >= BUZZ_VOLUME_RATIO else "-"
+            kb_lines.append(
+                f"| {r['ticker'] or 'TBD'} | {r['company'][:30]} | {r['date']} | "
+                f"${r['deal_size_m']:.0f}M | {r.get('price_change_pct', '❓')}% | {buzz} |"
+            )
+    else:
+        kb_lines.append("_No big priced IPOs in last 60 days._")
+
+    kb_lines += ["", "## High Buzz (first-week volume ≥ 3x avg)", ""]
+    if buzz_flags:
+        for r in buzz_flags:
+            kb_lines.append(
+                f"- **{r['ticker']}** {r['company']} — "
+                f"{r.get('volume_ratio')}x volume, {r.get('price_change_pct')}% since IPO, "
+                f"current ${r.get('current_price', '❓')}"
+            )
+    else:
+        kb_lines.append("_None._")
+
+    kb_lines += ["", "## Upcoming (deal ≥ $500M)", ""]
+    if upcoming_big:
+        kb_lines += [
+            "| Company | Ticker | Expected Date | Price Range | Deal Size |",
+            "|---|---|---|---|---|",
+        ]
+        for r in upcoming_big:
+            kb_lines.append(
+                f"| {r['company'][:30]} | {r['ticker'] or 'TBD'} | {r['expected_date']} | "
+                f"{r['price_range']} | ${r['deal_size_m']:.0f}M |"
+            )
+    else:
+        kb_lines.append("_No big upcoming IPOs._")
+
+    kb_lines += [
+        "",
+        "---",
+        "*Nick: สำหรับแต่ละ candidate — ถ้า sector ตรง thesis → เสนอ add THESIS_TRACKER; ถ้าไม่ตรง → note 'outside theses' แล้วข้าม*",
+    ]
+
+    kb_out = KB / "nick-candidates.md"
+    kb_out.write_text("\n".join(kb_lines), encoding="utf-8")
+    print(f"KB candidates: {kb_out}")
 
 
 if __name__ == "__main__":

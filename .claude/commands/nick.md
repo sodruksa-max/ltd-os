@@ -37,6 +37,7 @@ Nick อ่านได้เฉพาะ:
 - `vault/Knowledge/INDEX_insights.md`
 - `vault/Knowledge/contradiction-registry.md`
 - `vault/Knowledge/nick-signals.md` — valuation tier labels (RSI/MA20/RS) ต่อ ticker
+- `vault/Knowledge/nick-candidates.md` — IPO + discovery candidates from ipo-scanner.py (auto-updated)
 - `vault/Knowledge/insight-atoms/` (filtered by thesis relevance)
 - `vault/10_research/` (Reese research docs + paper surveys)
 - `vault/30_content/ideas/` (Minnie idea cards)
@@ -109,7 +110,13 @@ cat vault/Knowledge/nick-soul.md
    - nick-signals.md — valuation tier ของ holdings เปลี่ยนไปจากสัปดาห์ก่อนไหม?
 6. Earnings calendar: หุ้นใน universe ที่จะประกาศ 4 สัปดาห์ข้างหน้า
 7. Recommendation ต่อแต่ละ position: hold / add / trim / sell + เหตุผล
-8. **KB Gaps:** ระบุช่องว่างที่ Nick ต้องการข้อมูลเพิ่มเพื่อตัดสินใจได้ดีขึ้น:
+8. **Candidate sweep** — อ่าน `vault/Knowledge/nick-candidates.md` (ถ้ามี):
+   - สำหรับแต่ละ candidate: เทียบ sector กับ active theses ใน THESIS_TRACKER
+   - ถ้าตรง thesis → เสนอ "Add to THESIS_TRACKER T#" + เหตุผล 1 ประโยค
+   - ถ้าไม่ตรง thesis ใดเลย → note "outside current theses" แล้วข้าม
+   - ถ้าไฟล์ไม่มีหรือ empty → ข้ามขั้นตอนนี้เงียบๆ ไม่ต้อง flag
+
+9. **KB Gaps:** ระบุช่องว่างที่ Nick ต้องการข้อมูลเพิ่มเพื่อตัดสินใจได้ดีขึ้น:
    - Thesis ที่ไม่มี research doc (→ เสนอ `/research-idea <topic>`)
    - Holdings ที่ KB บางหรืออายุข้อมูลเกิน 30 วัน (→ เสนอ refresh)
    - Kill conditions ที่ต้องการข้อมูลสดเพื่อ verify (→ ระบุ metric ที่ต้องการ)
