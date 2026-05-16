@@ -27,6 +27,7 @@ description: Self-improving layer — reads all post-market reviews, finds recur
 vault/20_investment/_journal/*-review.md    (N วันย้อนหลัง)
 vault/_memory/OUTCOMES.md                   (Trading Calibration Log)
 vault/_memory/PREFERENCES.md               (กฎปัจจุบัน)
+vault/_memory/HYPERTHYMESIA_LOG.md          (full-context history — ถ้ามี)
 ```
 
 หลังโหลดไฟล์แล้ว รัน Brier Score เพื่อได้ quantitative baseline ของ calibration accuracy:
@@ -89,6 +90,28 @@ code/python/.venv/Scripts/python scripts/post-snapshot.py --date <MISSING_DATE>
 - confidence calibration — low confidence + ถูก vs high confidence + ผิด
 
 **3f. Regime distribution — overfitting guard**
+
+**3g. HSAM Context-Matched Precedent Query (ถ้ามี HYPERTHYMESIA_LOG)**
+
+ถ้า `vault/_memory/HYPERTHYMESIA_LOG.md` มีอยู่และมี entries ≥ 5:
+
+ดู regime + VIX range ของสัปดาห์ปัจจุบัน (จาก review ไฟล์ล่าสุด) แล้วหา entries ใน HYPERTHYMESIA_LOG ที่ context ใกล้เคียงที่สุด:
+- Regime ตรงกัน (เช่น choppy)
+- VIX อยู่ใน range เดียวกัน (±3 points)
+- Catalyst type คล้ายกัน (earnings / Fed / geopolitical)
+
+แสดง top 3 precedents:
+```
+HSAM Precedent Query — context ใกล้เคียงสัปดาห์นี้:
+1. [date]: [regime] VIX=[X] — Predicted [direction] @ [confidence] → Actual [Y], Match [Z]
+   Lesson: [top lesson จาก entry นั้น]
+2. [date]: ...
+3. [date]: ...
+
+Pattern from precedents: "เมื่อ [context] เกิด → outcome คือ [X] ใน Y/Z ครั้ง"
+```
+
+ถ้า HYPERTHYMESIA_LOG ยังไม่มี entries พอ → ข้ามเงียบๆ ไม่ต้องแจ้ง
 - นับวันแต่ละ regime: trending-up X วัน / trending-down X วัน / choppy X วัน / risk-off X วัน
 - ถ้า regime ใด regime หนึ่ง > 70% ของ sample → flag:
   > ⚠️ **Regime-homogeneous sample**: X% ของ review วันเหล่านี้เป็น `[regime]` — pattern ที่เห็นอาจใช้ได้เฉพาะ regime นี้ ไม่ใช่ all-weather rule

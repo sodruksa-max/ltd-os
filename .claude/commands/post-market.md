@@ -331,6 +331,42 @@ Append 1 line ใต้ section `## Trading Calibration Log` ใน `vault/_memo
 <date> [review-only] — Actual: <Y> (S&P <+/-X%>), No premarket brief, Key observation: <Z>
 ```
 
+### 7.5 HYPERTHYMESIA_LOG append
+
+Append full-context entry ใน `vault/_memory/HYPERTHYMESIA_LOG.md` — ทำทั้ง full mode และ review-only mode
+
+**Full mode entry:**
+```
+## <date> — Full
+Regime: [trending-up / trending-down / choppy / risk-off]
+
+**Market snapshot at decision time:**
+S&P: [+/-X%] | VIX: [X] | TNX: [X%] | Oil(Brent): [$X]
+Dominant sector move: [sector] [direction]
+
+**Prediction:**
+Direction: [Bullish/Base/Bearish] @ [low/medium/high] confidence
+Reasoning: [exact reasoning from premarket brief — what made me think this]
+Known unknowns: [อะไรที่ยังไม่แน่ใจตอน predict]
+Key catalysts expected: [list จาก brief]
+
+**Outcome:**
+Actual: [Bullish/Base/Bearish] — S&P [+/-X%]
+Match: [Yes/Partial/No] | Calibration: [well-calibrated/over-confident/under-confident]
+Surprise: [blind spot หลักที่พลาด]
+Top lesson: [1 ประโยค]
+```
+
+**Review-only mode entry (abbreviated):**
+```
+## <date> — Review-only
+Regime: [regime]
+Market: S&P [+/-X%] | VIX: [X]
+Key observation: [สรุปสั้น]
+```
+
+ถ้า `vault/_memory/HYPERTHYMESIA_LOG.md` ยังไม่มี → สร้างก่อนด้วย header จาก template แล้วค่อย append
+
 ### 8. KB Sync
 
 > **Observation masking:** ทำงานจาก review ใน context — ห้าม re-read ไฟล์ซ้ำ
