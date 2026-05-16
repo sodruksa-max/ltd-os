@@ -20,6 +20,13 @@ Invoke `analyst` agent to review usage + suggest improvements.
 5. For each suggested action, ask: "Approve? (yes/no/modify)"
 6. If approved: make the change, commit with message `analyst: <change> (approved)`
 7. Log all approvals + rejections to `vault/_memory/ANALYST_LOG.md`
+8. **System Improvement section** (append at end of every /analyst run):
+   - Read `vault/10_research/papers/` — scan Implementation Roadmap sections across all paper surveys
+   - Read `vault/_memory/DECISIONS.md` — check what's been decided but not built
+   - Read `vault/_memory/ANALYST_LOG.md` — skip items already approved or rejected before
+   - Output: **Top 3 improvement items**, ranked by impact-high / complexity-low
+   - Format per item: `[impact: H/M] [effort: ~Xh] <what to build/change> — <why it matters now>`
+   - Max 200 words total for this section — keep it scan-able, not a report
 
 ## Constraints
 
