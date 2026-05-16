@@ -115,6 +115,14 @@ cat vault/Knowledge/nick-soul.md
 
 3. คำนวณ NAV ปัจจุบัน vs SPY since inception
 
+**Savant Calculation Rule — ห้ามประมาณทุกตัวเลข:**
+- ก่อน calculate: อ่าน `vault/Knowledge/savant-numbers.md` — NAV Log section — ตัวเลขที่ archived แล้วไม่ต้อง re-search
+- NAV = ผลรวม (exact_shares_i × exact_price_i) ถึง 2 decimal places
+- % weight = (position_value ÷ NAV) × 100 ถึง 2 decimal places
+- Return vs SPY = คำนวณจาก exact inception date + exact entry prices ที่ archived
+- ถ้าไม่มี exact data → แสดง `[EXACT UNAVAILABLE: <reason>]` — ห้ามประมาณ
+- หลัง calculate: append exact NAV + exact SPY price วันนี้ ลง `vault/Knowledge/savant-numbers.md` (NAV Log section)
+
 3.5 **Tourette Price Reflex — instinct scan ก่อน deep analysis**
 
 ดูราคา holdings ทั้งหมดแบบ raw instinct **ก่อน** เริ่ม kill condition check:

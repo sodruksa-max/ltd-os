@@ -185,6 +185,29 @@ Vera Autism Summary:
 - New contradictions logged: N entries
 ```
 
+**Vera Savant Precision Audit (รันหลัง autism layer — enforce exact numbers):**
+
+ต่อทุกตัวเลขที่ผ่านมาใน Reese doc — ตรวจว่า exact หรือ approximate:
+
+**Imprecision flags (บังคับ exact หรือ mark unverified):**
+- "ประมาณ", "about", "roughly", "~X", "double digits", "strong growth", "significant margin" → `[SAVANT: IMPRECISE]` — ต้องหา exact value
+- Revenue / EPS / margin ที่ไม่ระบุ FY หรือ quarter → `[SAVANT: UNANCHORED]` — ต้องระบุ period
+- ตัวเลขที่ไม่ระบุ date ของ source → `[SAVANT: UNDATED]` — ต้องระบุ data date
+
+**Critical numbers → Savant Archive:**
+ตัวเลขที่ verified exact แล้ว และ critical ต่อ thesis หรือ kill condition → append ใน `vault/Knowledge/savant-numbers.md`:
+```
+[TICKER] [DATE-VERIFIED] [METRIC] = [EXACT VALUE] | Source: [source, date] | Relevant to: [thesis/kill condition]
+```
+
+Vera สรุป savant audit:
+```
+Vera Savant Summary:
+- [SAVANT: IMPRECISE] N — imprecise numbers flagged
+- [SAVANT: UNANCHORED] M — numbers without period anchor
+- Critical numbers archived: K → savant-numbers.md
+```
+
 ---
 
 ## STEP 6 — INDIE ATOMS
