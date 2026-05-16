@@ -173,6 +173,16 @@ for cmd in review daily-brief handoff context condense weekly-learnings onboard 
   fi
 done
 
+echo ""
+echo "-- Slash commands (cognitive trait)"
+for cmd in brainstorm connect deep-dive wild-thesis; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd}"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
 # ── Vault structure ───────────────────────────────────────────────────────────
 echo ""
 echo "-- Vault"
@@ -212,6 +222,27 @@ if [[ -f "$nick_signals" ]]; then
 else
   f "nick-signals.md missing — run nick-monitor.py"
 fi
+
+# ── Knowledge Base files ──────────────────────────────────────────────────────
+echo ""
+echo "-- Knowledge Base files"
+for kb in \
+  "vault/Knowledge/THESIS_TRACKER.md" \
+  "vault/Knowledge/topic-map.md" \
+  "vault/Knowledge/INDEX_insights.md" \
+  "vault/Knowledge/contradiction-registry.md" \
+  "vault/Knowledge/thesis-convergence.md" \
+  "vault/Knowledge/nick-soul.md" \
+  "vault/Knowledge/ptsd-threat-patterns.md" \
+  "vault/Knowledge/paranoid-threat-signatures.md" \
+  "vault/Knowledge/tle-memory-index.md" \
+  "vault/Knowledge/misophonia-triggers.md"; do
+  if [[ -f "$ROOT/$kb" ]]; then
+    p "$kb"
+  else
+    f "$kb missing"
+  fi
+done
 
 # ── Memory files ──────────────────────────────────────────────────────────────
 echo ""
