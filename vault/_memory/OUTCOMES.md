@@ -82,6 +82,7 @@ Each entry follows this structure:
 2026-05-04 — Predicted: Base (medium), Actual: Bearish (-0.41%), Match: No, Calibration: over-confident, Top lesson: Binary geopolitical events (Iran peace→missiles) = cap confidence Low; add 10Y yield rate-of-change tracker to brief
 2026-05-05 — Predicted: Base (low), Actual: Bullish (SPY +0.78%), Match: No, Calibration: direction wrong / confidence appropriate (BS 0.09), Top lesson: Oil -3.90% crash = unlock XLK risk-on; Polymarket 84% crowd can be 180° wrong — extreme odds = potential contrarian signal
 [weekly-calibration 2026-05-11] 5 reviews analyzed (2026-04-28 ถึง 2026-05-05) — proposals: 4 approved, 0 skipped — top pattern: geopolitical binary event = over-confidence trap (2/5 reviews)
+[weekly-calibration 2026-05-16] 6 reviews analyzed (2026-04-28 ถึง 2026-05-11) — proposals: 2 approved, 0 skipped — top pattern: oil sustained high = XLE up (4/6 reviews); yield rate-of-change untracked (2/6 reviews)
 
 2026-05-11 — Predicted: Base (medium), Actual: Base (SPY +0.23%), Match: Yes, Calibration: well-calibrated, BS: 0.25, Top lesson: XLE +2.68% ใน Base — WTI > $95 sustained = XLE ขึ้นตาม oil; ASTS miss 223% on EPS > expected magnitude; pre-market TLT +0.49% ≠ EOD
 

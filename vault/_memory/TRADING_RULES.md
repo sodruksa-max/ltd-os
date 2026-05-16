@@ -23,10 +23,13 @@
 - ถ้ามีเรื่อง Trump/executive action ที่ยัง active → เพิ่ม row "Presidential Action Risk" ใน Risk Framework แยกจาก Geopolitical
 - Format: `**Presidential Action Risk:** [สถานการณ์] → trigger: [oil/USD/defense/equities] → magnitude: [ต่ำ/กลาง/สูง]`
 
-## Oil crash → sector beneficiary *(approved 2026-05-11)*
+## Oil direction → sector beneficiary *(approved 2026-05-11, extended 2026-05-16)*
 
 - ถ้า WTI หรือ Brent ลง ≥3% → ระบุ XLK + QQQM เป็น primary beneficiary ใน Bullish scenario
-- Evidence: May 5 oil -3.9% → XLK +2.2%; Apr 30 oil คลาย → Nasdaq rally
+- Evidence (down): May 5 oil -3.9% → XLK +2.2%; Apr 30 oil คลาย → Nasdaq rally
+- ถ้า WTI/Brent ปิดเหนือ $95 ติดต่อกัน ≥2 trading days → XLE เป็น primary outperformer ใน Base/Bullish scenario; ห้ามใส่ "XLE อาจลงขัดสัญชาตญาณ" ถ้า oil sustained สูง
+- WTI $100 = psychological threshold → ระบุใน oil section ของ brief เสมอเมื่อ WTI ใกล้หรือเหนือ $100
+- Evidence (sustained high): Apr 28 XLE+1.66% (WTI~$100) / Apr 30 XLE+1.05% (Brent~$114) / May 4 XLE+0.92% (WTI~$105) / May 11 XLE+2.68% (WTI$100+ sustained)
 
 ## Trade setup discipline
 
@@ -44,6 +47,12 @@
 3. Profit-taking — lock gains
 4. Time-of-day — เวลาห้าม trade
 5. Earnings/news triggers
+
+## 10Y yield rate-of-change → TLT reliability *(approved 2026-05-16)*
+
+- เพิ่ม column "+/- Xbps vs yesterday" ใน Macro table ของ brief ทุกวัน
+- ถ้า 10Y yield เพิ่มขึ้น ≥5bps vs previous close → TLT pre-market snapshot ไม่น่าเชื่อถือสำหรับทิศทาง EOD; ระบุ "yield momentum overrides TLT pre-market" ใน brief
+- Evidence: May 4 yield +21bps (stagflation signal ไม่ถูก track) + May 11 TLT pre-market +0.49% → EOD -0.60% เพราะ yield rising ตลอดวัน
 
 ## Source verification
 
