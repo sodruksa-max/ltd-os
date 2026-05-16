@@ -2,7 +2,7 @@
 council_topic: Workflow design สำหรับระบบพัฒนาสูตรอาหาร + สูตรปุ๋ย organic
 expertise_lens: strategist
 date: 2026-05-17
-status: open
+status: "decided: Hybrid A (Pragmatist + Optimist KB) — Q2=ขาย justifies full KB from day 1"
 ---
 
 # Council Decision: Recipe + Fertilizer Workflow
@@ -98,8 +98,13 @@ status: open
 
 ---
 
+## User answers (2026-05-17)
+
+- **Q1 (baseline):** ใช้ปุ๋ยยอดนิยมในตลาดเป็น v0 baseline — เริ่มด้วย `/paper-survey` หา market standard สำหรับปาล์ม (เช่น 15-15-15, 13-13-21) แทนการ document ฟาร์มจริง
+- **Q2 (purpose):** เพื่อขาย — external value confirmed → Hybrid A: Pragmatist structure + Optimist's compounding KB + `content_angle:` field ตั้งแต่วันแรก
+
 ## Outcome (fill when decided)
 
-- Date decided:
-- Choice:
+- Date decided: 2026-05-17
+- Choice: Hybrid A — Pragmatist spine + Optimist KB (shared insight-atoms) + content_angle field + 12-week fertilizer gate
 - Outcome (after 12 weeks):
