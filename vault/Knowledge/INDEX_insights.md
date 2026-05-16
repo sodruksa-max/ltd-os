@@ -87,6 +87,12 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T3] post-market-2026-05-11 — Quarterly run-rate vs FY guidance gap ≥ 3x → magnitude miss risk สูง; flag ใน brief แทนแค่ "miss probability กลาง"
 - [2026-05-11] [General] post-market-2026-05-11 — 10Y yield > 4.35% rising intraday → TLT likely ปิดลบแม้ pre-market TLT +; yield momentum ภายในวันมักต่อเนื่อง
 
+## Oil Palm Fertilizer NPK Baseline (fertilizer-palm-npk-baseline-2026-05-17.md)
+- [2026-05-17] [domain:fertilizer] fertilizer-palm-npk-baseline-2026-05-17 — ปาล์มโตต้องการ K สูงสุด (3 กก./ต้น/ปี); organic ทำงานผ่าน CEC+AMF ไม่ใช่แค่ NPK; cost-positive เฉพาะเมื่อ source EFB/POME ฟรีจากโรงงานใกล้บ้าน
+
+## Food Science Top 5 Mechanisms (food-science-top5-mechanisms-2026-05-17.md)
+- [2026-05-17] [domain:recipe] food-science-top5-mechanisms-2026-05-17 — Umami synergy (IMP+GMP+glutamate) = 15x sensitivity; Maillard sweet spot 150–160°C; salt 0.3–0.5% กด bitter receptor
+
 ## PLTR Deep Dive (pltr-2026-05-16.md)
 - [2026-05-16] [T4] pltr-2026-05-16 — PLTR valuation post-drawdown: 46x NTM EV/Revenue (~62x trailing P/S) after -26% YTD; still 9x sector median — extreme premium tier; updates May 11 "80-115x" atom (that was peak pricing)
 - [2026-05-16] [T4] pltr-2026-05-16 — PLTR kill condition triggers: US Gov declining QoQ ≥2 qtrs OR US commercial <80% YoY Q2/Q3 2026; Q2 earnings Aug 10 is first checkpoint
