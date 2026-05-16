@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# cost-report.sh — DEPRECATED: Claude Code does not export token usage logs.
+# This script always outputs $0.00. Track real costs at console.anthropic.com → Usage.
+# Kept for reference only — do not rely on its output.
+#
 # cost-report.sh — estimate Claude API costs from Claude Code usage
 # Usage: cost-report.sh [--period day|week|month] [--format text|json]
 
