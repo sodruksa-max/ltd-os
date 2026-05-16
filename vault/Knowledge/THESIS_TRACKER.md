@@ -11,10 +11,11 @@ Active investment theses. Nick's universe walk + Reese's research frame draw fro
 
 ### T1 — AI Capex Supercycle
 **Statement:** Hyperscaler capex (MSFT/AMZN/GOOGL/META) remains elevated → semicon + datacenter = direct beneficiary for 3-5 years.
-**Tickers:** NVDA, AMD, AVGO, SMCI, DELL, HPE, MU, MRVL, LRCX, MOD
+**Tickers:** NVDA, AMD, AVGO, SMCI, DELL, HPE, MU, MRVL, LRCX, MOD, CBRS (watch)
 **Kill condition:** Hyperscaler capex guidance 2 consecutive quarters below prior year → thesis broken.
 **Status:** Active — early innings
-**Last reviewed:** 2026-05-11
+**Last reviewed:** 2026-05-16
+**Notes:** CBRS (Cerebras Systems) added as watch — wafer-scale AI chip, largest US tech IPO 2026 ($5.55B), 86% UAE revenue concentration risk, P/S ~186x; Nick flagged 2026-05-16; full research at vault/20_investment/CBRS-2026-05-16.md
 
 ### T2 — Semiconductor Moats
 **Statement:** NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.
@@ -25,10 +26,11 @@ Active investment theses. Nick's universe walk + Reese's research frame draw fro
 
 ### T3 — Space & Defense AI
 **Statement:** Space economy entering commercial ramp — launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.
-**Tickers:** RKLB, ASTS, LUNR, KTOS, BBAI
+**Tickers:** RKLB, ASTS, LUNR, KTOS, BBAI, HAWK (watch)
 **Kill condition:** RKLB loses government launch contracts; ASTS spectrum/regulatory blocked; BBAI loses DoD renewals.
 **Status:** Active — speculative tier
-**Last reviewed:** 2026-05-11
+**Last reviewed:** 2026-05-16
+**Notes:** HAWK added as watch — space RF intelligence / satellite; Nick flagged 2026-05-16; no research doc yet (run /stock-content HAWK to build)
 
 ### T4 — AI Software Monetization
 **Statement:** AI infra build-out → software layer begins monetizing: PLTR winning gov + enterprise AI; CRM/SNOW embedding AI into workflow.

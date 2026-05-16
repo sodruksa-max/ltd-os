@@ -2,7 +2,7 @@
 council_topic: ควรสร้าง /system-review command ใหม่หรือไม่
 expertise_lens: engineer
 date: 2026-05-16
-status: open
+status: "decided: extend /analyst (Caveman option) — implemented 2026-05-16"
 ---
 
 # Council Decision: /system-review Build Decision
@@ -89,6 +89,6 @@ Caveman caught between two fears: "new command = forgotten cave" AND "3 lines = 
 
 ## Outcome (fill later when known)
 
-- Date decided:
-- Choice:
-- Outcome (after 4 weeks):
+- Date decided: 2026-05-16
+- Choice: Caveman option — extend /analyst with "System Improvement" section (Step 8); commit 343f6cf
+- Outcome (after 4 weeks): *(review ~2026-06-13)*

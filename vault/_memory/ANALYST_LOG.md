@@ -34,7 +34,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add 3-dimension scorecard (KM/CV/BB, 1-5 each, pass ≥12/15) to Chris step in stock-content.md
 **Decision**: approved
 **Reason**: low effort, raises floor quality on every research doc
-**Commit**: pending
+**Commit**: 638c8fb
 
 ---
 
@@ -44,7 +44,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add FAITH rule — all numbers must trace to source before ✓; else ⚠️ UNVERIFIED NUMERIC
 **Decision**: approved
 **Reason**: tightens Vera's audit on the most dangerous claim type; zero infrastructure cost
-**Commit**: pending
+**Commit**: 638c8fb
 
 ---
 
@@ -54,7 +54,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add Theme cluster field to atom format in stock-content.md (Indie section)
 **Decision**: approved
 **Reason**: enables thesis-convergence.py and Nick KB sweep to find cross-ticker signals
-**Commit**: pending
+**Commit**: 638c8fb
 
 ---
 
@@ -64,7 +64,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add 3-dimension HisRubric check (data sourcing, reasoning quality, conclusion validity) to Step 4
 **Decision**: approved
 **Reason**: catches low-quality docs earlier, before Chris round-trip
-**Commit**: pending
+**Commit**: 638c8fb
 
 ---
 
@@ -74,7 +74,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Create scripts/outcomes-index.py — parse entries → JSON index with date/ticker/outcome/pnl/tags
 **Decision**: approved
 **Reason**: enables fast filtered retrieval as OUTCOMES grows; compounds over time
-**Commit**: pending
+**Commit**: 638c8fb
 
 ---
 
@@ -84,7 +84,7 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add draft → self-critique → finalize flow to Step 4 of /nick-weekly
 **Decision**: approved
 **Reason**: highest-stakes decision point in Nick workflow; low effort, high impact
-**Commit**: pending
+**Commit**: e967894
 
 ---
 
@@ -94,4 +94,4 @@ Record of insights from `/analyst` command — what was suggested, what you appr
 **Suggested**: Add keyphrase extraction instruction to Step 5 KB sweep in /nick-weekly
 **Decision**: approved
 **Reason**: reduces false KB gaps and unnecessary /stock-content runs; zero infrastructure cost
-**Commit**: pending
+**Commit**: e967894
