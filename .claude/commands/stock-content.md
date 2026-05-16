@@ -224,7 +224,14 @@ Researcher ใช้: N searches
 
 ## Commit
 
-หลัง /review ผ่าน → รัน:
+หลัง /review ผ่าน → stage ทุกไฟล์ที่สร้างแล้ว commit:
 ```bash
+git add vault/20_investment/<TICKER>-<DATE>.md \
+        vault/30_content/ideas/<slug>-<DATE>.md \
+        vault/10_research/<slug>-reese-<DATE>.md \
+        vault/Knowledge/insight-atoms/<slug>-<DATE>.md \
+        vault/Knowledge/INDEX_insights.md \
+        vault/Knowledge/contradiction-registry.md \
+        config/watchlist.txt
 bash scripts/safe-commit.sh "vault: stock-content <TICKER>"
 ```
