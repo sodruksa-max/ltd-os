@@ -131,6 +131,16 @@ for cmd in pre-market post-market market-log eod paper-trade screen bot weekly-c
 done
 
 echo ""
+echo "-- Slash commands (formula system)"
+for cmd in new-formula new-recipe; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd}"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+echo ""
 echo "-- Slash commands (research & content)"
 for cmd in stock-research stock-content paper-survey import-notebooklm nlm; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
@@ -174,6 +184,8 @@ for dir in \
   "vault/20_investment/nick/alerts" \
   "vault/30_content" \
   "vault/40_projects" \
+  "vault/50_formulas/fertilizer" \
+  "vault/50_formulas/recipes" \
   "vault/_memory" \
   "vault/_templates" \
   "vault/90_archive"
@@ -218,7 +230,7 @@ done
 # ── Templates ─────────────────────────────────────────────────────────────────
 echo ""
 echo "-- Templates"
-for tpl in real-trade-template; do
+for tpl in real-trade-template fertilizer-formula recipe-formula; do
   if ls "$ROOT/vault/_templates/${tpl}"* 2>/dev/null | grep -q .; then
     p "template: $tpl"
   else
