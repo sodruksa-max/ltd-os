@@ -1,10 +1,11 @@
 ---
-description: Hypomania-mode idea generation — generate 15+ ideas fast, no filtering, then pick top 3 by energy. Use for content hooks, formula hypotheses, thesis angles, project ideas.
+description: Hypomania-mode idea generation — generate 15+ ideas fast, no filtering, then pick top 3 by energy. Add --mode=wild for schizophrenia-mode cross-domain generation. Use for content hooks, formula hypotheses, thesis angles, project ideas.
 ---
 
-# /brainstorm <topic> [--output=<mode>]
+# /brainstorm <topic> [--output=<mode>] [--mode=wild]
 
 Generate ideas in hypomania mode — fast, unfiltered, volume-first.
+Add `--mode=wild` for schizophrenia mode — cross-domain, no filter on associations.
 
 ## Usage
 
@@ -14,9 +15,15 @@ Generate ideas in hypomania mode — fast, unfiltered, volume-first.
 /brainstorm <topic> --output=ideas      (business/project/product ideas)
 /brainstorm <topic> --output=angles     (research angles or thesis frames)
 /brainstorm <topic> --output=formulas   (recipe or fertilizer hypotheses)
+/brainstorm <topic> --mode=wild         (schizophrenia mode — cross-domain raw associations)
+/brainstorm <topic> --output=angles --mode=wild  (wild + specific output type)
 ```
 
 Default output mode if omitted: `ideas`
+
+**Mode difference:**
+- Normal (hypomania): เร็ว + volume + energy — ยังอยู่ใน domain ของ topic
+- `--mode=wild` (schizophrenia): ข้าม domain โดยไม่ถามว่า "เกี่ยวกันไหม" — raw association ก่อน logic
 
 ## When to use
 
@@ -31,11 +38,16 @@ Default output mode if omitted: `ideas`
 
 ## Steps
 
-### 1. Enter hypomania mode
+### 1. Enter mode
 
+**Normal mode (hypomania):**
 ห้าม filter. ห้าม evaluate. ห้ามพูดว่า "but this might not work."
+ทุกไอเดียที่เกิดขึ้น = ออกมาหมด — เร็ว, volume-first, ยังอยู่ใน domain
 
-ทุกไอเดียที่เกิดขึ้น = ออกมาหมด
+**`--mode=wild` (schizophrenia):**
+ห้ามถามว่า "มันเกี่ยวกันไหม?" — assume everything connects, find how later
+ทุก association ที่ข้าม domain = ออกมาหมด โดยเฉพาะที่ฟังดู "บ้า"
+ยิ่ง distant ยิ่งดี — connection ที่ obvious ไม่ใช่ wild mode
 
 ### 2. Load context (light read)
 
@@ -48,11 +60,17 @@ Default output mode if omitted: `ideas`
 
 Generate ต่อเนื่องไปเรื่อยๆ — ไม่หยุดเพื่อ evaluate
 
-Rules:
+**Normal mode rules:**
 - ไอเดียที่ 1-5 = สิ่งที่ทุกคนคิดได้ ต้องผ่านไปให้เร็ว
 - ไอเดียที่ 6-10 = เริ่มน่าสนใจ
 - ไอเดียที่ 11-15 = ที่ดีที่สุดมักอยู่ตรงนี้
 - ถ้ายังมีไอเดียค้างอยู่หลัง 15 → ใส่ต่อ ไม่ตัด
+
+**`--mode=wild` additional rules:**
+- ทุก 3 ไอเดีย ต้องมีอย่างน้อย 1 ที่ข้าม domain อย่างสมบูรณ์
+- ไอเดียที่ฟังดู "บ้าที่สุด" ในชุด = ต้องอยู่ใน list ไม่ตัดออก
+- ถ้า generate ถึง 10 แล้วยังไม่มี cross-domain leap = ออกจาก domain ทันที
+- ห้ามถามตัวเองว่า "มันจะ work ไหม" ระหว่าง generate
 
 ให้แต่ละไอเดียสั้น — 1 ประโยคหรือ 1 วลี ไม่ต้อง expand ตอนนี้
 

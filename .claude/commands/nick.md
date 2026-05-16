@@ -231,6 +231,41 @@ Psychopathy Kill Check:
 - [SUNK COST] TICKER — entry price detected in reasoning, purged + re-evaluated
 ```
 
+5.8 **Schizophrenia Cross-Domain Unknown Driver Scan — หา driver ที่ยังไม่มีชื่อ**
+
+เป้าหมาย: ค้นหา driver ที่ซ่อนอยู่เบื้องหลัง portfolio ซึ่งยังไม่มีชื่อในไทยๆ thesis ใดเลย เพราะมันมาจากคนละ domain กันโดยสิ้นเชิง
+
+**สมมติฐานเริ่มต้น:** portfolio ทุกชุดมี 1-2 underlying driver ที่ invisible เพราะอยู่นอก mental model ของ thesis ปัจจุบัน
+
+**Domain leap scan:**
+มองพอร์ตทั้งหมดพร้อมกัน แล้วถาม:
+> "ถ้า driver ที่แท้จริงของพอร์ตนี้ไม่ใช่เรื่อง tech หรือ finance แต่เป็นเรื่อง [domain อื่นโดยสิ้นเชิง] — มันจะเป็น domain ไหน?"
+
+Force-generate 3 hypotheses จาก domains ที่ไม่ obvious เช่น:
+- biology (population dynamics, predator-prey)
+- military strategy (logistics, attrition warfare)
+- epidemiology (adoption curves, herd immunity)
+- anthropology (status signaling, resource control)
+- agriculture (growing season, soil depletion)
+
+ต่อแต่ละ hypothesis → ถาม:
+> "ถ้า hypothesis นี้จริง — อะไรใน portfolio ปัจจุบันจะ make sense ที่ไม่เคย make sense ก่อน?"
+
+**Unknown driver flag:**
+ถ้าพบ cross-domain hypothesis ที่:
+1. อธิบาย pattern ที่ thesis ปัจจุบัน explain ไม่ได้
+2. มี observable prediction ที่วัดได้
+
+→ flag: `[UNKNOWN DRIVER] <hypothesis> — observable: <prediction> — suggest: /wild-thesis <topic>`
+
+รายงานท้าย session (เฉพาะถ้าพบ — ถ้าไม่พบข้ามเงียบๆ):
+```
+Schizophrenia Scan:
+- [UNKNOWN DRIVER] <cross-domain hypothesis>
+  Observable: <what must be true if this hypothesis is right>
+  Next: /wild-thesis <topic> --domains=<domain>
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
