@@ -329,8 +329,9 @@ def main():
     mon_str = monday.strftime("%d %b")
     fri_str = friday.strftime("%d %b %Y")
 
+    fetched_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     print(f"## Weekly Market Snapshot — {iso_label} ({mon_str}–{fri_str})")
-    print(f"*Alpaca IEX weekly bars + Yahoo Finance direct HTTP | สร้างโดย weekly-snapshot.py*\n")
+    print(f"*Alpaca IEX weekly bars + Yahoo Finance direct HTTP | สร้างโดย weekly-snapshot.py | fetched: {fetched_at}*\n")
     print("---\n")
 
     # Alpaca weekly bars
@@ -352,6 +353,13 @@ def main():
             "weekly_pct": weekly_pct,
         }
     print_macro_section(macro)
+
+    # Cross-validate SPY: Alpaca vs Yahoo Finance — flag if diff > 1pp
+    spy_yf_close, _, _, spy_yf_pct = fetch_yf_weekly("SPY", monday, friday)
+    spy_alpaca_pct = (alpaca_data or {}).get("SPY", {}).get("weekly_pct")
+    if spy_alpaca_pct is not None and spy_yf_pct is not None:
+        if abs(spy_alpaca_pct - spy_yf_pct) > 1.0:
+            print(f"> ⚠️ **SPY SOURCE CONFLICT**: Alpaca IEX {pct_str(spy_alpaca_pct)} vs Yahoo Finance {pct_str(spy_yf_pct)} — diff {abs(spy_alpaca_pct - spy_yf_pct):.2f}pp — verify before using\n")
 
     # Regime verdict
     spy = (alpaca_data or {}).get("SPY", {})
