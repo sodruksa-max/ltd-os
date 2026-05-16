@@ -95,6 +95,8 @@ cat vault/Knowledge/nick-soul.md
 
 ## /nick-weekly — WEEKLY REVIEW
 
+### Search budget: 15 web searches per session (ใช้อย่างรอบคอบ — เก็บไว้สำหรับ decision-critical gaps)
+
 ### Process:
 
 0. **Score previous week's recs** (feedback loop — ทำก่อนอ่าน soul.md เสมอ):
@@ -105,29 +107,54 @@ cat vault/Knowledge/nick-soul.md
    - ถ้าไม่มีอะไรต้อง score → ข้ามเงียบๆ ไม่ต้องแจ้ง
 
 1. อ่าน nick-soul.md
-2. ดึงราคาปัจจุบัน (web) สำหรับทุก holdings + SPY
-3. คำนวณ NAV ปัจจุบัน vs SPY benchmark since inception
-4. ตรวจ kill conditions ทุกตำแหน่ง:
-   - **Intact:** thesis ยังดี → hold
-   - **Evolving:** thesis กำลังเปลี่ยนแต่ยังไม่ break → note + monitor
-   - **Invalidated:** kill condition triggered → เสนอ sell
-5. KB sweep — ตรวจ 4 แหล่ง:
-   - **thesis-convergence.md** — อ่านก่อนเสมอ: theme ไหน confirmed โดย 3+ sources? ใช้เป็น structural tailwind ในการ size positions
-   - insight atoms ใหม่ใน `vault/Knowledge/insight-atoms/` (ดู date ล่าสุด) จาก /stock-content หรือ /stock-research
-   - contradiction-registry.md — มี contradiction ใหม่ที่กระทบ holdings ไหม?
-   - nick-signals.md — valuation tier ของ holdings เปลี่ยนไปจากสัปดาห์ก่อนไหม?
-6. Earnings calendar: หุ้นใน universe ที่จะประกาศ 4 สัปดาห์ข้างหน้า
-7. Recommendation ต่อแต่ละ position: hold / add / trim / sell + เหตุผล
-8. **Candidate sweep** — อ่าน `vault/Knowledge/nick-candidates.md` (ถ้ามี):
-   - สำหรับแต่ละ candidate: เทียบ sector กับ active theses ใน THESIS_TRACKER
-   - ถ้าตรง thesis → เสนอ "Add to THESIS_TRACKER T#" + เหตุผล 1 ประโยค
-   - ถ้าไม่ตรง thesis ใดเลย → note "outside current theses" แล้วข้าม
-   - ถ้าไฟล์ไม่มีหรือ empty → ข้ามขั้นตอนนี้เงียบๆ ไม่ต้อง flag
 
-9. **KB Gaps:** ระบุช่องว่างที่ Nick ต้องการข้อมูลเพิ่มเพื่อตัดสินใจได้ดีขึ้น:
-   - Thesis ที่ไม่มี research doc (→ เสนอ `/research-idea <topic>`)
-   - Holdings ที่ KB บางหรืออายุข้อมูลเกิน 30 วัน (→ เสนอ refresh)
-   - Kill conditions ที่ต้องการข้อมูลสดเพื่อ verify (→ ระบุ metric ที่ต้องการ)
+2. **ดึงราคา + ข่าวสำคัญ (web — 3-4 searches)**
+   - ราคาปัจจุบันทุก holdings + SPY + VIX
+   - ข่าวสำคัญสัปดาห์นี้ต่อแต่ละ holding (1 search รวม)
+   - Earnings calendar 4 สัปดาห์ข้างหน้าสำหรับ universe ทั้งหมด (1 search)
+
+3. คำนวณ NAV ปัจจุบัน vs SPY since inception
+
+4. **Kill condition check — ทุก position อย่างรอบคอบ:**
+   ต่อแต่ละ holding ให้ทำตามลำดับ:
+   a. อ่าน kill conditions จาก KB หรือ nick_state.json
+   b. ตรวจว่า KB มีข้อมูลสดพอที่จะ verify แต่ละ condition ไหม
+   c. ถ้า KB บางหรืออายุ > 30 วัน → **ค้นหาทันที (1-2 searches)** แทนที่จะ flag ไว้
+   d. ตัดสิน: **Intact / Evolving / Invalidated**
+
+   Kill condition ที่ต้องการ fresh data ตัวอย่าง:
+   - "hyperscaler capex guidance" → search "`<TICKER>` Q1 2026 earnings capex guidance"
+   - "RPO stagnation" → search "`<TICKER>` RPO latest quarter"
+   - "gov contract loss" → search "`<TICKER>` government contract news 2026"
+
+5. **KB sweep — ตรวจ 4 แหล่ง:**
+   - **thesis-convergence.md** — theme ไหน STRONG (3+ sources)? → structural tailwind
+   - insight-atoms/ — มี atom ใหม่ที่เกี่ยวข้องกับ holdings ไหม?
+   - contradiction-registry.md — มี unresolved contradiction ที่กระทบ holdings ไหม?
+   - nick-signals.md — RSI/MA20/RS tier ปัจจุบันต่อแต่ละ holding
+
+6. **Recommendation — ทุก position + sizing ชัดเจน:**
+   - Hold / Add / Trim / Sell + เหตุผล
+   - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
+   - ถ้า Trim/Sell → ระบุ % ที่ขาย + เหตุผล kill condition ที่ trigger
+
+7. **Candidate sweep — ตัดสินใจเองพร้อมข้อมูล:**
+   อ่าน `vault/Knowledge/nick-candidates.md` แล้วต่อแต่ละ candidate ที่ตรง thesis:
+   a. ค้นหา fundamentals เบื้องต้น (1-2 searches) — revenue, market cap, moat
+   b. เทียบกับ nick-signals.md tier (ถ้ามี)
+   c. ตัดสิน: **Buy now / Watch (entry condition) / Skip (เหตุผล)**
+   d. ถ้า Buy → ระบุ conviction, sizing, kill conditions เบื้องต้น
+   — ไม่ต้องรอ /stock-research ก่อน ถ้า conviction ≤ med และข้อมูลพอ
+
+8. **Self-research สำหรับ open questions (remaining budget):**
+   ถ้ายังมี search budget เหลือและมีคำถามที่บล็อกการตัดสินใจ → ค้นหาทันที
+   บันทึกสิ่งที่ค้นพบเป็น insight atom สั้นๆ ใน `vault/Knowledge/insight-atoms/` ก่อนจบ session
+
+9. **KB Gaps (เฉพาะ deep research ที่ต้องการ > 5 searches):**
+   Flag เฉพาะสิ่งที่ต้องการ full research pipeline เท่านั้น:
+   - ไม่มี Reese doc และ conviction สูง → เสนอ `/stock-content <TICKER>`
+   - มี doc แต่เก่า > 60 วัน + earnings ใหม่ → เสนอ refresh
+   — ห้าม flag ทุกอย่างเป็น KB Gap; ถ้าข้อมูลพอตัดสินใจได้ → ตัดสินใจเลย
 
 ### Cluster-complete trigger:
 ถ้า 3+ holdings invalidated พร้อมกัน → flag ให้รัน /nick-quarterly
@@ -135,6 +162,8 @@ cat vault/Knowledge/nick-soul.md
 ### Output:
 - `vault/20_investment/nick/weekly/<date>_weekly-rec.md`
 - Append entry ใน `vault/20_investment/nick/performance/nav_log.md`
+- Append insight atoms ใหม่ (ถ้ามี) ใน `vault/Knowledge/insight-atoms/`
+- Update `vault/20_investment/nick/nick_state.json` ถ้ามี position change
 
 ---
 
@@ -194,13 +223,17 @@ cat vault/Knowledge/nick-soul.md
 ]
 ```
 
-## KB Gaps — Research requests
-| Priority | Topic | Why needed | Suggested command |
+## Deep Research Queue (เฉพาะสิ่งที่ต้องการ > 5 searches)
+| Priority | Ticker/Topic | Why deep research needed | Command |
 |---|---|---|---|
-| High/Med/Low | `<topic>` | `<thesis/kill condition ที่ขาดข้อมูล>` | `/research-idea <topic>` |
+| High/Med | `<TICKER>` | `<เหตุผลที่ inline search ไม่พอ>` | `/stock-content <TICKER>` |
+
+*ถ้า Nick ค้นหา inline แล้วได้ข้อมูลพอ → ไม่ต้องขึ้นตารางนี้*
 
 ## Nick's note
 [1-2 ประโยค process observation — เกี่ยวกับ thesis หรือ decision quality ไม่ใช่ราคา]
+
+## Searches used this session: N/15
 ```
 
 ---

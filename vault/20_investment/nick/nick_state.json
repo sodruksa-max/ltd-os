@@ -1,37 +1,51 @@
 {
-  "last_executed_rec": "2026-05-10_weekly-rec.md",
+  "last_executed_rec": "2026-05-16b_weekly-rec.md",
   "positions": {
-    "IONQ": {
+    "NVDA": {
       "partial_taken": false,
-      "entry_date": "2026-05-10"
+      "entry_date": "2026-05-10",
+      "shares": 13.95,
+      "entry_price": 215.00,
+      "weight": 0.308
     },
     "AVGO": {
       "partial_taken": false,
-      "entry_date": "2026-05-10"
+      "entry_date": "2026-05-10",
+      "shares": 5.81,
+      "entry_price": 430.00,
+      "weight": 0.245
+    },
+    "ASML": {
+      "partial_taken": false,
+      "entry_date": "2026-05-10",
+      "shares": 1.32,
+      "entry_price": 1517.00,
+      "weight": 0.206
     },
     "PLTR": {
       "partial_taken": false,
-      "entry_date": "2026-05-10"
+      "entry_date": "2026-05-10",
+      "shares": 10.95,
+      "entry_price": 137.00,
+      "weight": 0.143
     },
-    "CRM": {
+    "IONQ": {
       "partial_taken": false,
-      "entry_date": "2026-05-10"
-    },
-    "SNOW": {
-      "partial_taken": false,
-      "entry_date": "2026-05-10"
-    },
-    "RKLB": {
-      "partial_taken": false,
-      "entry_date": "2026-05-10"
-    },
-    "ASTS": {
-      "partial_taken": false,
-      "entry_date": "2026-05-10"
-    },
-    "KTOS": {
-      "partial_taken": false,
-      "entry_date": "2026-05-10"
+      "entry_date": "2026-05-16",
+      "shares": 15,
+      "entry_price": 51.33,
+      "weight": 0.076
     }
+  },
+  "cash": {
+    "amount": 230.05,
+    "weight": 0.023,
+    "note": "Fractional reserve post-IONQ entry"
+  },
+  "nav": {
+    "current": 10178.03,
+    "inception": 10000.00,
+    "spy_inception": 737.83,
+    "as_of": "2026-05-16"
   }
 }

@@ -131,7 +131,7 @@ done
 
 echo ""
 echo "-- Slash commands (research & content)"
-for cmd in stock-research stock-content research-idea paper-survey import-notebooklm nlm; do
+for cmd in stock-research stock-content paper-survey import-notebooklm nlm; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
     p "/${cmd}"
   else
