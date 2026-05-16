@@ -188,12 +188,25 @@ Skipped: X รายการ
 ถ้า y → apply ทุก change พร้อมกัน
 ถ้า n → ทิ้งทุกอย่าง ไม่แก้ไขไฟล์ใด
 
-### 7. Append calibration entry
+### 7. Run Brier Score
+
+```bash
+code/python/.venv/Scripts/python scripts/brier-score.py
+```
+
+แสดง output ให้ user เห็น extract ค่าสำคัญ 2 อย่าง:
+- `latest_bs` = rolling 10d average Brier score ล่าสุด
+- `bs_flag` = [ok] / [!] OVER-CONFIDENT / [~] ok
+
+ถ้า `[!] OVER-CONFIDENT` → แจ้ง user ด้วย:
+> ⚠️ Brier Score สูงกว่า 0.25 — ระบบ over-confident อย่างเป็นระบบ พิจารณาลด confidence level ใน pre-market brief
+
+### 8. Append calibration entry
 
 Append 1 บรรทัดใต้ `## Trading Calibration Log` ใน `vault/_memory/OUTCOMES.md`:
 
 ```
-[weekly-calibration YYYY-MM-DD] N reviews analyzed — proposals: X approved, X skipped — top pattern: [pattern]
+[weekly-calibration YYYY-MM-DD] N reviews analyzed — proposals: X approved, X skipped — top pattern: [pattern] — BS rolling 10d: [latest_bs] [bs_flag]
 ```
 
 ---

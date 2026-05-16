@@ -97,6 +97,13 @@ cat vault/Knowledge/nick-soul.md
 
 ### Process:
 
+0. **Score previous week's recs** (feedback loop — ทำก่อนอ่าน soul.md เสมอ):
+   ```bash
+   code/python/.venv/Scripts/python scripts/nick-score.py
+   ```
+   - ถ้ามี outcome entries ใหม่ → append ลง nick-soul.md อัตโนมัติ
+   - ถ้าไม่มีอะไรต้อง score → ข้ามเงียบๆ ไม่ต้องแจ้ง
+
 1. อ่าน nick-soul.md
 2. ดึงราคาปัจจุบัน (web) สำหรับทุก holdings + SPY
 3. คำนวณ NAV ปัจจุบัน vs SPY benchmark since inception
