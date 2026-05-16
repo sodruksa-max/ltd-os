@@ -242,6 +242,69 @@ Proposal: [none / "24h cooling period" / "ban NARRATIVE OVERRIDE" / "recalibrate
 ```
 ถ้าไม่มี stop triggers ใน window → ข้ามเงียบๆ
 
+**3m. Hypergraphia — Documentation Quality Audit**
+
+เปรียบเทียบ documentation quality ระหว่าง win days กับ loss days:
+- Win days: avg words/decision rationale
+- Loss days: avg words/decision rationale
+- ถ้า win days ยาวกว่า loss days อย่างมีนัย → `[HYPERGRAPHIA: WIN BIAS]` — documentation ดีขึ้นเพราะชนะ ไม่ใช่เพราะ process
+
+```
+Win day avg: X words/decision
+Loss day avg: Y words/decision
+Win bias factor: X/Y
+Status: [balanced / [HYPERGRAPHIA: WIN BIAS]]
+```
+
+ถ้าไม่มี data เพียงพอ (< 5 win days หรือ < 5 loss days) → ข้ามเงียบๆ
+
+**3n. Aura — Signal Materialization Rate**
+
+ติดตาม [AURA: EARLY SIGNAL] ที่เกิดใน N วันที่ผ่านมา — นับกี่ครั้งที่ materialize เป็นจริงภายใน 4 สัปดาห์:
+
+```
+AURA signals tracked: N
+Materialized within 4 weeks: M (X%)
+Status: [predictive (>60%) / monitoring (30-60%) / noise (<30%) / [AURA: INSUFFICIENT DATA]]
+Proposed adjustment: [increase weight / reduce weight / continue collecting]
+```
+
+**3o. Tachypsychia — Conviction-Speed Inverse Rule**
+
+เปรียบเทียบ decisions ที่ decide เร็ว (< 5 นาที) vs ช้า (> 3 ชั่วโมง deliberation):
+
+```
+Quick conviction (<5 min): N trades | Win rate: X%
+Slow conviction (>3hr): M trades | Win rate: Y%
+Pattern: [QUICK BETTER / SLOW BETTER / MIXED]
+Status: [no action / [TACHYPSYCHIA: SNAP CONVICTION] → propose min deliberation rule]
+```
+
+**3p. OBE — Weekly Behavioral Self-Observation**
+
+อ่าน N วันของ journal ในฐานะ researcher สังเกต subject — สกัด behavioral signatures ที่เกิด ≥3 ครั้ง:
+
+```
+Behavioral signatures this week:
+- [pattern name]: occurred N times — [brief description]
+Escalation: [none / [OBE: BEHAVIORAL SIGNATURE <name>] → เสนอเป็น rule]
+```
+
+ถ้า pattern เดิมกลับมา ≥2 สัปดาห์ติดกัน → escalate เป็น standing rule proposal
+
+**3q. Semantic Satiation — Thesis Wear Rate**
+
+ตรวจ thesis phrases ของ active positions ที่อ้างถึงซ้ำโดยไม่มี new evidence แนบ — ≥8 ครั้งในช่วง N วัน:
+
+```
+Thesis phrases tracked: [list]
+Worn threshold breaches: [ticker: phrase — N occurrences, last new evidence: date]
+Status: [fresh / [SATIATION: WORN THESIS]]
+Action: [none / require fresh evidence search before next hold decision]
+```
+
+ถ้าไม่มี stop triggers ใน window → ข้ามเงียบๆ
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว

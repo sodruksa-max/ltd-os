@@ -677,6 +677,68 @@ Autopilot Rate: Y%
 
 ถ้าไม่มี active trading วันนี้ → ข้ามเงียบๆ
 
+### 8.993 Hypergraphia — Forced Documentation Check
+
+ตรวจทุก decision วันนี้ว่ามี rationale บันทึกครบ:
+- rationale < 3 ประโยค → `[HYPERGRAPHIA: UNDOCUMENTED]`
+
+```
+Documented decisions: N/M
+[HYPERGRAPHIA: UNDOCUMENTED] entries: [list หรือ none]
+Action: [none / write retroactive rationale now]
+```
+
+ถ้าไม่มี trade decisions วันนี้ → ข้ามเงียบๆ
+
+### 8.994 Tachypsychia — Fast Market Decision Audit
+
+ถ้าวันนี้ range > 1.5%: เปรียบเทียบคุณภาพ decisions ใน high-vol periods vs calm periods:
+- Stop placed before entry? Size reduced? Entry justification ครบ?
+
+```
+High-vol decisions: N | Quality: [full / partial / [TACHYPSYCHIA: SNAP DECISION]]
+Calm decisions: M | Quality: [full / partial]
+Pattern: [quality maintained / degraded in high-vol]
+```
+
+ถ้า range < 1.5% วันนี้ → ข้ามเงียบๆ
+
+### 8.995 PTSD — Threat Pattern Memory Update
+
+สกัด warning signs ที่เกิด ≤2 ชั่วโมงก่อน losses วันนี้ → append ลง `vault/Knowledge/ptsd-threat-patterns.md`
+ถ้า pattern นี้เกิด ≥2 ครั้งใน log → escalate เป็น HIGH PRIORITY ใน pre-market Step 0.97 ครั้งถัดไป
+
+```
+New patterns logged: [list หรือ none]
+High-priority escalation: [pattern description / none]
+```
+
+ถ้าไม่มี losses วันนี้ → ข้ามเงียบๆ
+
+### 8.996 OBE — Third-Person Process Audit
+
+อ่าน journal วันนี้ราวกับเป็นนักวิจัยสังเกต subject จากภายนอก — ห้ามใช้ first-person ในการตอบ:
+
+```
+Observer notes: [2-3 ประโยค third-person field notes]
+Patterns identified: [list หรือ none]
+[OBE: PROCESS PATTERN <name>] ถ้าเห็น pattern ≥2 ครั้ง
+```
+
+### 8.997 Dopamine — Decision Quality Tracker
+
+ตรวจ decisions ที่ทำใน 60 นาทีหลัง profitable close (post-win) เทียบกับ neutral state:
+
+```
+Post-win decisions: N | Quality: [full / partial / [DOPAMINE: POST-WIN DEGRADATION]]
+Neutral decisions: M | Quality: [full / partial]
+Pattern: [quality maintained / degraded post-win]
+```
+
+ถ้า POST-WIN DEGRADATION ≥2 ครั้งใน session → propose "15-min cooldown after win" ใน weekly-calibration
+
+ถ้าไม่มี active trading วันนี้ → ข้ามเงียบๆ
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

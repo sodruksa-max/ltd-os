@@ -158,6 +158,13 @@ Implication: [fade consensus / wait for re-rating / proceed with caution]
 
 ถ้า consensus ไม่ถึง threshold → `Paranoid: consensus not extreme ✅`
 
+**Stendhal Thesis Overwhelm check** — ตรวจ conviction ที่สูงผิดปกติใน Reese doc:
+1. นับ superlative/absolute language ใน bull case ("unprecedented", "inevitable", "only", "perfect", "best in class")
+2. ถามตัวเอง: มี ≥2 ugly elements — ตัวเลขที่แย่, risk ที่ยังแก้ไม่ได้, หรือ bear ที่ยังไม่มีคำตอบ?
+3. ถ้า superlatives ≥3 AND ugly elements < 2 → `[STENDHAL: THESIS OVERWHELM]` — ต้องใส่ explicit bear scenario ก่อน save
+
+ถ้าไม่มี overwhelm pattern → `Stendhal: thesis balanced ✅`
+
 Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
@@ -404,6 +411,49 @@ Trade signal: [none / mean-revert / accumulate ahead of repricing]
 ```
 
 ถ้าไม่มี recent significant event → `AIWS magnitude: no event to calibrate ✅`
+
+**Vera Layer 10 — Aura Scotoma Map** [AURA: SCOTOMA]
+
+ตรวจ blind spots ใน research — สมมติฐานที่ thesis พึ่งพาแต่ไม่มี evidence รองรับ:
+
+```
+Scotoma scan:
+- Addressable market size: [sourced / [AURA: SCOTOMA — assumed]]
+- Competitive moat duration: [sourced / [AURA: SCOTOMA — assumed]]
+- Management execution track record: [sourced / [AURA: SCOTOMA — assumed]]
+- Regulatory/macro assumptions: [sourced / [AURA: SCOTOMA — assumed]]
+- Customer concentration risk: [sourced / [AURA: SCOTOMA — assumed]]
+Scotoma count: N
+```
+
+ถ้า ≥2 scotomas → prepend `⚠️ Scotoma Count: N` ใน Vera section header
+ถ้า < 2 → `Aura: scotoma within range ✅`
+
+**Vera Layer 11 — Split-Brain Narrative vs Data Gap** [SPLIT-BRAIN: NARRATIVE VS DATA GAP]
+
+ตรวจว่า narrative ใน Reese doc grounded ด้วย data หรือเป็น narrative ล้วนๆ:
+
+```
+Narrative claim: [สรุป thesis หลัก 1 ประโยค]
+Data anchor: [metric/filing/event ที่รองรับ claim โดยตรง]
+Gap verdict: [GROUNDED / [SPLIT-BRAIN: NARRATIVE VS DATA GAP]]
+```
+
+ถ้า GAP → ใส่ ❓ ที่ claim นั้น + note "narrative-only, unverified by data"
+ถ้าไม่มี gap → `Split-Brain: narrative grounded ✅`
+
+**Vera Layer 12 — Semantic Satiation Buzzword Strip** [SATIATION: BUZZWORD]
+
+สแกนหาคำที่ใช้ซ้ำจนหมด meaning: "AI-powered", "platform", "ecosystem", "flywheel", "moat", "secular tailwind", "best-in-class", "disruptive":
+
+```
+Buzzwords found: [list]
+Count: N
+Required replacements: [buzzword → metric ที่วัดได้แทน]
+```
+
+ถ้า ≥4 → `[SATIATION: BUZZWORD]` — mandatory: แทนที่ด้วย specific metrics ก่อน approve note
+ถ้า < 4 → `Satiation: language specific ✅`
 
 ---
 

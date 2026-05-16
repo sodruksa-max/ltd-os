@@ -598,6 +598,117 @@ Mismatch: [none / [PARASOMNIA: REGIME SHIFT] — holdings suit X but market ente
 Action: [none / reduce momentum positions / increase defensive weight / raise cash]
 ```
 
+5.23 **Hypergraphia — Position Record Completeness Check**
+
+ทุก position ต้องมี 5 elements written ครบก่อน Recommendation — ถ้าเขียนไม่ได้ = ยังไม่ควรลงเงิน
+
+| Element | ตัวอย่าง valid | ตัวอย่าง invalid |
+|---|---|---|
+| Thesis (1 ประโยค) | "NVDA dominates AI training chip supply through CUDA lock-in" | "AI is growing" |
+| Primary catalyst | "Next earnings: data center revenue > $X signals acceleration" | "good earnings" |
+| Measurable kill condition | "Gross margin < 60% for 2 consecutive quarters" | "if thesis changes" |
+| Hold horizon | "12–18 months until next product cycle" | "long term" |
+| Max size rationale | "High conviction = 15% NAV; loses 50% = -7.5% total" | "I like this stock" |
+
+→ flag `[HYPERGRAPHIA: INCOMPLETE RECORD] <ticker> — missing: [element list]` → ห้าม Add size จนกว่าจะ complete ทุก element
+
+5.24 **Stendhal — Position Awe Check**
+
+ก่อน Add/Buy ด้วย size ใหญ่: ตรวจว่า conviction นี้ถูก overwhelm ด้วย narrative ที่ "สวยเกินไป" ไหม
+
+ถาม 2 คำถาม:
+1. "มีอะไรใน thesis นี้ที่ ugly หรือ genuinely uncertain บ้าง?" — ต้องตอบได้ ≥ 2 ข้อ specific
+2. "ถ้า thesis นี้เป็น value trap — อะไรคือ mechanism ที่ทำให้มัน look good แต่ actually bad?"
+
+ถ้าตอบข้อ 1 ไม่ได้ภายใน 2 ข้อ specific → `[STENDHAL: OVERWHELMING CONVICTION]` — ลด size 25% + mandatory /challenge ก่อน execute
+
+```
+Stendhal Check: [TICKER]
+Ugly elements identified: [N items หรือ "none found → STENDHAL flag"]
+Value trap mechanism: [identified / "unclear → flag"]
+Status: [clear ✅ / [STENDHAL: OVERWHELMING CONVICTION]]
+```
+
+5.25 **Split-Brain — Dual Thesis Evaluation**
+
+Evaluate thesis แต่ละอันด้วย 2 modes อิสระ — ห้าม cross-reference ระหว่างสองจนกว่าจะ evaluate เสร็จทั้งคู่
+
+**Left-Brain** (logic only — ไม่ดู chart, ไม่ดู sentiment):
+> IF [metric A] AND [metric B] → THEN [outcome] — pure IF-THEN ไม่มี narrative
+
+**Right-Brain** (pattern only — ไม่ดู numbers, ไม่ดู DCF):
+> Sector trend, management tone, market positioning, timing — holistic feel
+
+- ทั้งสองเห็นตรงกัน → `[SPLIT-BRAIN: ALIGNED]` — high conviction
+- ขัดแย้ง → `[SPLIT-BRAIN: HEMISPHERE CONFLICT]` — ลด size 30% + note ว่า hemisphere ไหน historically แม่นกว่าสำหรับ thesis ประเภทนี้
+
+```
+Split-Brain: [TICKER]
+Left-Brain verdict: [bullish / bearish / neutral — IF-THEN chain]
+Right-Brain verdict: [bullish / bearish / neutral — pattern read]
+Alignment: [ALIGNED ✅ / [SPLIT-BRAIN: HEMISPHERE CONFLICT] → size -30%]
+```
+
+5.26 **PTSD — Portfolio Perimeter Check**
+
+ตรวจ "perimeter" รอบ portfolio — สัญญาณ structural threat ที่ build เงียบๆ
+
+**3 Perimeter dimensions:**
+
+1. **Correlation spike:** ตรวจ pairwise correlation ระหว่าง holdings — ถ้า holdings ที่ปกติ uncorrelated เริ่ม move together → `[PTSD: CORRELATION SPIKE]` — risk ของ synchronized drawdown สูงขึ้น
+
+2. **Liquidity erosion:** bid-ask spread ของ holdings ขยายหรือ volume หาย → `[PTSD: LIQUIDITY EROSION]` — exit จะ expensive กว่าที่คิด
+
+3. **Short interest building:** short interest ใน any position เพิ่มขึ้น > 20% MoM → `[PTSD: SHORT BUILDING]` — smart money กำลัง attack thesis
+
+```
+PTSD Perimeter: [TICKER]
+Correlation: [normal / [PTSD: CORRELATION SPIKE]]
+Liquidity: [normal / [PTSD: LIQUIDITY EROSION]]
+Short interest: [stable / [PTSD: SHORT BUILDING]]
+Action: [none / raise cash / reduce exposure]
+```
+
+**กฎ:** ถ้าพบ 2+ PTSD flags ใน portfolio → raise cash 10% ทันที
+
+5.27 **OBE — Investment Committee Presentation Mode**
+
+Nick describe ทุก position ราวกับนำเสนอต่อ skeptical investment committee ที่ไม่รู้จัก manager มาก่อน
+
+ต่อแต่ละ position: เขียน 3-sentence pitch ในฐานะ outsider:
+1. "บริษัทนี้ทำอะไร และ competitive advantage คืออะไร (in numbers)"
+2. "ทำไม ณ ราคานี้ถึงน่าลงทุน (valuation metric + catalyst timeline)"
+3. "ถ้า thesis ผิด — สิ่งที่จะทำให้รู้คือ [metric/event] ใน [timeframe]"
+
+ถ้า justify ไม่ได้ใน 3 ประโยคชัดเจน → `[OBE: UNJUSTIFIABLE TO OUTSIDER]` — ลด size 25% จนกว่าจะ articulate ได้
+
+```
+OBE Committee Pitch: [TICKER]
+Sentence 1 (what + moat): [...]
+Sentence 2 (valuation + catalyst): [...]
+Sentence 3 (kill condition): [...]
+Status: [articulable ✅ / [OBE: UNJUSTIFIABLE TO OUTSIDER]]
+```
+
+5.28 **Dopamine — Pattern Validation Gate**
+
+ถ้า Nick พบ "hidden connection" หรือ cross-thesis macro signal → ตรวจก่อนว่า real หรือ dopamine-induced
+
+**Validation checklist (ต้องผ่าน 2/3):**
+1. มี independent data point (ไม่ใช่จาก thesis ตัวเอง) support connection ไหม?
+2. Connection นี้ถ้า remove emotional context ออก (เช่น market excitement) ยังเห็นไหม?
+3. มี historical precedent ที่ connection นี้ lead to predicted outcome จริงไหม?
+
+- ผ่าน ≥ 2/3 → pattern real → ใช้ใน decision
+- ผ่าน < 2/3 → `[DOPAMINE: PATTERN UNVERIFIED]` — บันทึกไว้ใน KB ห้าม act จนกว่า 1 สัปดาห์ผ่านและยัง see pattern อยู่
+
+```
+Dopamine Pattern Gate: [connection/pattern described]
+Checklist: [independent data: yes/no] [context-free: yes/no] [precedent: yes/no]
+Score: [N/3]
+Status: [validated ✅ / [DOPAMINE: PATTERN UNVERIFIED] → monitor 1 week]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
