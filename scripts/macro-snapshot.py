@@ -329,10 +329,10 @@ def print_macro_section(data, vix_rank: float | None = None, pos_multiplier: flo
 
 def main():
     load_env()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    fetched_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     print("## Macro Snapshot")
-    print(f"*{now} | Alpaca (US ETFs) + Yahoo Finance direct HTTP (macro) | embed in pre-market brief*\n")
+    print(f"*Alpaca (US ETFs) + Yahoo Finance direct HTTP (macro) | embed in pre-market brief | fetched: {fetched_at}*\n")
     print("---\n")
 
     # Alpaca ETF proxies

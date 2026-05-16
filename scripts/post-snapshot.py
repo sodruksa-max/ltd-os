@@ -304,9 +304,10 @@ def main():
         # Yesterday local time — when run in morning Bangkok = last US trading day
         target_date = date.today() - timedelta(days=1)
 
+    fetched_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     day_name = target_date.strftime("%A")
     print(f"## Post-Market Snapshot — {target_date} ({day_name})")
-    print(f"*Alpaca EOD bars + Yahoo Finance direct HTTP | สร้างโดย post-snapshot.py*\n")
+    print(f"*Alpaca EOD bars + Yahoo Finance direct HTTP | สร้างโดย post-snapshot.py | fetched: {fetched_at}*\n")
     print("---\n")
 
     # Alpaca bars
