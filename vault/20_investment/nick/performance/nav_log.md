@@ -22,3 +22,4 @@ Append-only. อัปเดตทุกครั้งที่รัน /nick-
 | 2026-05-10 | $10,000.00 | - | - | post-execute: 8 orders from 2026-05-10_weekly-rec.md |
 | 2026-05-10 | $10,000.00 | - | - | post-execute: 8 orders from 2026-05-10_weekly-rec.md |
 | 2026-05-10 | $10,000.00 | - | - | weekly snapshot (Friday close) |
+| 2026-05-16 | $10,063.15 | $739.17 | +0.45pp vs SPY | NVDA+4.80% / AVGO-1.12% / ASML-1.00% / PLTR-2.19% / Cash held |
