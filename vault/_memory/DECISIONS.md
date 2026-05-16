@@ -16,6 +16,8 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ## Architecture / system
 
+- 2026-05-16 — ถ้า quarterly run-rate vs annual guidance ห่างกัน > 3x → ระบุ "magnitude risk: high" ใน earnings section ของ /pre-market เสมอ — เรียนรู้จาก ASTS EPS miss 223% (คาด moderate แต่ actual catastrophic)
+- 2026-05-16 — Nick CI fix loop: ถ้า push failed 3 ครั้งติด → หยุด investigate root cause ก่อน ห้าม commit ต่อทันที — 2026-05-10 รัน fix loop 8+ ครั้งในวันเดียว ไม่ effective
 - 2026-05-11 — CI workflow ที่ push to git ต้องมี `git pull --rebase origin main` ก่อน push เสมอ — concurrent GitHub Actions runs reject กัน เรียนรู้จาก nick-daily + nick-weekly push rejection 2026-05-10
 - 2026-04-25 — v0.3.9: เพิ่ม /council command + 4 agents (optimist, pragmatist, skeptic, synthesizer) — multi-agent debate สำหรับ decisions ใหญ่ ไม่ตัดสินใจให้ user
 - 2026-04-25 — v0.3.8: เพิ่ม vault/_assets/ folder (5 subfolders) + .gitignore template สำหรับ binary exclusion (commented out)
