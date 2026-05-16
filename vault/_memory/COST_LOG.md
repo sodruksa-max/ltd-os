@@ -38,3 +38,11 @@ updated: weekly
 
 ## 2026-05-16 — week report [script placeholder]
 - Total: $0.00 (0 tokens) — script cannot read Claude Code usage; check Anthropic console
+
+## 2026-05-16 — week report
+- Total: $0.00 (0 tokens)
+- Input: $0.00, Output: $0.00
+
+## 2026-05-16 — week report
+- Total: $0.00 (0 tokens)
+- Input: $0.00, Output: $0.00
