@@ -117,6 +117,89 @@ Keep last 5 runs only (truncate older).
 - If either command (`new-formula`, `new-recipe`) exists → verify both template AND folder exist
 - Asymmetry in any direction → WARN
 
+---
+
+### 2.8 ADHD Layer — Novelty Radar
+
+เป้าหมาย: จับสิ่งที่มีอยู่ในระบบจริงแต่ healthcheck ยังไม่รู้จัก — ไม่ยอมให้ของใหม่ลอยอยู่นอก checklist
+
+**Unregistered scripts:**
+```bash
+ls scripts/*.py scripts/*.sh 2>/dev/null
+```
+- เทียบกับ list ทั้งหมดใน `healthcheck.sh`
+- Script ไหนที่ `ls` เจอแต่ไม่อยู่ใน healthcheck → `[NEW — unregistered: scripts/X.py — consider adding to healthcheck]`
+
+**Unregistered commands:**
+```bash
+ls .claude/commands/*.md
+```
+- เทียบกับ cmd lists ทั้งหมดใน `healthcheck.sh`
+- Command ไหนที่มีไฟล์แต่ไม่อยู่ใน healthcheck → `[NEW — unregistered command: /X]`
+
+**Unregistered templates:**
+```bash
+ls vault/_templates/*.md
+```
+- Template ไหนที่ไม่อยู่ใน symmetry audit (Step 2.7) → `[NEW — unregistered template: X.md — no symmetry check]`
+
+**ผลที่ต้องการ:** ทุกครั้งที่ระบบโตขึ้น healthcheck รู้ทันที — ไม่ต้องรอให้ manual อัปเดต
+
+---
+
+### 2.9 ADHD Layer — Hyperfocus on FAIL
+
+เมื่อ bash script ส่งกลับ FAIL ใดๆ → **อย่าไปต่อทันที** — หยุดและขุดลึก FAIL นั้นก่อน
+
+**สำหรับแต่ละ FAIL:**
+1. ระบุว่า FAIL นี้กระทบอะไร — command ไหน, workflow ไหน, domain ไหน ที่พึ่งพาสิ่งที่หายไป
+2. ถ้า FAIL = script หาย → grep ใน `.claude/commands/` ว่ามี command ไหน reference script นั้น
+3. ถ้า FAIL = directory หาย → ตรวจว่ามีไฟล์ที่ควรอยู่ใน dir นั้นหรือเปล่า (glob หา orphaned files)
+4. ถ้า FAIL = package หาย → ระบุ scripts ที่ใช้ package นั้น (`grep -r "import X" scripts/`)
+
+**รายงาน FAIL พร้อม impact:**
+```
+[FAIL] scripts/screener.py not found
+  → Impact: /screen command broken, /bot command broken
+  → Dependents: .claude/commands/screen.md, .claude/commands/bot.md
+  → Fix: restore file from git history or rebuild
+```
+
+ไม่ report แค่ "file missing" — ต้อง report ว่า "ถ้าหายแล้วระบบพัง ตรงไหน"
+
+---
+
+### 2.10 ADHD Layer — Cross-domain Cluster Detection
+
+เป้าหมาย: ADHD brain เห็น pattern ที่คนอื่นมองข้าม — WARN กระจัดกระจายอาจมีสาเหตุร่วมที่เดียว
+
+**Cluster by domain:**
+จัดกลุ่ม WARN/FAIL ทั้งหมดตาม domain:
+- `trading` — pre-market, screener, alpaca, real-trades
+- `nick` — nick-signals, nick-score, nick portfolio files
+- `formula` — 50_formulas/, new-formula, new-recipe, templates
+- `memory` — _memory/ files, cross-validation failures
+- `git` — uncommitted, unpushed, dirty tree
+- `scripts` — missing scripts, broken dependencies
+
+ถ้า domain ไหนมี **3+ issues** → flag:
+```
+[CLUSTER] domain: nick — 4 issues detected — possible systemic cause
+  → nick-signals.md stale, nick-score.py FAIL, nick-monitor.py FAIL, nav_log.md missing
+  → Likely cause: data pipeline hasn't run since [date]
+```
+
+**Cluster by date:**
+- ดู git log 7 วันล่าสุด: `git log --oneline --since="7 days ago"`
+- ถ้า FAIL/WARN ที่เจอมี correlation กับ commit ล่าสุด → flag:
+```
+[ADHD CONNECTION] FAIL in scripts/X.py correlates with commit abc1234 (2026-05-15)
+  → That commit touched: [list files changed]
+  → Possible regression introduced by that commit
+```
+
+**ผลที่ต้องการ:** แทนที่จะรายงาน 7 WARN แยกกัน → บอกว่า "4 ตัวนี้มาจากสาเหตุเดียวกัน แก้ที่เดียวหาย"
+
 ### 3. Generate report
 
 Output in this format:
@@ -176,12 +259,27 @@ Output in this format:
 ### Persistent WARNs (OCD — escalation)
 [items that appeared in prior run → marked [PERSISTED] or escalated to FAIL]
 
+### Novelty Radar (ADHD)
+[NEW — unregistered: scripts/X.py]
+[NEW — unregistered command: /X]
+[NEW — unregistered template: X.md]
+
+### FAIL Impact Map (ADHD)
+[FAIL] scripts/X → Impact: /cmd1, /cmd2 broken → Fix: ...
+
+### Clusters (ADHD)
+[CLUSTER] domain: X — N issues — possible systemic cause: ...
+[ADHD CONNECTION] FAIL in X correlates with commit abc123 (date) — possible regression
+
 ---
 
 ### Summary
 PASS: X | WARN: Y | FAIL: Z
 Persistent (unresolved from last run): N
+Unregistered (new, not yet in checklist): N
+Clusters found: N
 OCD Pass: [CLEAN / WARNINGS / ESCALATED]
+ADHD Pass: [NOTHING NEW / N UNREGISTERED / N CLUSTERS]
 Overall: [ALL SYSTEMS GO / OK WITH WARNINGS / DEGRADED]
 
 ---
