@@ -40,6 +40,22 @@ Psychopathy audit: [N] patterns found
 Strip test: argument [holds / weakens significantly after stripping]
 ```
 
+2.7 **Hyperlexia Adjusted Metric Scan**
+
+สแกน target note หา metric qualifiers ที่ซ่อน adjusted numbers ไว้:
+
+ตรวจหา: `excluding one-time items`, `non-GAAP`, `adjusted`, `pro forma`, `on a constant currency basis`, `organic growth`, `ex-acquisitions`, `revenue recognition change`, `restated`, `preliminary`
+
+ต่อแต่ละ qualifier ที่พบ → flag `[HYPERLEXIA: ADJUSTED METRIC]` + ถาม:
+> "ตัวเลข unadjusted / GAAP คืออะไร? gap ระหว่าง adjusted กับ unadjusted บอกอะไร?"
+
+```
+Hyperlexia scan: [N] adjusted metrics found
+- [HYPERLEXIA: ADJUSTED METRIC] "<metric>" — unadjusted: [X or ❓ verify]
+  Gap signals: [interpretation or "unknown — verify before proceeding"]
+```
+ถ้าไม่พบ → `Hyperlexia scan: clean ✅`
+
 3. **Warn on cost** if this is the user's first `/challenge` today:
    ```
    Heads up: /challenge uses devils_advocate which runs 5+ web searches + deep vault scan.

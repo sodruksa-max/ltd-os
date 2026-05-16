@@ -457,6 +457,27 @@ grep -r "\[RISK\]" vault/20_investment/_journal/ --include="*-review.md" | grep 
 
 ถ้าไม่พบ accumulating risk ใดเลย → ข้ามเงียบๆ ไม่ต้องแสดง
 
+### 8.8 Schizotypal — Unexplained Anomaly Log
+
+บันทึก 1-2 สิ่งที่เกิดขึ้นวันนี้ซึ่งไม่มี model ใดอธิบายได้สมบูรณ์
+
+**เกณฑ์ที่นับเป็น anomaly:**
+- เกิดขึ้นตรงข้ามกับ consensus expectation โดยสิ้นเชิง
+- ไม่สอดคล้องกับ correlation ปกติ (เช่น VIX ลงแต่ bonds ร่วง)
+- timing ผิดปกติ (ราคา move ก่อน news ออก, sector diverge โดยไม่มี catalyst)
+
+**กฎ: ไม่ต้องอธิบาย** — แค่ log ไว้; append ใน review file ต่อท้าย GAD Forward Threat Register:
+```
+Schizotypal Anomaly: [date]
+- [ANOMALY] <อะไรเกิด> — unexplained by: <model/narrative ที่ fail>
+```
+
+**Pattern detection:**
+ถ้า anomaly เดิมปรากฏซ้ำ ≥ 3 ครั้งข้าม review files → flag:
+> `[SCHIZOTYPAL: SIGNAL] <anomaly> — ปรากฏ 3+ ครั้ง → /wild-thesis <topic>`
+
+ถ้าไม่พบ anomaly → ข้ามเงียบๆ ไม่ต้องแสดง
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

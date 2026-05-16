@@ -371,6 +371,62 @@ DR Conviction Audit:
 DR clean: [Y/N]
 ```
 
+5.12 **Hyperlexia — Earnings Transcript Q&A Scan (บังคับก่อน Buy ถ้ามี transcript)**
+
+ถ้า holding มี earnings transcript ที่เข้าถึงได้ (จาก KB หรือ search) — บังคับสแกน Q&A section โดยเฉพาะ ไม่ใช่แค่ prepared remarks หรือ guidance numbers
+
+**ตรวจหา evasion patterns:**
+- คำถามนักวิเคราะห์ที่ management ตอบ off-topic หรือ redirect ไป talking points
+- คำถามที่ถามซ้ำ 2+ ครั้งโดย analyst ต่างคน (= management ยังไม่ตอบจริง)
+- Hedging language cluster: "we'll see", "too early to tell", "monitor closely", "work through" — ถ้า 3+ ครั้งใน Q&A → flag
+
+**ตรวจหา fine-print signals:**
+- Guidance ที่มี qualifier: "excluding", "adjusted", "constant currency", "assuming no further..." → `[HYPERLEXIA: QUALIFIED GUIDANCE]`
+- Revenue beat แต่ cash flow miss ในเอกสารเดียวกัน → flag discrepancy
+
+```
+Hyperlexia Q&A Scan: [TICKER]
+- Evasion: [N] redirected questions — topics: [list]
+- Fine-print: [HYPERLEXIA: QUALIFIED GUIDANCE] / clean ✅
+- Verdict: [pass / flag for deeper read]
+```
+ถ้าไม่มี transcript → ข้ามเงียบๆ บันทึก `[HYPERLEXIA: NO TRANSCRIPT]`
+
+5.13 **Schizotypal — Hidden Correlation Detector**
+
+มองพอร์ตทั้งหมดพร้อมกันในช่วง 4 สัปดาห์ที่ผ่านมา:
+> "holdings เหล่านี้ move together ในแบบที่ thesis ไม่ได้อธิบายไหม?"
+
+ตรวจ:
+- Holdings 3+ ที่ price direction เดียวกันในสัปดาห์เดียวกัน โดยไม่มี common catalyst ที่รู้จัก
+- Holdings ที่ควร decorrelated (sector ต่างกัน) แต่ behave เหมือนกัน
+- Timing coincidence: thesis A invalidated ใกล้เคียงกับ thesis B deteriorating
+
+ถ้าพบ → ตั้ง hypothesis: hidden factor คืออะไร? (currency exposure? macro sensitivity? supply chain overlap?)
+→ flag `[SCHIZOTYPAL: HIDDEN CORRELATION] <hypothesis>` + พิจารณาว่า concentration risk มากกว่าที่คิดไหม
+
+ถ้าไม่พบ → ข้ามเงียบๆ
+
+5.14 **Social Anxiety — Adversarial Perception Check (ก่อน Buy ทุกรายการ)**
+
+> "ถ้า bearish analyst ที่ฉลาดที่สุดอ่าน thesis นี้ — สิ่งแรกที่เขาจะโจมตีคืออะไร?"
+
+ต่างจาก GAD (enumerate failure paths) — SA คือ มองผ่านสายตา adversary ที่ motivated จะหาว่าผิดและฉลาดพอที่จะหาจุดอ่อน
+
+**Protocol:**
+1. ระบุ weakness ที่ชัดเจนที่สุด 1 ข้อใน thesis นี้ (ที่ adversary จะโจมตีก่อน)
+2. ถาม: "Nick มีคำตอบสำหรับการโจมตีนั้นไหม?"
+   - มีคำตอบที่ data หนุน → conviction ยืนยัน
+   - คำตอบเป็น narrative → downgrade conviction + `[SA: EXPOSED FLANK]`
+   - ไม่มีคำตอบ → ไม่ Buy จนกว่าจะหาคำตอบได้
+
+```
+SA Adversarial Check: [TICKER]
+- Primary attack point: [weakness ที่ชัดที่สุด]
+- Nick's defense: [data-based / narrative / no answer]
+- Result: [conviction confirmed / [SA: EXPOSED FLANK] / Hold pending answer]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

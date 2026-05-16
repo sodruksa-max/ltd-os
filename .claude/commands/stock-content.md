@@ -116,6 +116,19 @@ Next earnings date + consensus EPS
 - Conclusion validity: kill conditions วัดได้จริง (metric threshold / event / date) — ไม่ใช่ "outlook แย่ลง"
 ถ้า dimension ใดไม่ผ่าน → แก้ก่อน save
 
+**Social Anxiety — Narrative Perception Audit (รันก่อน save Reese doc):**
+
+> "ถ้า skeptical analyst อ่าน doc นี้ — เขาจะมองว่า narrative ลำเอียงอย่างไร?"
+
+สแกนหา perception bias ใน 3 มิติ:
+- **Bull case tone:** ฟังดู overconfident หรือ aspirational เกินไปไหม? คำที่ signal: "clear winner", "inevitable", "only player", "dominant"
+- **Bear case tone:** ฟังดูเป็น strawman ที่ตั้งไว้เพื่อ knock down ง่ายๆ ไหม? bear case ที่แข็งแกร่งควรทำให้ลังเล ไม่ใช่รู้สึกว่า "โอเคมีความเสี่ยงแต่ไม่น่าเป็นห่วง"
+- **Kill conditions:** ฟังดู abstract หรือ vague ไหม? เช่น "ถ้า competitive landscape เปลี่ยน" vs "ถ้า gross margin < 40% สองไตรมาสติด"
+
+ต่อแต่ละ bias ที่พบ → flag `[SA: NARRATIVE BIAS]` + ระบุประโยคที่ต้องแก้
+
+ถ้าไม่พบ → `SA Narrative Audit: balanced ✅`
+
 Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
@@ -237,6 +250,45 @@ Vera Synesthesia Summary:
 - [SYNESTHESIA WARN] M — metrics with 2+ warning axes
 - Encoding available for: Nick kill check / Reese narrative context
 ```
+
+**Vera Hyperlexia Fine-Print Audit (รันหลัง synesthesia — อ่านทุกตัวอักษรที่คนอื่นข้าม):**
+
+สแกน source documents ที่ใช้ใน research (10-K, 10-Q, earnings release, press release) โดยเฉพาะ:
+- **Footnotes และ MD&A Risk Factors** — อ่านทุกบรรทัด ไม่ข้าม
+- **Earnings call Q&A** — ไม่ใช่แค่ prepared remarks
+- **Forward-looking statements section** — หา qualifiers ที่ซ่อนไว้
+
+**Flag patterns:**
+- Adjusted metric qualifier: "excluding", "non-GAAP", "adjusted", "constant currency", "ex-acquisitions" → `[HYPERLEXIA: ADJUSTED METRIC]` + หา unadjusted value
+- Evasion patterns in Q&A: คำถามที่ถามซ้ำ 2+ ครั้งโดย analyst ต่างคนแต่ยังไม่ได้คำตอบตรงๆ → `[HYPERLEXIA: EVASION]`
+- Risk factor language ที่ escalated จาก prior filing: เช่น "may" เปลี่ยนเป็น "could materially affect" → `[HYPERLEXIA: ESCALATED RISK]`
+
+Vera สรุป hyperlexia audit:
+```
+Vera Hyperlexia Summary:
+- [HYPERLEXIA: ADJUSTED METRIC] N — unadjusted values needed
+- [HYPERLEXIA: EVASION] M — Q&A deflections logged
+- [HYPERLEXIA: ESCALATED RISK] K — risk language strengthened vs prior filing
+```
+
+**Vera Misophonia Trigger Registry Scan (รันหลัง hyperlexia — check ต่อ trigger registry):**
+
+```bash
+cat vault/Knowledge/misophonia-triggers.md | grep "^\[" | grep -v "Market-Level" | head -30
+```
+
+Check ทุก Company-Level trigger ใน registry ต่อ source documents ที่อ่านมาแล้ว:
+- Any match → `[MISOPHONIA: TRIGGER] <pattern name>` — ห้าม suppress, ห้าม rationalize ทิ้ง
+- ต้องถูก address ใน Reese doc หรือ contradiction-registry ก่อนจบ pipeline
+
+Vera สรุป misophonia scan:
+```
+Vera Misophonia Summary:
+- Triggers checked: N (จาก registry)
+- [MISOPHONIA: TRIGGER] M fired — must address before proceeding
+- Registry path: vault/Knowledge/misophonia-triggers.md
+```
+ถ้าไม่พบ trigger → `Misophonia scan: clean ✅`
 
 ---
 

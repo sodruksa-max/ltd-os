@@ -142,6 +142,27 @@ Top optimism keywords: [keyword] ใน [section] — miss rate X%
 Status: [clean / [DR: MODERATE BIAS] / [DR: SYSTEMATIC OPTIMISM]]
 ```
 
+**3i. Schizotypal — Coincidence Convergence Scanner**
+
+มองหา 3+ data points ที่ดูไม่เกี่ยวกันแต่เกิดพร้อมกันในช่วง N วัน:
+- สินทรัพย์ที่ไม่ควร correlate แต่ move together
+- sector rotation ที่ไม่ match กับ macro narrative
+- timing coincidences: ข่าว A เกิดวันเดียวกับ data B และ C
+
+ต่อแต่ละ cluster ที่พบ → ตั้ง hypothesis:
+> "ถ้า 3 สิ่งนี้ไม่ใช่ coincidence — hidden factor คืออะไรที่อธิบายได้ทั้งหมด?"
+
+**กฎ: ไม่ต้องพิสูจน์** — แค่ log hypothesis ถ้า pattern ซ้ำ ≥ 3 สัปดาห์ค่อยสอบสวนผ่าน `/wild-thesis`
+
+แสดงใน Pattern Summary:
+```
+Schizotypal Convergence:
+- Cluster: [X] + [Y] + [Z] — date range: [range]
+  Hidden factor hypothesis: [1 ประโยค]
+  Recurrence: ครั้งแรก / N ครั้งแล้ว → [ถ้า ≥ 3: สอบสวน — /wild-thesis <topic>]
+```
+ถ้าไม่พบ cluster → ข้ามเงียบๆ
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
