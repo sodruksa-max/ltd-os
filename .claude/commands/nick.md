@@ -346,6 +346,31 @@ GAD Pre-mortem: [TICKER]
 Pre-mortem complete: ✅ Buy confirmed / ⚠️ Watch (paths unclear)
 ```
 
+5.11 **Depressive Realism — Conviction Base Rate Calibration**
+
+รันหลัง GAD pre-mortem — ตรวจ optimism bias ใน conviction rating และ ROI estimate ทุกรายการ
+
+**DR-1: Conviction Evidence Test**
+ต่อทุก holding ที่ rate "high conviction":
+> "evidence ที่หนุน conviction นี้คือ data อะไร?" — ห้ามตอบด้วย narrative หรือ thesis ล้วนๆ
+
+- ถ้าตอบได้ด้วย data (earnings beat, RS tier ≥ 2, thesis-convergence confirmed) → ผ่าน
+- ถ้าตอบได้แค่ "thesis น่าสนใจ" หรือ "ตลาดน่าจะ..." → downgrade เป็น **medium** อัตโนมัติ + flag `[DR: NARRATIVE CONVICTION]`
+
+**DR-2: ROI Base Rate Strip**
+ต่อทุก holding ที่มี ROI estimate — แทนที่ด้วย base rate question:
+> "thesis ประเภทนี้ใน regime ปัจจุบัน — median outcome คืออะไร ไม่ใช่ upside case?"
+
+ถ้า ROI estimate อิงจาก upside scenario เป็นหลัก → flag `[DR: UPSIDE ANCHORED]` + ระบุ base case range
+
+รายงานก่อน Step 6:
+```
+DR Conviction Audit:
+- [TICKER] conviction: high → [ผ่าน / downgraded to medium] [DR: NARRATIVE CONVICTION]
+- [TICKER] ROI: [ผ่าน / [DR: UPSIDE ANCHORED] base case: X–Y%]
+DR clean: [Y/N]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

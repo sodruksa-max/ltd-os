@@ -394,6 +394,32 @@ grep -E "T[0-9]|Statement:|Tickers:" vault/Knowledge/THESIS_TRACKER.md | head -2
 
 *กฎ: ต้องเลือก 1 scenario เสมอ ไม่ hedge — ถ้า data ไม่พอให้ confidence = low แต่ยังต้องเลือก — เหตุผลต้อง derive จาก data ใน brief เดียวกันเท่านั้น ห้ามขัดแย้งกับ data ของตัวเอง*
 
+### Depressive Realism — Scenario Probability Reality Check
+
+รันหลัง Most Likely เลือกแล้ว — ตรวจหา optimism bias ใน 2 มิติ:
+
+**DR-1: Probability Inflation Check**
+ดู scenario ที่เลือกเป็น Most Likely:
+- ถ้า Most Likely = Bullish + confidence ≥ medium แต่ไม่มี structural data support (breadth กว้าง, VIX ลด, yield stable) → `[DR: INFLATED]` — ระบุ adjusted confidence ที่ data จริงรองรับ
+- ถ้า Most Likely = Base แต่ Bearish trigger มีหลายข้อพร้อมกัน → `[DR: UNDERSTATED DOWNSIDE]`
+- ถ้า probability กระจาย Bullish 60% / Base 30% / Bearish 10% โดยไม่มี data heatmap หนุน → `[DR: INFLATED]` พร้อม suggested redistribution
+
+**DR-2: Optimism Language Scan**
+สแกน brief ที่เพิ่งเขียนหาคำต่อไปนี้:
+`should`, `likely to`, `expected to`, `set to`, `probably`, `almost certainly`, `bounce`, `recover`
+
+ต่อแต่ละคำที่พบ — ตรวจว่ามี data support ไหม:
+- มี data → ผ่าน
+- ไม่มี data → `[DR: OPTIMISM LANGUAGE]` + ระบุว่าคำไหนในส่วนไหน
+
+แสดงก่อน Risk Framework:
+```
+DR Reality Check:
+- Probability: [ผ่าน / [DR: INFLATED] adjusted: Bullish X% / Base X% / Bearish X%]
+- Language: [ผ่าน / [DR: OPTIMISM LANGUAGE] N คำ — section: X]
+```
+ถ้าไม่พบ bias ใดเลย → `DR Reality Check: clean ✅`
+
 ---
 
 ## กรอบความเสี่ยง (Risk Framework)

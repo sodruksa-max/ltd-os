@@ -117,6 +117,31 @@ Pattern from precedents: "เมื่อ [context] เกิด → outcome ค
   > ⚠️ **Regime-homogeneous sample**: X% ของ review วันเหล่านี้เป็น `[regime]` — pattern ที่เห็นอาจใช้ได้เฉพาะ regime นี้ ไม่ใช่ all-weather rule
 - ถ้า sample มีหลาย regime → note ว่า "diverse sample — pattern น่าเชื่อถือกว่า"
 
+**3h. Depressive Realism — Systematic Optimism Bias Tracker**
+
+สแกนทุก brief ใน N วัน หาภาษา optimism bias เปรียบกับผลจริง:
+
+**Optimism language keywords:** `should`, `likely to`, `expected to`, `set to`, `probably`, `almost certainly`, `bounce`, `recover`, `likely`
+
+ต่อแต่ละ keyword ที่พบใน brief:
+- บันทึก: วันที่ / section ที่ปรากฏ / Most Likely scenario วันนั้น / ผลจริง (match/no match)
+
+**คำนวณ Optimism Bias Rate:**
+```
+Optimism Bias Rate = (ครั้งที่ใช้ optimism language + ผลไม่ match) / (ครั้งที่ใช้ optimism language ทั้งหมด)
+```
+
+- Rate < 40% → ภาษา optimism มี data support ดี — ผ่าน
+- Rate 40–60% → `[DR: MODERATE BIAS]` — แนะนำใช้คำที่ระบุ condition ชัดขึ้น
+- Rate > 60% → `[DR: SYSTEMATIC OPTIMISM]` → เสนอ proposal: "ห้ามใช้ optimism language โดยไม่มี data อ้างอิงใน brief section ที่พบบ่อย"
+
+แสดงใน Pattern Summary:
+```
+DR Optimism Bias: X% (N ครั้งที่ใช้ / M ครั้งที่ผิด)
+Top optimism keywords: [keyword] ใน [section] — miss rate X%
+Status: [clean / [DR: MODERATE BIAS] / [DR: SYSTEMATIC OPTIMISM]]
+```
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
