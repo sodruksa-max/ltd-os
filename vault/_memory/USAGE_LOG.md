@@ -7,6 +7,10 @@ source: scripts/usage-tracker.py
 # Usage Log
 *Auto-generated 2026-05-16 — อ่านโดย /daily-brief เพื่อ surface gaps*
 
+## Proactive Recommendations
+
+1. **ยังไม่เคยสร้าง content** จาก thesis ที่มี → `/research-idea 'AI capex supercycle' --output: yt` เพื่อ test pipeline Minnie→Reese→Rae ครั้งแรก
+
 ## Command Activity (30 วันล่าสุด)
 
 | Command | ใช้ล่าสุด | วันที่ผ่านไป | Count 30d | Gap |
@@ -25,9 +29,9 @@ source: scripts/usage-tracker.py
 | /weekly-learnings | 2026-05-16 | 0 | 1 | ✅ |
 | /weekly-market | 2026-05-16 | 0 | 1 | ✅ |
 
-## Gaps — ต้องการความสนใจ
+## Gaps
 
-- **/pre-market** — ไม่ได้ใช้ 5 วัน (ควรทุก 1 วัน, warn ที่ 4 วัน)
+- **/pre-market** — ไม่ได้ใช้ 5 วัน (ควรทุก 1 วัน)
 - **/daily-brief** — ยังไม่เคยใช้
 - **/import-notebooklm** — ยังไม่เคยใช้
 - **/market-log** — ยังไม่เคยใช้
