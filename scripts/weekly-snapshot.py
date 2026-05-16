@@ -183,11 +183,13 @@ def fetch_weekly_alpaca(monday: date, friday: date):
                 result[ticker] = {}
                 continue
 
-            fri_close   = _val(week_bars[-1], "close")
-            mon_close   = _val(week_bars[0],  "close")
-            weekly_high = max(_val(b, "high") for b in week_bars)
-            weekly_low  = min(_val(b, "low")  for b in week_bars)
-            weekly_pct  = (
+            last_bar      = week_bars[-1]
+            fri_close     = _val(last_bar, "close")
+            last_bar_date = _date(last_bar)
+            mon_close     = _val(week_bars[0], "close")
+            weekly_high   = max(_val(b, "high") for b in week_bars)
+            weekly_low    = min(_val(b, "low")  for b in week_bars)
+            weekly_pct    = (
                 (fri_close - prev_fri_close) / prev_fri_close * 100
                 if fri_close and prev_fri_close else None
             )
@@ -195,6 +197,7 @@ def fetch_weekly_alpaca(monday: date, friday: date):
             result[ticker] = {
                 "mon_close":      mon_close,
                 "fri_close":      fri_close,
+                "last_bar_date":  last_bar_date,
                 "prev_fri_close": prev_fri_close,
                 "weekly_pct":     weekly_pct,
                 "weekly_high":    weekly_high,
@@ -301,17 +304,25 @@ def print_alpaca_section(data: dict):
         print(f"> ⚠️ **INCOMPLETE WEEK**: Alpaca IEX returned {spy_days}/5 trading days for SPY — weekly % may be misleading (holiday week or IEX data gap)\n")
 
     print("### Weekly ETF Performance (Alpaca IEX)")
-    print("| ETF | Label | Fri Close | Weekly % | Weekly High | Weekly Low | Days |")
-    print("|---|---|---|---|---|---|---|")
+    print("| ETF | Label | Last Close | Data date | Weekly % | Weekly High | Weekly Low | Days |")
+    print("|---|---|---|---|---|---|---|---|")
     for ticker, label in ALPACA_TICKERS:
-        d = data.get(ticker, {})
-        fri   = f"${d['fri_close']:.2f}"  if d.get("fri_close")   else "[unverified]"
+        d          = data.get(ticker, {})
+        close_val  = f"${d['fri_close']:.2f}" if d.get("fri_close") else "[unverified]"
+        bar_date   = d.get("last_bar_date")
+        # Flag if last bar isn't Friday
+        if bar_date and bar_date != friday:
+            date_str = f"⚠️{bar_date.strftime('%a %d')}"
+        elif bar_date:
+            date_str = bar_date.strftime("%a %d")
+        else:
+            date_str = "—"
         pct   = pct_str(d.get("weekly_pct"))
         high  = f"${d['weekly_high']:.2f}" if d.get("weekly_high") else "—"
         low   = f"${d['weekly_low']:.2f}"  if d.get("weekly_low")  else "—"
         n     = d.get("num_days")
         days  = f"⚠️{n}" if (n is not None and n < 5) else str(n) if n is not None else "—"
-        print(f"| **{ticker}** | {label} | {fri} | {pct} | {high} | {low} | {days} |")
+        print(f"| **{ticker}** | {label} | {close_val} | {date_str} | {pct} | {high} | {low} | {days} |")
     print()
 
 

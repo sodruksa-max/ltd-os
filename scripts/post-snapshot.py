@@ -189,7 +189,8 @@ def fetch_alpaca_bars(target_date: date):
 # ---------------------------------------------------------------------------
 
 def fetch_yf_ohlc(ticker: str, target_date: date):
-    """Returns (close, high, low, pct) for target_date via Yahoo Finance v8.
+    """Returns (close, high, low, pct, actual_date) for target_date via Yahoo Finance v8.
+    actual_date = date the bar actually came from (may differ from target_date if fallback used).
     Retries up to 3 times with exponential backoff on rate-limit (429) or errors.
     """
     import requests, time
@@ -226,7 +227,7 @@ def fetch_yf_ohlc(ticker: str, target_date: date):
                 (i for i, (d, c, _, _) in enumerate(pairs) if d == target_date and c is not None),
                 None,
             )
-            # Fallback: last valid bar
+            # Fallback: last valid bar (different date — caller will flag this)
             if idx is None:
                 for i in range(len(pairs) - 1, -1, -1):
                     if pairs[i][1] is not None:
@@ -234,9 +235,9 @@ def fetch_yf_ohlc(ticker: str, target_date: date):
                         break
 
             if idx is None:
-                return None, None, None, None
+                return None, None, None, None, None
 
-            _, close, high, low = pairs[idx]
+            actual_date, close, high, low = pairs[idx]
 
             # Prev close
             prev_close = None
@@ -246,13 +247,13 @@ def fetch_yf_ohlc(ticker: str, target_date: date):
                     break
 
             pct = (close - prev_close) / prev_close * 100 if close and prev_close else None
-            return close, high, low, pct
+            return close, high, low, pct, actual_date
 
         except Exception:
             if attempt < 2:
                 time.sleep(2 ** attempt)
 
-    return None, None, None, None
+    return None, None, None, None, None
 
 
 # ---------------------------------------------------------------------------
@@ -283,17 +284,24 @@ def print_alpaca_section(data: dict):
     print()
 
 
-def print_macro_section(macro: dict):
+def print_macro_section(macro: dict, target_date=None):
     print("### Macro Indicators (Yahoo Finance direct)")
-    print("| Indicator | Close | % Change | Intraday High | Intraday Low |")
-    print("|---|---|---|---|---|")
+    print("| Indicator | Close | Data date | % Change | Intraday High | Intraday Low |")
+    print("|---|---|---|---|---|---|")
     for ticker, label, unit in MACRO_TICKERS:
-        d     = macro.get(ticker, {})
-        close = _fmt_macro(d.get("close"), unit)
-        pct   = pct_str(d.get("pct"))
-        high  = _fmt_macro(d.get("high"), unit) if d.get("high") else "—"
-        low   = _fmt_macro(d.get("low"),  unit) if d.get("low")  else "—"
-        print(f"| **{label}** ({ticker}) | {close} | {pct} | {high} | {low} |")
+        d           = macro.get(ticker, {})
+        close       = _fmt_macro(d.get("close"), unit)
+        pct         = pct_str(d.get("pct"))
+        high        = _fmt_macro(d.get("high"), unit) if d.get("high") else "—"
+        low         = _fmt_macro(d.get("low"),  unit) if d.get("low")  else "—"
+        actual_date = d.get("actual_date")
+        if actual_date and target_date and actual_date != target_date:
+            date_str = f"⚠️{actual_date} (fallback)"
+        elif actual_date:
+            date_str = str(actual_date)
+        else:
+            date_str = "—"
+        print(f"| **{label}** ({ticker}) | {close} | {date_str} | {pct} | {high} | {low} |")
     print()
 
 
@@ -331,9 +339,10 @@ def main():
     # Macro via Yahoo Finance
     macro = {}
     for ticker, label, unit in MACRO_TICKERS:
-        close, high, low, pct = fetch_yf_ohlc(ticker, target_date)
-        macro[ticker] = {"close": close, "high": high, "low": low, "pct": pct}
-    print_macro_section(macro)
+        close, high, low, pct, actual_date = fetch_yf_ohlc(ticker, target_date)
+        macro[ticker] = {"close": close, "high": high, "low": low, "pct": pct,
+                         "actual_date": actual_date}
+    print_macro_section(macro, target_date)
 
     # Scenario verdict
     spy_pct = alpaca_data.get("SPY", {}).get("pct")
