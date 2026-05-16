@@ -37,7 +37,7 @@ Show user the auto-picked lens at start: "Using expertise lens: <X>. Override wi
 - "Python list คืออะไร" → just ask
 - "เลือก library อะไร" → too small
 
-Cost: ~$1-2.50 per /council. Time: 8-14 min.
+Cost: ~$1.50-3.50 per /council. Time: 10-16 min.
 
 ## Pre-checks
 
@@ -53,24 +53,26 @@ Write `brief.md` (context, goal, constraints, stakes, open questions).
 
 Show user: "Brief done. Auto-picked expertise lens: <X>. Starting parallel proposals..."
 
-## Phase 2: Proposals (4 parallel)
+## Phase 2: Proposals (5 parallel)
 
-Invoke 4 mindset proposers IN PARALLEL with same brief:
+Invoke 5 mindset proposers IN PARALLEL with same brief:
 - `optimist`
 - `pragmatist`
 - `skeptic`
 - `caveman`
+- `hypomania`
 
 Each writes `proposal-<role>.md` independently. Don't share between agents.
 
-After all 4 done → 1-line summary of each.
+After all 5 done → 1-line summary of each.
 
 ## Phase 3: Cross-critique (1 turn)
 
-Generate 12 critiques (each proposer critiques the other 3):
+Generate 20 critiques (each proposer critiques the other 4):
 - Format: steelman + weakness + question
-- Save all 12 in single `critiques.md`
+- Save all 20 in single `critiques.md`
 - Caveman critiques: keep language direct and physical — no abstract framing
+- Hypomania critiques: fast, multiple observations per proposal — at least 2 angles per critique
 
 ## Phase 3.5: Expertise lens (NEW — 1 turn)
 
@@ -85,10 +87,11 @@ This is NOT a 4th proposal — it's a reality check from one specific angle.
 
 ## Phase 4: Synthesis (synthesizer agent)
 
-Synthesizer reads brief + 4 proposals + 12 critiques + **expertise findings**. Produces `synthesis.md`:
+Synthesizer reads brief + 5 proposals + 20 critiques + **expertise findings**. Produces `synthesis.md`:
 - Decision matrix (now includes expertise dimensions)
 - Where proposers AGREE / DIVERGE
 - **Caveman gut signal** — did primal brain say SAFE, UNEASY, or DANGER? Note if gut contradicts sophisticates
+- **Hypomania ceiling signal** — what's the highest-upside scenario identified? Did other proposers miss it or reject it?
 - Critique patterns
 - Expertise warnings highlighted
 - Hybrid options
@@ -124,6 +127,9 @@ status: open
 ## Caveman gut signal
 <SAFE / UNEASY / DANGER — and whether gut contradicts the sophisticated proposals>
 
+## Hypomania ceiling
+<The highest-upside scenario identified — what becomes possible if the best conditions align?>
+
 ## Recommendation framework
 <from synthesizer — IF dimension X matters → option Y>
 
@@ -132,7 +138,7 @@ status: open
 
 ## All artifacts
 - [[brief]]
-- [[proposal-optimist]] / [[proposal-pragmatist]] / [[proposal-skeptic]] / [[proposal-caveman]]
+- [[proposal-optimist]] / [[proposal-pragmatist]] / [[proposal-skeptic]] / [[proposal-caveman]] / [[proposal-hypomania]]
 - [[critiques]]
 - [[expertise-<lens>]]
 - [[synthesis]]
@@ -157,10 +163,11 @@ Files: vault/_council/<date>-<slug>/
 Read in this order:
 1. DECISION.md (start here)
 2. expertise-<lens>.md (specific reality check)
-3. synthesis.md (decision matrix + caveman gut signal)
-4. proposal-caveman.md (gut check — read if sophisticated proposals feel too abstract)
-5. proposal-*.md (full proposals if curious)
-6. final-challenge.md (questions YOU must answer)
+3. synthesis.md (decision matrix + caveman gut + hypomania ceiling)
+4. proposal-hypomania.md (ceiling check — read if proposals feel too conservative)
+5. proposal-caveman.md (gut check — read if sophisticated proposals feel too abstract)
+6. proposal-*.md (full proposals if curious)
+7. final-challenge.md (questions YOU must answer)
 
 The council does NOT decide for you.
 
@@ -170,8 +177,8 @@ After 2-8 weeks → log outcome to OUTCOMES.md (use /weekly-learnings)
 
 ## Constraints
 
-- Total token budget: 70-110K (6 phases, 4 proposers)
-- Time budget: 8-14 minutes wall time
+- Total token budget: 80-120K (6 phases, 5 proposers)
+- Time budget: 10-16 minutes wall time
 - If a proposer fails → continue with remaining, note in DECISION.md
 - DO NOT skip phases
 - DO NOT auto-decide for user

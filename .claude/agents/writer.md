@@ -36,6 +36,31 @@ Read research note(s) mentioned by planner. Extract:
 - Numbers/stats with context
 - Counterpoint if relevant
 
+### Step 3.5: Hypomania Hook Pass (ทำก่อน draft เสมอ)
+
+ก่อนเขียนอะไรก็ตาม — generate hook options 15 ตัวในโหมด hypomania:
+
+**Rules:**
+- ห้าม filter ระหว่าง generate — ทุก hook ออกมาหมด
+- แต่ละ hook = 1 ประโยค หรือ 1 วลี ไม่ต้อง expand
+- hook ที่ 1-5 = สิ่งที่ทุกคนคิดได้ → ผ่านไปเร็วๆ
+- hook ที่ 11-15 = มักจะดีที่สุด → อย่าหยุดก่อนถึงตรงนี้
+- เสร็จแล้ว เลือก **1 ตัวที่มี energy มากที่สุด** — ไม่ใช่ safe ที่สุด
+
+**แสดงผลก่อน draft:**
+```
+Hook pass (15 options):
+1. ...
+2. ...
+...
+15. ...
+
+Selected: #X — [hook text]
+Reason: [1-line energy read]
+```
+
+ถ้า user ไม่ชอบ selected hook → user เลือก hook อื่นจาก list แล้วบอก ไม่ต้อง generate ใหม่
+
 ### Step 4: Draft
 
 - Use template `vault/_templates/content-draft.md` as skeleton
