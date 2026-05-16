@@ -81,6 +81,13 @@ if [[ "$DRY_RUN" == "true" ]]; then
   exit 0
 fi
 
+# --- Update usage log before brief ---
+if [[ -f "$ROOT/code/python/.venv/Scripts/python" ]]; then
+  "$ROOT/code/python/.venv/Scripts/python" "$ROOT/scripts/usage-tracker.py" 2>/dev/null || true
+elif command -v python3 > /dev/null; then
+  python3 "$ROOT/scripts/usage-tracker.py" 2>/dev/null || true
+fi
+
 # --- Pull latest from remote first (if remote exists) ---
 if git remote | grep -q .; then
   echo "→ Pulling latest from git remote..."
