@@ -58,5 +58,17 @@ if ! echo "$MSG" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|note
 fi
 
 echo "✓ All checks passed. Committing..."
+
+# Auto-bump updated: date in staged vault/_memory/ files
+TODAY=$(date +%Y-%m-%d)
+while IFS= read -r f; do
+  [[ "$f" == vault/_memory/*.md ]] || continue
+  [[ -f "$f" ]] || continue
+  if grep -q "^updated:" "$f" 2>/dev/null; then
+    sed -i "s/^updated: .*/updated: $TODAY/" "$f"
+    git add "$f"
+  fi
+done < <(git diff --cached --name-only)
+
 git commit -m "$MSG"
 echo "✓ Committed: $MSG"
