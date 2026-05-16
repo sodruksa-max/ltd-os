@@ -129,6 +129,35 @@ Next earnings date + consensus EPS
 
 ถ้าไม่พบ → `SA Narrative Audit: balanced ✅`
 
+**Paranoid — Consensus Distrust Check (รันก่อน save Reese doc):**
+
+ถ้า analyst consensus ≥ 80% bullish หรือ ≥ 80% bearish → ตรวจ 3 คำถาม adversarial:
+
+**1. Who benefits from this consensus?**
+- Sell-side ที่ upgrade มี banking/underwriting relationship กับบริษัทนี้ไหม?
+- Consensus bullish ตรงกับช่วงที่ insider กำลัง distribute หรือ lock-up ใกล้หมดไหม?
+- ถ้า consensus bearish — short sellers ที่มี large position กำลัง build narrative ไหม?
+
+**2. Who disagrees and why?**
+- ค้นหา dissenting analyst หรือ short report ที่ขัดกับ consensus
+- ถ้าหาคนที่ไม่เห็นด้วยไม่ได้เลย → อาจเป็นสัญญาณว่า information ยังไม่ complete
+
+**3. Is it already priced in?**
+- ถ้า consensus 80%+ bullish แต่ราคาขึ้นมาแล้ว > 30% ใน 6 เดือน → upside อาจ exhausted
+- Sentiment extreme มักเป็น contrarian signal ไม่ใช่ momentum signal
+
+→ flag `[PARANOID: CONSENSUS TRAP] <direction> — N% consensus, priced in: [yes/no/partial]`
+→ flag `[PARANOID: SELL-SIDE INCENTIVE]` ถ้าพบ banking relationship ที่ conflict
+
+```
+Paranoid Consensus Check: [N% bullish / N% bearish]
+Threshold triggered: [yes / no — N < 80%]
+Adversarial finding: [PARANOID: CONSENSUS TRAP / SELL-SIDE INCENTIVE / clean]
+Implication: [fade consensus / wait for re-rating / proceed with caution]
+```
+
+ถ้า consensus ไม่ถึง threshold → `Paranoid: consensus not extreme ✅`
+
 Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---

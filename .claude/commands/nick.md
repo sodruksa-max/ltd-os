@@ -536,6 +536,68 @@ Alignment: [aligned / [BPD: AMBIVALENT HOLD] / [BPD: EMOTIONAL ANCHOR]]
 Override justification: [1 ประโยค data-based หรือ "none — trim 25%"]
 ```
 
+5.20 **CIP — Stop-Execution Audit**
+
+ตรวจว่า kill conditions ที่ triggered ใน session ก่อน (หรือตาม KB ล่าสุด) ถูก execute จริงไหม
+
+สำหรับแต่ละ position ที่ kill condition อาจ triggered แล้ว:
+1. Kill condition triggered? (ตาม metrics ปัจจุบัน)
+2. ถ้าใช่ — executed หรือ still held?
+3. ถ้า still held → classify reason:
+   - `[CIP: DATA OVERRIDE]` — มีข้อมูลใหม่ที่ชัดเจนที่ทำให้ kill condition ยังไม่สมบูรณ์ (acceptable)
+   - `[CIP: PAIN IGNORED]` — reason เป็น narrative หรือ hope ("ยังมีความหวัง", "ตลาดยังไม่ reflect") → force execute ณ ราคาปัจจุบัน
+
+**กฎเหล็ก:** `[CIP: PAIN IGNORED]` ไม่มี exception — ระบบไม่รู้สึกเจ็บ ดังนั้นต้องมีกลไก external บังคับ execute แทน ไม่รอ "รู้สึกพร้อม"
+
+```
+CIP Stop-Execution Audit:
+- [TICKER]: kill condition [triggered / not triggered]
+  If triggered: [executed ✅ / [CIP: DATA OVERRIDE] — reason / [CIP: PAIN IGNORED] → force exit]
+Overall: [N positions checked, M overrides found]
+```
+
+5.21 **TLE — Market Memory Index Check**
+
+ก่อน Recommendation — ตรวจ KB ว่ามี "high-intensity market days" ที่ conditions คล้ายปัจจุบันไหม
+
+อ่าน `vault/Knowledge/tle-memory-index.md` (ถ้ามี) — ไฟล์นี้ append-only สะสม sessions สำคัญ
+
+Pattern match criteria (ต้องตรง ≥ 2 จาก 3):
+- Portfolio drawdown > 5% ใน session เดียว
+- Thesis ถูก disprove อย่าง sudden
+- Kill condition triggered หลาย positions พร้อมกัน
+
+ถ้าพบ match:
+> `[TLE: PORTFOLIO PATTERN MATCH] — similar to [date]: [what happened] → outcome: [what changed in holdings after]`
+
+ถ้าไม่มีไฟล์หรือไม่มี match → ข้ามเงียบๆ
+
+**Append-only rule:** ทุกครั้งที่ Nick weekly รัน → append entry ใหม่ใน `vault/Knowledge/tle-memory-index.md` เฉพาะ sessions ที่มี high-intensity event (drawdown > 5% หรือ thesis disproved) — ไม่ต้องบันทึกทุก session
+
+5.22 **Parasomnia — Regime Boundary Detector**
+
+ตรวจว่า portfolio positioning ยังเหมาะกับ market regime ปัจจุบันไหม — หรือกำลัง "sleepwalk" ใน regime เก่า
+
+**Regime transition signals:**
+
+| จาก → ไป | สัญญาณ | Portfolio impact |
+|---|---|---|
+| Trending → Ranging | Momentum stocks เริ่ม chop, breadth แคบลง | Momentum longs เริ่มเป็น liabilities |
+| Ranging → Volatile | Correlations breakdown, VIX term structure flattens | All positions ขยับ uncorrelated |
+| Low Vol → High Vol | VIX spikes > 20%, credit spreads widen suddenly | Size ทุก position ควรลดลง |
+| Risk-on → Risk-off | Defensive outperform, yield curve invert | Growth thesis under pressure |
+
+ตรวจ current portfolio vs regime:
+- Holdings ส่วนใหญ่เป็น growth/momentum ในช่วงที่ signals บอก ranging/risk-off → `[PARASOMNIA: REGIME SHIFT]`
+
+```
+Parasomnia Regime Check:
+Current regime: [Trending / Ranging / Volatile / Transitioning]
+Portfolio positioned for: [regime ที่ holdings suit]
+Mismatch: [none / [PARASOMNIA: REGIME SHIFT] — holdings suit X but market entering Y]
+Action: [none / reduce momentum positions / increase defensive weight / raise cash]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

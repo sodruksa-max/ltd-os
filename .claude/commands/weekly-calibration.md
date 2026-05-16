@@ -214,6 +214,34 @@ Proposal: [none / "require explicit criteria for all setups" / "review criteria 
 ```
 ถ้าไม่มี data เพียงพอ (< 5 predictions แต่ละประเภท) → ข้ามเงียบๆ
 
+**3l. CIP — Stop-Loss Override Rate Tracker**
+
+ตรวจว่า stop-loss overrides ใน N วันเป็น DATA หรือ NARRATIVE — และ override เหล่านั้นจบอย่างไร
+
+ขั้นตอน:
+1. สแกน post-market reviews หา `[CIP: DATA OVERRIDE]` และ `[CIP: NARRATIVE OVERRIDE]` ทั้งหมดใน N-day window
+2. สำหรับแต่ละ NARRATIVE OVERRIDE — ตรวจ outcome ว่า trade จบอย่างไร (win/loss)
+3. คำนวณ:
+
+```
+NARRATIVE OVERRIDE Rate = (NARRATIVE OVERRIDE count) / (total stop triggers)
+NARRATIVE OVERRIDE Win Rate = (NARRATIVE OVERRIDE ที่จบกำไร) / (NARRATIVE OVERRIDE ทั้งหมด)
+```
+
+**Interpretation:**
+- NARRATIVE OVERRIDE Rate > 20% → `[CIP: OVERRIDE PATTERN]` — systematic problem, เสนอ rule: "mandatory 24h cooling period ก่อน override ใดๆ"
+- NARRATIVE OVERRIDE Win Rate < 40% → `[CIP: OVERRIDE LOSING]` — overrides กำลังทำให้เสียมากกว่าได้ → เสนอ: "ban NARRATIVE OVERRIDE ทั้งหมด — DATA OVERRIDE เท่านั้น"
+- NARRATIVE OVERRIDE Win Rate > 60% → `[CIP: OVERRIDE USEFUL]` — overrides มี edge จริง → ปรับ kill conditions ให้ less sensitive
+
+แสดงใน Pattern Summary:
+```
+CIP Override Rate: X% (N overrides / M triggers)
+NARRATIVE OVERRIDE Win Rate: Y% (P wins / N overrides)
+Status: [controlled / [CIP: OVERRIDE PATTERN] / [CIP: OVERRIDE LOSING] / [CIP: OVERRIDE USEFUL]]
+Proposal: [none / "24h cooling period" / "ban NARRATIVE OVERRIDE" / "recalibrate kill conditions"]
+```
+ถ้าไม่มี stop triggers ใน window → ข้ามเงียบๆ
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว

@@ -585,6 +585,98 @@ Action: [none / "revisit tomorrow — emotional state may have skewed analysis" 
 
 ถ้าไม่พบ flag ใดเลย → ข้ามเงียบๆ
 
+### 8.98 CIP — Loss Execution Log
+
+บันทึกทุก stop-loss trigger วันนี้และตรวจว่า executed หรือ rationalized ออกไป
+
+สแกน review วันนี้หา:
+- Position ที่ stop price ถูก hit แต่ยังถือต่อ
+- Position ที่ thesis invalidated แต่ยังไม่ close
+- Position ที่ rule บอกให้ exit แต่มี "เหตุผล" ให้ stay
+
+ต่อแต่ละกรณีที่พบ → classify:
+- `[CIP: DATA OVERRIDE]` — มีข้อมูลใหม่ที่ชัดเจน explicit เปลี่ยน thesis จริงๆ (acceptable)
+- `[CIP: NARRATIVE OVERRIDE]` — reason เป็น vague hope หรือ rationalization ("ตลาดน่าจะ recover", "เดี๋ยวคงดีขึ้น", "ยังถือ")
+
+```
+CIP Loss Execution Log:
+- [TICKER / trade]: stop triggered [yes / no]
+  Executed: [yes ✅ / no → [CIP: DATA OVERRIDE] / no → [CIP: NARRATIVE OVERRIDE]]
+  If DATA OVERRIDE: [ข้อมูลใหม่ที่ชัดเจน]
+  If NARRATIVE OVERRIDE: [reason ที่บอก + flag for follow-up]
+NARRATIVE OVERRIDE rate today: [N / total triggers]
+Cumulative this week: [track ใน review file]
+```
+
+**กฎสะสม:** ถ้า NARRATIVE OVERRIDE ≥ 2 ใน week เดียวกัน → เสนอ rule update ใน weekly-calibration ถัดไป
+
+### 8.99 Paranoid — Threat Signature Registry Update
+
+บันทึก warning signs ที่เกิดก่อน bad trades วันนี้เป็น pattern library สะสม
+
+ขั้นตอน:
+1. ระบุ trades วันนี้ที่ outcome แย่กว่า expectation
+2. สำหรับแต่ละ trade — ย้อนดูว่ามี pre-trade warning sign อะไรบ้างที่ ignore ไป:
+   - Market condition ที่ไม่เอื้อ แต่ trade ต่อ
+   - Setup ที่ดูดีแต่มี red flag เล็กๆ ที่ข้ามไป
+   - Timing ที่ผิดปกติ (เช่น เข้าตอนที่ volume เบาผิดปกติ)
+3. Append ใน `vault/Knowledge/paranoid-threat-signatures.md`:
+
+```
+[YYYY-MM-DD] [TICKER/SETUP TYPE]
+Pre-trade signals ignored: [list]
+Outcome: [loss magnitude / miss vs expectation]
+Pattern: [คำอธิบายสั้นที่ใช้ recognize ในอนาคต]
+```
+
+**Pattern detection:** ถ้า signature เดิมปรากฏ ≥ 3 ครั้ง → append ใน pre-market brief เป็น `[PARANOID: THREAT SIGNATURE] <pattern>` อัตโนมัติ
+
+ถ้าไม่มี bad trades วันนี้ → ข้ามเงียบๆ
+
+### 8.991 TLE — Sequence Causality Replay
+
+Replay chain of events วันนี้เป็น temporal sequence เพื่อหา leading indicator ที่ซ่อนอยู่
+
+สร้าง timeline:
+```
+[Time A]: <event/observation>
+→ [Time B]: <market reaction>
+→ [Time C]: <follow-through or reversal>
+→ [Outcome]: <final direction + magnitude>
+```
+
+ตรวจหา:
+- **Hidden leading indicator:** สิ่งที่เกิดก่อนและ predict outcome ได้ — ถ้าเห็นอีกครั้ง → weight higher
+- **False signal:** สิ่งที่ดูเหมือน leading แต่ไม่ได้ predict อะไร — ลด weight ครั้งถัดไป
+- **Delayed effect:** event ที่เกิดตอนเช้าแต่ market ตอบสนองตอนบ่าย → note time lag
+
+→ บันทึก 1 key sequence pattern ไว้ใน review: `[TLE: SEQUENCE] A → B → C led to [outcome] — watch for [A] in future sessions`
+
+ถ้าไม่มี notable sequence วันนี้ → ข้ามเงียบๆ
+
+### 8.992 Parasomnia — Autopilot Rate Audit
+
+ตรวจว่า decisions วันนี้มีกี่ % ที่ผ่าน conscious checklist vs เกิดจาก reflex
+
+นับ decisions ทุกอัน (entry, exit, hold, skip) แล้ว classify:
+- **Conscious:** ผ่าน IF-THEN check ก่อนทำ + มี explicit reason
+- **Autopilot/Reflex:** ทำเพราะ momentum / habit / เห็นแล้วทำเลย
+
+```
+Parasomnia Autopilot Rate:
+Total decisions today: N
+- Conscious: X (X%)
+- Autopilot/Reflex: Y (Y%)
+Autopilot Rate: Y%
+```
+
+**Thresholds:**
+- < 20% autopilot → `[PARASOMNIA: CONTROLLED]` — process intact
+- 20–30% → `[PARASOMNIA: ELEVATED]` — note patterns ที่ trigger reflex
+- > 30% → `[PARASOMNIA: HIGH AUTOPILOT]` — flag วันนี้ว่า "review quality questionable" + mandatory: redo 1 key decision tomorrow with fresh analysis
+
+ถ้าไม่มี active trading วันนี้ → ข้ามเงียบๆ
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

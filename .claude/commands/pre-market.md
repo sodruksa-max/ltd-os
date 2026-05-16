@@ -575,6 +575,60 @@ BPD Market Split:
 
 **กฎ:** ถ้าพบทั้ง idealization และ devaluation ในวันเดียว → `[BPD: FULL SPLIT DAY]` — ตลาดวิ่ง emotional ทั้ง session ให้ลด size ทุก position 20% และหลีกเลี่ยง FOMO entries
 
+### Paranoid — Adversarial Scan
+
+สำหรับ bullish scenario หลักวันนี้: ถาม "ใครได้ประโยชน์จากการที่ retail เชื่อ scenario นี้?"
+
+**3 คำถาม adversarial:**
+
+1. **Incentive check:** ใครที่ manufacture consensus วันนี้มี financial incentive ในฝั่งตรงข้ามไหม?
+   - Sell-side upgrade ก่อน lock-up expiry / secondary offering?
+   - Large holder กำลัง distribute แต่ narrative ยังบวก?
+   - Market maker ที่ต้องการ buy-side ก่อน sell-side fills?
+
+2. **Information asymmetry:** ถ้า news วันนี้เป็นจริง — ทำไม insiders ถึงไม่ซื้อ/ขายตาม?
+   - ตรวจ insider transaction ล่าสุด (ถ้าทำได้) vs narrative ปัจจุบัน
+
+3. **Consensus manufacturing:** narrative นี้ถูก echo ซ้ำในหลาย media outlets พร้อมกันผิดปกติไหม?
+   - ถ้าใช่ → อาจเป็น coordinated narrative ไม่ใช่ organic discovery
+
+→ flag `[PARANOID: ADVERSARIAL ACTOR] <who + motive>` ถ้าพบ incentive misalignment ชัดเจน
+
+```
+Paranoid Adversarial: [CLEAR / [PARANOID: ADVERSARIAL ACTOR] — who: [X], motive: [Y]]
+Implication: [proceed as normal / reduce size / wait for confirmation before entry]
+```
+
+ถ้าไม่พบ incentive misalignment → `Paranoid: no adversarial signal ✅`
+
+### TLE — Temporal Pattern Match
+
+เปรียบ conditions วันนี้กับ historical dates ที่คล้าย — "déjà vu เป็น signal ไม่ใช่ noise"
+
+**Match criteria (ต้องตรง ≥ 3 จาก 5):**
+1. VIX range (เทียบ ± 2 points)
+2. Futures direction + magnitude (เช่น ES +0.3–0.8%)
+3. Sector rotation pattern (defensive up / cyclical up / mixed)
+4. News theme category (Fed / earnings / geopolitical / macro data)
+5. Day-of-week + market microstructure (Monday gap / OpEx Friday)
+
+ถ้าพบ match ≥ 3/5 → ระบุ:
+- วันที่ match: [YYYY-MM-DD]
+- Conditions ที่ตรง: [list]
+- Outcome วันนั้น: [market direction + magnitude ถ้ามีข้อมูล]
+
+→ flag `[TLE: PATTERN MATCH] similar to [date] — prior outcome: [X]`
+
+ใช้เป็น **reference weight** ใน scenario section ไม่ใช่ prediction โดดๆ — ถ้า match outcome bearish แต่ scenario วันนี้ bullish → note tension ไว้
+
+```
+TLE Pattern Match: [MATCH FOUND / no match]
+- Similar date: [YYYY-MM-DD / N/A]
+- Conditions matched: [N/5]
+- Prior outcome: [direction + magnitude หรือ "unknown"]
+- Weight on today's scenario: [increases [scenario] probability / no adjustment]
+```
+
 ---
 
 ## กรอบความเสี่ยง (Risk Framework)
@@ -661,6 +715,21 @@ Setup ทุกอันใช้ logic แบบ IF-THEN — การเข้
 - Most Likely = **Bullish** → setup ที่เป็น Short ต้องมีเหตุผลชัดเจน
 - Most Likely = **Base** → setup ทั้งสองทิศทางได้ แต่ต้องมี invalidation ชัดเจน
 ถ้า setup ขัดกับ Most Likely โดยไม่มีเหตุผล → flag ⚠️ ใน brief ก่อน save
+
+**Parasomnia — Reflex Entry Guard (รันก่อนเขียน setup ทุกอัน):**
+
+ตรวจว่า setup แต่ละอันมาจาก conscious analysis หรือ reflex/autopilot
+
+Reflex patterns ที่ต้องระวัง:
+- "เห็น ticker วิ่ง → อยากซื้อ" (FOMO reflex — trigger = movement ไม่ใช่ thesis)
+- "sector วิ่งทั้ง sector → ซื้อทุกตัว" (herd reflex — ไม่ได้วิเคราะห์ individual)
+- "ตลาดลง → เพิ่ม position" (dip-buying reflex — โดยไม่ตรวจ thesis)
+- "เมื่อวานทำได้ → วันนี้ทำเหมือนกัน" (habit reflex — ไม่ได้ปรับตาม conditions ใหม่)
+- "setup นี้เคยได้กำไร → ทำซ้ำ" (pattern addiction — ไม่ได้ตรวจ current validity)
+
+สำหรับทุก setup → ถามตัวเอง: "ฉันจะเขียน setup นี้ถ้าตัวเลข/movement วันนี้ไม่มีอยู่ไหม?" ถ้าคำตอบ = ไม่ → อาจเป็น reflex ไม่ใช่ thesis
+
+→ flag `[PARASOMNIA: REFLEX SETUP] "<trigger>"` ถ้า entry driver เป็น movement ไม่ใช่ thesis — setup นั้นต้องผ่าน additional justification ก่อน include
 
 **กฎบังคับก่อนเขียน setup:**
 
