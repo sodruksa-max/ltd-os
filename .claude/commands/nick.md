@@ -290,6 +290,37 @@ Schizophrenia Scan:
   Next: /wild-thesis <topic> --domains=<domain>
 ```
 
+5.9 **Synesthesia Portfolio Color Map — แปลทุก holding เป็น multi-channel texture**
+
+เป้าหมาย: ให้แต่ละ holding มี "สี + พื้นผิว" จาก 3 input channels พร้อมกัน — ก่อนที่ recommendation จะถูกเขียน
+
+**3 input channels ต่อ holding:**
+
+| Channel | Metric | Signal |
+|---|---|---|
+| Color | Momentum tier (จาก nick-signals.md) | RSI >60 = GREEN / 40–60 = YELLOW / <40 = RED |
+| Texture | Kill condition distance | Metric ห่างจาก threshold >30% = SMOOTH / 10–30% = ROUGH / <10% = HOT |
+| Brightness | Thesis freshness | Reese doc < 30 วัน = BRIGHT / 30–90 วัน = DIM / >90 วัน = DARK |
+
+**Portfolio texture map:**
+ต่อแต่ละ holding → assign 1 combined label:
+- `[GREEN-SMOOTH-BRIGHT]` — healthy, thesis intact, fresh data
+- `[YELLOW-ROUGH-DIM]` — watch, approaching kill threshold, aging data
+- `[RED-HOT-DARK]` — danger, near kill condition, stale research
+
+**Dissonance flag:**
+ถ้า holding มี 2+ channels ส่งสัญญาณ RED หรือ ROUGH/HOT → flag `[TEXTURE DISSONANT]` ก่อนเขียน recommendation:
+> `[TEXTURE DISSONANT] TICKER — Color: RED | Texture: HOT | Brightness: DIM — ตรวจ kill conditions ก่อน`
+
+แสดงท้าย KB sweep:
+```
+Portfolio Color Map:
+- TICKER: [COLOR-TEXTURE-BRIGHTNESS] — [1-line interpretation]
+- TICKER: [COLOR-TEXTURE-BRIGHTNESS] — [1-line interpretation]
+...
+Dissonant holdings: N — flagged for priority kill check
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

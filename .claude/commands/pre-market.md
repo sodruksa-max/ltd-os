@@ -90,6 +90,31 @@ Reflex flags (pre-analysis instinct):
 
 **Reflex flags ที่ raise ต้องถูก addressed ใน brief** — ถ้า analysis confirm = escalate; ถ้า analysis resolve = note `[REFLEX RESOLVED]`
 
+### 0.8 Synesthesia Market Texture Gestalt — ตีความข้อมูลผ่าน multi-channel พร้อมกัน
+
+รันหลัง Tourette reflex scan — แปล 5 key metrics เป็น texture รวมก่อนเริ่มวิเคราะห์
+
+**5 input channels (ใช้ข้อมูลจาก Step 1.5 หรือ preliminary data ที่มีอยู่):**
+
+| Channel | Metric | Signal |
+|---|---|---|
+| Temperature | SPY % | ≥+0.8% = HOT / +0.3–0.8% = WARM / ±0.3% = NEUTRAL / −0.3 to −0.8% = COOL / ≤−0.8% = COLD |
+| Texture | VIX | ≤15 = SMOOTH / 15–20 = ROUGH / 20–25 = CHOPPY / >25 = JAGGED |
+| Width | Breadth (adv/dec %) | >65% = WIDE / 55–65% = MID / 45–55% = THIN / <45% = NARROW |
+| Pressure | TNX direction | ↑ sharply = TIGHTENING / ↑ mild = FIRM / flat = NEUTRAL / ↓ = EASING |
+| Weight | Oil (Brent) % | >+1.5% = HEAVY / 0–1.5% = LOADED / flat = BALANCED / <0 = LIGHT |
+
+**Gestalt — combine ทั้ง 5 channels เป็น texture สั้นๆ 1-3 คำ:**
+- ตัวอย่าง: `[WARM-ROUGH]` (SPY บวกเล็กน้อย, VIX ยังสูง), `[HOT-SMOOTH]` (ตลาดวิ่ง, volatility ต่ำ), `[COLD-JAGGED-HEAVY]` (risk-off + oil spike)
+- Gestalt = compressed multi-channel signal ที่สรุปสภาพตลาดโดยรวม ก่อนอ่าน narrative ใดๆ
+
+แสดงก่อนเริ่ม brief:
+```
+Market texture: [GESTALT] — Temperature: X | Texture: X | Width: X | Pressure: X | Weight: X
+```
+
+**กฎ: Gestalt ต้องถูก referenced ใน Scenario section** — ถ้า scenario ขัดกับ gestalt อย่างชัดเจน → note `[TEXTURE CONFLICT]` และอธิบายว่าทำไม
+
 ### 1. Fetch live news data in parallel
 
 Macro numbers (futures, VIX, yields, oil, gold, DXY) come from Step 1.5 scripts — only news and sentiment need web searches here.

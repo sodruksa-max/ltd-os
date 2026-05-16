@@ -208,6 +208,36 @@ Vera Savant Summary:
 - Critical numbers archived: K → savant-numbers.md
 ```
 
+**Vera Synesthesia Multi-Modal Encoding (รันหลัง savant audit — encode ตัวเลขสำคัญแบบ multi-axis):**
+
+ต่อทุก metric ที่ verified exact แล้ว — แปลงเป็น relative position พร้อมกัน 3 แกน:
+
+**3 axes ต่อ metric:**
+- **vs Peer median** — [ABOVE ✓] / [AT MEDIAN ~] / [BELOW ✗]
+- **vs Own 3Y history** — [NEAR HIGH ↑] / [MID RANGE →] / [NEAR LOW ↓]
+- **vs Kill condition** — [SAFE: DISTANT] / [WATCH: APPROACHING] / [DANGER: AT THRESHOLD]
+
+**Format:**
+```
+[METRIC] [VALUE] [vs PEER] [vs HISTORY] [vs KILL]
+```
+ตัวอย่าง:
+```
+FCF margin 18% [ABOVE MEDIAN ✓] [NEAR 3Y HIGH ↑] [KILL: DISTANT]
+Revenue growth 12% YoY [BELOW MEDIAN ✗] [MID RANGE →] [WATCH: APPROACHING]
+Gross margin 54% [AT MEDIAN ~] [MID RANGE →] [SAFE: DISTANT]
+```
+
+**กฎ: ถ้า metric มี 2+ axes ที่เป็น warning ([BELOW ✗] / [NEAR LOW ↓] / [WATCH] หรือแย่กว่า) → flag `[SYNESTHESIA WARN]`**
+
+Vera สรุป synesthesia encoding:
+```
+Vera Synesthesia Summary:
+- Metrics encoded: N
+- [SYNESTHESIA WARN] M — metrics with 2+ warning axes
+- Encoding available for: Nick kill check / Reese narrative context
+```
+
 ---
 
 ## STEP 6 — INDIE ATOMS
