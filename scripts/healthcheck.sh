@@ -24,7 +24,7 @@ else
   f "venv missing — run: python -m venv code/python/.venv"
 fi
 
-for pkg in alpaca yfinance; do
+for pkg in alpaca yfinance requests; do
   if "$VENV" -c "import $pkg" 2>/dev/null; then
     p "package: $pkg"
   else
@@ -55,7 +55,7 @@ fi
 
 # ── Scripts ───────────────────────────────────────────────────────────────────
 echo ""
-echo "-- Scripts"
+echo "-- Scripts (core)"
 for script in \
   "scripts/macro-snapshot.py" \
   "scripts/sr-levels.py" \
@@ -64,6 +64,7 @@ for script in \
   "scripts/context-check.sh" \
   "scripts/healthcheck.sh" \
   "scripts/safe-commit.sh" \
+  "scripts/safe-push.sh" \
   "scripts/daily-brief.sh" \
   "scripts/bootstrap.sh" \
   "scripts/cost-report.sh" \
@@ -79,17 +80,78 @@ do
   fi
 done
 
+echo ""
+echo "-- Scripts (data pipelines)"
+for script in \
+  "scripts/nick-monitor.py" \
+  "scripts/weekly-snapshot.py" \
+  "scripts/post-snapshot.py" \
+  "scripts/news-snapshot.py" \
+  "scripts/catalyst-calendar.py" \
+  "scripts/sector-flow.py" \
+  "scripts/etf-discovery.py" \
+  "scripts/universe-screen.py" \
+  "scripts/brier-score.py"
+do
+  if [[ -f "$ROOT/$script" ]]; then
+    p "$script"
+  else
+    f "$script not found"
+  fi
+done
+
+echo ""
+echo "-- Scripts (CCR / automation)"
+for script in \
+  "scripts/ipo-scanner.py" \
+  "scripts/build_dashboard.py" \
+  "scripts/weekly-audit.py" \
+  "scripts/junk_filter.py" \
+  "scripts/_llm.py"
+do
+  if [[ -f "$ROOT/$script" ]]; then
+    p "$script"
+  else
+    f "$script not found"
+  fi
+done
+
 # ── Slash commands ────────────────────────────────────────────────────────────
 echo ""
-echo "-- Slash commands"
-for cmd in \
-  "pre-market" "post-market" "daily-brief" "eod" \
-  "handoff" "context" "council" "weekly-calibration" \
-  "stock-research" "analyst" "challenge" "condense" \
-  "weekly-learnings" "weekly-market" "import-notebooklm"
-do
+echo "-- Slash commands (trading)"
+for cmd in pre-market post-market market-log eod paper-trade screen bot weekly-calibration weekly-market; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
-    p "/$(basename $cmd)"
+    p "/${cmd}"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+echo ""
+echo "-- Slash commands (research & content)"
+for cmd in stock-research stock-content research-idea paper-survey import-notebooklm nlm; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd}"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+echo ""
+echo "-- Slash commands (nick portfolio)"
+for cmd in nick; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd} (nick-init / nick-weekly / nick-quarterly)"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+echo ""
+echo "-- Slash commands (system)"
+for cmd in review daily-brief handoff context condense weekly-learnings onboard analyst challenge council; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd}"
   else
     f "/${cmd} command missing"
   fi
@@ -102,8 +164,11 @@ for dir in \
   "vault/00_inbox" \
   "vault/daily" \
   "vault/10_research" \
+  "vault/Knowledge" \
   "vault/20_investment/_journal" \
   "vault/20_investment/_journal/real-trades" \
+  "vault/20_investment/nick/weekly" \
+  "vault/20_investment/nick/alerts" \
   "vault/30_content" \
   "vault/40_projects" \
   "vault/_memory" \
@@ -117,10 +182,23 @@ do
   fi
 done
 
+# Nick signals freshness
+nick_signals="$ROOT/vault/Knowledge/nick-signals.md"
+if [[ -f "$nick_signals" ]]; then
+  # Check if file was modified in last 2 days (172800 seconds)
+  if find "$nick_signals" -mmin +2880 | grep -q .; then
+    w "nick-signals.md exists but >48h old — run nick-monitor.py"
+  else
+    p "nick-signals.md recent"
+  fi
+else
+  f "nick-signals.md missing — run nick-monitor.py"
+fi
+
 # ── Memory files ──────────────────────────────────────────────────────────────
 echo ""
 echo "-- Memory files"
-for mem in PROJECTS DECISIONS PREFERENCES OUTCOMES WORKFLOWS COUNCIL_LOG; do
+for mem in PROJECTS DECISIONS PREFERENCES OUTCOMES WORKFLOWS COUNCIL_LOG TRADING_RULES; do
   fpath="$ROOT/vault/_memory/${mem}.md"
   if [[ -f "$fpath" ]]; then
     size=$(wc -c < "$fpath")
@@ -155,9 +233,18 @@ else
   w "${dirty} uncommitted change(s) (excluding handoff.md)"
 fi
 
+# Check unpushed commits
+unpushed=$(git -C "$ROOT" rev-list --count origin/main..HEAD 2>/dev/null || echo "0")
+if [[ "$unpushed" -eq 0 ]]; then
+  p "in sync with origin/main"
+elif [[ "$unpushed" -le 5 ]]; then
+  w "${unpushed} commit(s) ahead of origin/main — run: git push origin main"
+else
+  f "${unpushed} commits ahead of origin/main — CCR will run stale code until pushed"
+fi
+
 stale_handoff=""
 if [[ -f "$ROOT/.claude/handoff.md" ]]; then
-  # Check if handoff is from >24h ago using file modification time
   if find "$ROOT/.claude/handoff.md" -mmin +1440 | grep -q .; then
     stale_handoff="yes"
     w "handoff.md exists and is >24h old — may be stale"

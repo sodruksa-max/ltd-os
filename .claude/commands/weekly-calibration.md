@@ -29,6 +29,14 @@ vault/_memory/OUTCOMES.md                   (Trading Calibration Log)
 vault/_memory/PREFERENCES.md               (กฎปัจจุบัน)
 ```
 
+หลังโหลดไฟล์แล้ว รัน Brier Score เพื่อได้ quantitative baseline ของ calibration accuracy:
+
+```bash
+code/python/.venv/Scripts/python scripts/brier-score.py
+```
+
+Output: rolling 10-day Brier Score + over-confidence flag — ใช้เป็น evidence เพิ่มใน Step 3a (Calibration trend)
+
 ถ้าไม่พบ review ไฟล์เลย → หยุดและแจ้ง:
 > ❌ ไม่พบ review ไฟล์ — รัน `/post-market` ก่อนอย่างน้อย 1 วัน
 

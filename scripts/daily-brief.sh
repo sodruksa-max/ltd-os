@@ -60,6 +60,21 @@ echo "  Daily Brief — $TODAY"
 echo "═══════════════════════════════════════════"
 echo
 
+# --- Nick kill condition alerts (check before brief) ---
+ALERTS_DIR="$ROOT/vault/20_investment/nick/alerts"
+if [[ -d "$ALERTS_DIR" ]]; then
+  recent_alert=$(find "$ALERTS_DIR" -name "*-alert.md" -mmin -2880 2>/dev/null | sort -r | head -1)
+  if [[ -n "$recent_alert" ]]; then
+    echo "*** NICK KILL CONDITION ALERT ***"
+    echo "   File: $(basename "$recent_alert")"
+    echo "   Run /nick-weekly to review triggered positions"
+    echo "   ────────────────────────────────────────"
+    grep "^\*\*" "$recent_alert" 2>/dev/null | head -5 || true
+    echo "   ────────────────────────────────────────"
+    echo
+  fi
+fi
+
 if [[ "$DRY_RUN" == "true" ]]; then
   echo "(DRY RUN — would invoke: claude \"/daily-brief\")"
   echo "Current invocations today: $INVOCATIONS_TODAY/$MAX_DAILY_INVOCATIONS"
