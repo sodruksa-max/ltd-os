@@ -1,10 +1,10 @@
 ---
-description: Full research + KB pipeline for a single ticker — stock research, Minnie idea card, Reese doc, Chris+Vera audit, Indie atoms, KB sync. No content draft.
+description: Full research + KB pipeline for a single ticker — stock research note, Reese doc, Chris+Vera audit, Indie atoms, KB sync.
 ---
 
 # /stock-content
 
-Combined `/stock-research` + `/research-idea` pipeline in one command. Produces a complete investment research note + KB insight atoms in a single run. No content draft (stopped at Step 6).
+Deep research pipeline สำหรับ 1 ticker. ผลลัพธ์: stock research note + Reese doc + insight atoms ใน KB — ทุกอย่างที่ Nick ต้องการเพื่อตัดสินใจได้.
 
 ## Usage
 
@@ -96,23 +96,9 @@ Next earnings date + consensus EPS
 
 ---
 
-## STEP 4 — MINNIE IDEA CARD
+## STEP 4 — REESE RESEARCH DOC
 
-อ่านจาก stock-research note ใน context (ห้าม re-read จาก disk — observation masking):
-
-- **Central question:** คำถามหลัก 1 ข้อ
-- **Sub-questions (5-8):** กรอบที่ต้องรู้เพื่อตอบ central question
-- **Target audience:** ใคร รู้อะไรอยู่แล้ว
-- **Hook angles (3):** claim / number / contrast — ระบุ strongest
-- **Blind spots:** สิ่งที่คนมักพลาดในหัวข้อนี้
-
-Save: `vault/30_content/ideas/<slug>-<date>.md`
-
----
-
-## STEP 5 — REESE RESEARCH DOC
-
-สังเคราะห์จาก stock-research + Minnie ใน context:
+สังเคราะห์จาก stock-research ใน context:
 
 - **Narrative:** ทำไม story นี้สำคัญตอนนี้ (2-3 ย่อหน้า)
 - **Bull case (3):** specific claims ไม่ใช่ vague positive
@@ -128,7 +114,7 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
 
-## STEP 6 — CHRIS + VERA
+## STEP 5 — CHRIS + VERA
 
 > **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ
 
@@ -144,7 +130,7 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
 
-## STEP 7 — INDIE ATOMS
+## STEP 6 — INDIE ATOMS
 
 > **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ
 
@@ -178,7 +164,7 @@ Append: `vault/Knowledge/INDEX_insights.md` (+1 line ต่อ insight)
 
 ---
 
-## STEP 8 — THESIS KILL CONDITION CROSS-CHECK
+## STEP 7 — THESIS KILL CONDITION CROSS-CHECK
 
 อ่าน THESIS_TRACKER.md ใน context → เทียบ kill conditions ใน Reese doc กับ kill condition ระดับ thesis:
 - ถ้า consistent → note ✅ ใน Decision log ของ stock-research note
@@ -186,7 +172,7 @@ Append: `vault/Knowledge/INDEX_insights.md` (+1 line ต่อ insight)
 
 ---
 
-## STEP 9 — WATCHLIST + REPORT
+## STEP 8 — WATCHLIST + REPORT
 
 **Watchlist:**
 เพิ่ม ticker ลงใน `config/watchlist.txt` ถ้ายังไม่มี (append ท้ายไฟล์) → `/screen` จะจับอัตโนมัติครั้งถัดไป
@@ -195,7 +181,6 @@ Append: `vault/Knowledge/INDEX_insights.md` (+1 line ต่อ insight)
 ```
 บันทึกแล้ว:
   vault/20_investment/<TICKER>-YYYY-MM-DD.md
-  vault/30_content/ideas/<slug>-<date>.md
   vault/10_research/<slug>-reese-<date>.md
   vault/Knowledge/insight-atoms/<slug>-<date>.md
 
@@ -233,11 +218,10 @@ Researcher ใช้: N searches
 
 ## Commit
 
-Chris+Vera (Step 6) คือ review gate ของ pipeline นี้ — ไม่ต้องรัน `/review` ซ้ำ
+Chris+Vera (Step 5) คือ review gate ของ pipeline นี้ — ไม่ต้องรัน `/review` ซ้ำ
 Stage ทุกไฟล์ที่สร้างแล้ว commit:
 ```bash
 git add vault/20_investment/<TICKER>-<DATE>.md \
-        vault/30_content/ideas/<slug>-<DATE>.md \
         vault/10_research/<slug>-reese-<DATE>.md \
         vault/Knowledge/insight-atoms/<slug>-<DATE>.md \
         vault/Knowledge/INDEX_insights.md \

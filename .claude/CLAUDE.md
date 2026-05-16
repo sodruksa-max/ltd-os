@@ -1,13 +1,13 @@
 # LTD-OS — Project Memory for Claude Code
 
 ## What this is
-Personal knowledge base + workflow OS for: research, note-taking, investment analysis, content creation, and small coding projects. Owner does not write code — Claude Code is the executor, with specialized agents + Obsidian vault as memory.
+Personal knowledge base + workflow OS for: research, note-taking, and investment analysis. Owner does not write code — Claude Code is the executor, with specialized agents + Obsidian vault as memory.
 
 ## Core principles
 1. **Markdown-first** — everything in `vault/` is plain markdown. No proprietary formats.
 2. **Git is source of truth** — commit early via `safe-commit.sh`, only when reviewer passes.
 3. **Secrets never leave `.secrets/`** — never echo, never commit, never paste in chat.
-4. **Multi-agent workflow** — planner routes, specialist does, reviewer gates. Content pipeline: Minnie→Reese→Chris+Vera→Indie→Rae. Portfolio: Nick (blinded).
+4. **Multi-agent workflow** — planner routes, specialist does, reviewer gates. Research pipeline: Reese→Chris+Vera→Indie. Portfolio: Nick (blinded).
 5. **Owner doesn't code** — explain in plain Thai/English. No jargon dumps.
 6. **Memory is the vault** — Claude loads context task-scoped from `vault/_memory/` (see Token economics §8). ไม่ได้โหลดทั้งหมดทุก session.
 
@@ -33,7 +33,7 @@ vault/
   Knowledge/      — KB: THESIS_TRACKER, topic-map, contradiction-registry,
                     INDEX_insights, insight-atoms/, nick-soul.md
   20_investment/  — stock/macro research + _journal/ for trades + nick/ for Nick portfolio
-  30_content/     — drafts for posts/scripts/videos; ideas/ for Minnie idea cards
+  30_content/     — archived content (unused)
   40_projects/    — high-level project notes (code lives in code/)
   _assets/        — images, PDFs, audio (embedded in notes)
   90_archive/     — condensed originals, weekly reviews, challenges, failures, security log
@@ -68,25 +68,21 @@ Core agents:
 - `analyst` — cost/performance insights (MANUAL via `/analyst`)
 - `devils_advocate` — steelman opposition (MANUAL via `/challenge`)
 
-Content pipeline personas (used inside /research-idea and /stock-content):
-- `Minnie` — shapes idea into card: central question, sub-questions, hook angles, blind spots
-- `Reese` — synthesizes research doc: narrative, bull/bear, kill conditions, data gaps
-- `Chris` — critic: reviews research + script for logic, argument quality, kill condition measurability
+Research pipeline personas (used inside /stock-content):
+- `Reese` — synthesizes research doc: narrative, bull/bear, kill conditions, upside/downside scenario
+- `Chris` — critic: reviews research for logic, argument quality, kill condition measurability
 - `Vera` — fact audit: flags ⚠️ unverified claims, marks ❓, logs contradictions to KB
 - `Indie` — extracts atomic insights from research doc → saves to vault/Knowledge/insight-atoms/
-- `Rae` — writer: produces YouTube script / Substack / X thread / slides (follows PREFERENCES voice)
 
 Portfolio persona:
 - `Nick` — blinded thesis portfolio manager: reads KB only, no real trades, no paper bot positions
 
 ## Default workflow (pipeline)
 
-**Content creation:**
+**Research pipeline:**
 ```
-user prompt → specialist (researcher/writer/executor)
-           → Write vault file
-           → hook fires: vault-review-trigger.sh
-           → VAULT_REVIEW_REQUIRED → /review runs checklist → fixes gaps
+user prompt → /stock-content <TICKER>
+           → Researcher → Stock note → Reese doc → Chris+Vera → Indie atoms → KB sync
            → safe-commit
 ```
 
@@ -113,10 +109,9 @@ user prompt → coder → /review (code mode: security + QA) → safe-commit
 - `/weekly-market` → weekly market review — sector rotation, key events, earnings
 - `/weekly-calibration [N]` → self-improving layer: อ่าน N วันของ review → หา pattern → เสนอ update กฎ (user approve ก่อนทุกครั้ง)
 
-### Research & content
+### Research
 - `/stock-research <TICKER>` → deep-dive: researcher + stock template + KB lookup + kill conditions
-- `/stock-content <TICKER>` → full pipeline: stock research + Minnie + Reese + Chris+Vera + Indie atoms + KB sync (ไม่มี content draft)
-- `/research-idea <topic> [--angle] [--output: yt|substack|x|slides]` → 7-step pipeline: Minnie→Reese→Chris+Vera→Indie→Rae → KB grows
+- `/stock-content <TICKER>` → full pipeline: stock research + Reese doc + Chris+Vera + Indie atoms + KB sync
 - `/paper-survey` → หา academic papers — search arXiv/SSRN/Scholar, summarize, จัดกลุ่ม, แนะนำลำดับ implement
 - `/nlm` → natural language interface to NotebookLM — list notebooks, query, create audio/slides/mindmap
 - `/import-notebooklm` → paste NotebookLM summary, save to vault with proper structure
@@ -186,7 +181,7 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 (From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)
 - **Trading tasks** (pre-market, post-market, market-log, screen, eod, paper-trade, weekly-calibration): โหลด PREFERENCES.md + OUTCOMES.md (Trading Calibration Log section only) + TRADING_RULES.md
 - **Code/project tasks** (coder, executor, planner สำหรับ code): โหลดแค่ PROJECTS.md + DECISIONS.md
-- **Content tasks** (/research-idea, /stock-content, /stock-research, writer): โหลด PREFERENCES.md + vault/Knowledge/THESIS_TRACKER.md
+- **Research tasks** (/stock-content, /stock-research): โหลด PREFERENCES.md + vault/Knowledge/THESIS_TRACKER.md
 - **Nick tasks** (/nick-init, /nick-weekly, /nick-quarterly): โหลด vault/Knowledge/ เท่านั้น (THESIS_TRACKER + INDEX_insights) — ห้ามโหลด PREFERENCES หรือ OUTCOMES
 - **Full load** (PROJECTS + DECISIONS + PREFERENCES): เฉพาะ session start ครั้งแรก, /council, หรือ task ที่ span หลาย domain
 
