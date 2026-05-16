@@ -134,11 +134,39 @@ Output format: `Chris score: KM=X / CV=X / BB=X (total X/15)`
 - Score ≥ 12/15 → ✅ Pass → ไปต่อ
 - Score < 12/15 → ⚠️ Revise → ระบุ dimension ที่ต่ำสุด + 2 จุดที่ต้องแก้ → แก้แล้ว pass (max 1 round)
 
-**Vera (fact audit):**
+**Vera (fact audit) — Autism Memory Edition:**
 - Flag ⚠️ ทุก claim ที่ไม่มี source ชัดเจน
 - เปลี่ยนเป็น ❓ verify ทุกจุดที่ไม่ confirmed
 - **FAITH numerical rule:** ตัวเลขทุกตัว (revenue, growth rate, EPS, market size, margin) ต้อง trace กลับ source ได้ก่อน mark ✓ — ถ้า verify ไม่ได้ → flag ⚠️ UNVERIFIED NUMERIC (ไม่ใช่แค่ ❓)
 - ถ้า 2 sources ขัดแย้งกัน → **append ใน `vault/Knowledge/contradiction-registry.md` ทันที**
+
+**Vera Autism Layer (รันหลัง flag เสร็จ — cross-document memory):**
+
+1. **Historical claim check:** อ่าน INDEX_insights.md → หา atoms ที่เกี่ยวกับ TICKER นี้หรือ thesis เดียวกัน
+   - ถ้ามี atom เก่า (> 60 วัน) ที่พูดเรื่องเดียวกับ claim ในเอกสารนี้ → เปรียบเทียบ
+   - ถ้าตรงกัน → `[CONFIRMED by prior atom <date>]`
+   - ถ้าขัดแย้ง → `⚠️ STALE CONFLICT: current doc says X, atom from <date> says Y — append to registry`
+
+2. **Echo detection:** ต่อแต่ละ claim ที่ถูก cite จากหลาย sources:
+   - Trace กลับ: sources ทั้งหมดนั้น cite จาก source เดิมไหม?
+   - ถ้าใช่ → flag: `⚠️ ECHO: 3 sources ล้วน cite <original source> — ไม่ใช่ independent replication`
+   - ถ้าเป็น independent → flag: `✓ INDEPENDENTLY REPLICATED`
+
+3. **Systematic gap detection:** ดู atoms ทั้งหมดของ TICKER/thesis นี้ใน vault
+   - ถ้า dimension เดียวกัน (เช่น valuation, moat, management) มี ❓ ≥ 3 ครั้งใน atoms ต่างกัน → flag: `⚠️ SYSTEMATIC GAP: <dimension> — ไม่มีข้อมูลมาตลอด X เดือน`
+
+4. **Stale claim detection:** ถ้า claim ใดใน Reese doc ดูเหมือนอิงข้อมูลที่อาจ outdated:
+   - เช็ค date ของ source: ถ้า > 6 เดือน สำหรับ financial data หรือ > 12 เดือน สำหรับ structural data → flag: `⚠️ POSSIBLY STALE: claim based on data from <date>`
+
+Vera สรุป autism check ท้าย section:
+```
+Vera Autism Summary:
+- Confirmed by prior atoms: N claims
+- Echo detected: N claims (single-source masquerading as consensus)
+- Systematic gaps: [list dimensions]
+- Stale claims: N claims (data > 6 months)
+- New contradictions logged: N entries
+```
 
 ---
 

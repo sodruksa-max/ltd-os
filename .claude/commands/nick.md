@@ -136,6 +136,41 @@ cat vault/Knowledge/nick-soul.md
    - contradiction-registry.md — มี unresolved contradiction ที่กระทบ holdings ไหม?
    - nick-signals.md — RSI/MA20/RS tier ปัจจุบันต่อแต่ละ holding
 
+5.5 **Autism Pattern Check — cross-time memory (รันก่อน recommend ทุกครั้ง)**
+
+เป้าหมาย: จับ pattern และ contradiction ที่ข้ามเวลา ที่ human มักมองข้ามเพราะจำ session ก่อนไม่ได้
+
+**Kill condition drift detection:**
+- อ่าน weekly rec ล่าสุด: `vault/20_investment/nick/weekly/` (ไฟล์ล่าสุด)
+- ต่อแต่ละ holding: เปรียบเทียบ kill conditions ที่ระบุ session นี้ กับ kill conditions จาก session ก่อน
+- ถ้าข้อความ/threshold เปลี่ยนโดยไม่มีเหตุผล → flag: `[DRIFT] <TICKER> kill condition เปลี่ยนจาก "<old>" → "<new>" — ตั้งใจหรือ drift?`
+
+**Kill condition verification age:**
+- ต่อแต่ละ kill condition: เมื่อไหร่ที่มันถูก verify ครั้งล่าสุด (ไม่ใช่แค่ stated แต่ verified จริง)?
+- ถ้า kill condition ไม่ได้ถูก verify > 3 สัปดาห์ → flag: `[UNVERIFIED 3w] <condition> — ต้อง verify ก่อน finalize verdict`
+
+**Cross-thesis claim consistency:**
+- อ่าน contradiction-registry.md
+- ต่อแต่ละ holding: มี claim ในการ recommend session นี้ที่ขัดแย้งกับ contradiction-registry ไหม?
+- ถ้ามี → flag: `[CONTRADICTION] claim นี้ขัดแย้งกับ entry <date> ใน registry — ต้อง resolve ก่อน`
+
+**Intra-session consistency:**
+- ตรวจว่าใน session นี้เอง Nick พูดอะไรเกี่ยวกับ thesis ของ holding A ที่ขัดแย้งกับสิ่งที่พูดเกี่ยวกับ holding B ไหม (เช่น "hyperscaler capex กำลังลด" สำหรับ A แต่ "hyperscaler demand แข็ง" สำหรับ B)
+- ถ้าขัดแย้ง → flag: `[INTRA-SESSION CONFLICT] <claim A> vs <claim B> — ทั้งสองอยู่ใน session นี้`
+
+**Pattern across holdings:**
+- ถ้า 3+ holdings มี verdict "Evolving" หรือ "Invalidated" ในสัปดาห์เดียวกัน → flag: `[MACRO PATTERN] — cluster trigger, พิจารณารัน /nick-quarterly`
+- ถ้า 2+ holdings อยู่ใน sector เดียวกันและมี direction ตรงข้ามกัน (เช่น NVDA buy + AMD sell) → flag เหตุผลให้ชัด
+
+รายงาน autism check เป็น section แยกก่อน recommendation:
+```
+Autism Pattern Check:
+- [DRIFT] TICKER: kill condition drift detected — [old] → [new]
+- [UNVERIFIED Xw] TICKER: <condition> not verified since <date>
+- [CONTRADICTION] TICKER: conflicts with registry entry <date>
+- [CLEAN] No patterns detected this session
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
