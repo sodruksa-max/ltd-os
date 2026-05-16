@@ -190,15 +190,22 @@ for dir in \
   "vault/00_inbox" \
   "vault/daily" \
   "vault/10_research" \
+  "vault/10_research/papers" \
   "vault/Knowledge" \
+  "vault/Knowledge/insight-atoms" \
   "vault/20_investment/_journal" \
   "vault/20_investment/_journal/real-trades" \
   "vault/20_investment/nick/weekly" \
   "vault/20_investment/nick/alerts" \
+  "vault/20_investment/nick/performance" \
+  "vault/20_investment/nick/initial" \
+  "vault/20_investment/nick/quarterly" \
   "vault/30_content" \
   "vault/40_projects" \
   "vault/50_formulas/fertilizer" \
+  "vault/50_formulas/fertilizer/_research" \
   "vault/50_formulas/recipes" \
+  "vault/50_formulas/recipes/_research" \
   "vault/_memory" \
   "vault/_templates" \
   "vault/90_archive"
@@ -244,10 +251,23 @@ for kb in \
   fi
 done
 
+# Nick core files
+echo ""
+echo "-- Nick core files"
+for f in \
+  "vault/20_investment/nick/performance/nav_log.md" \
+  "vault/20_investment/nick/nick_state.json"; do
+  if [[ -f "$ROOT/$f" ]]; then
+    p "$f"
+  else
+    w "$f missing — nick system may be uninitialized"
+  fi
+done
+
 # ── Memory files ──────────────────────────────────────────────────────────────
 echo ""
 echo "-- Memory files"
-for mem in PROJECTS DECISIONS PREFERENCES OUTCOMES WORKFLOWS COUNCIL_LOG TRADING_RULES; do
+for mem in PROJECTS DECISIONS PREFERENCES OUTCOMES WORKFLOWS COUNCIL_LOG TRADING_RULES ANALYST_LOG COST_LOG HYPERTHYMESIA_LOG USAGE_LOG healthcheck-log; do
   fpath="$ROOT/vault/_memory/${mem}.md"
   if [[ -f "$fpath" ]]; then
     size=$(wc -c < "$fpath")
