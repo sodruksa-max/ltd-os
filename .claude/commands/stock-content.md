@@ -54,21 +54,30 @@ ls vault/20_investment/ | grep -i <TICKER>
 | Peer valuation | `<TICKER> valuation P/E EV/EBITDA peers <SECTOR>` |
 | Reddit / Seeking Alpha | `<TICKER> site:seekingalpha.com OR site:reddit.com analysis` |
 
-**ข้อมูลที่ต้องดึงมา (ใส่ ❓ ถ้าหาไม่ได้):**
+**Output format — คืนเป็น 5 sections นี้เท่านั้น (ห้าม list vault files — vault context โหลดแล้ว ไม่ใช่ findings):**
 
-- Business model, revenue segments, key customers, geography
-- Revenue TTM, YoY growth, gross margin, FCF, net debt
-- P/E, EV/EBITDA — เทียบกับ sector median + historical range 3 ปี
-- **Peer snapshot:** 1-2 peer หลักพร้อม forward P/E / EV/EBITDA เพื่อเปรียบเทียบ
-- Short interest % of float + vs. average
-- Insider ownership % + recent buys/sells (6 เดือน)
-- Dilution history (3 ปี)
-- CEO name, tenure, track record, red flags
-- Next earnings date + consensus EPS estimate
-- Competitive moat
-- Bull case (3 ข้อ specific)
-- Bear case steelman (3 ข้อ — ไม่ใช่ strawman)
-- Key catalysts 6-12 เดือน
+**[A] Business & Financials**
+Revenue TTM, YoY growth, gross margin, FCF, net debt, revenue segments, key customers, geography
+
+**[B] Valuation vs Peers**
+P/S, P/E, EV/EBITDA (trailing + forward) — vs sector median + historical range 3 ปี
+Peer snapshot: 1-2 peers พร้อม forward multiples เปรียบเทียบ
+
+**[C] Management & Ownership**
+CEO name, tenure, track record, red flags
+Insider ownership %, sell/buy ratio 6 เดือน, dilution history 3 ปี
+Short interest % of float
+
+**[D] Bull / Bear / Catalysts**
+Bull case (3 ข้อ specific — ไม่ใช่ vague positive)
+Bear case steelman (3 ข้อ — ไม่ใช่ strawman)
+Key catalysts 6-12 เดือน พร้อมวันที่
+Next earnings date + consensus EPS
+
+**[E] Data conflicts**
+ถ้า 2 sources ให้ค่าต่างกัน → list ที่นี่ ไม่ฝังใน sections อื่น
+
+ใส่ ❓ ทุกที่ที่หาไม่ได้ — ห้าม fabricate
 
 ---
 
