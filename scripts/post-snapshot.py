@@ -189,60 +189,70 @@ def fetch_alpaca_bars(target_date: date):
 # ---------------------------------------------------------------------------
 
 def fetch_yf_ohlc(ticker: str, target_date: date):
-    """Returns (close, high, low, pct) for target_date via Yahoo Finance v8."""
-    import requests
-    try:
-        url = (
-            f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
-            f"?interval=1d&range=15d"
-        )
-        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
-        resp.raise_for_status()
-        result = resp.json()["chart"]["result"][0]
-        timestamps = result["timestamp"]
-        quotes     = result["indicators"]["quote"][0]
-        closes     = quotes.get("close", [])
-        highs      = quotes.get("high",  [])
-        lows       = quotes.get("low",   [])
+    """Returns (close, high, low, pct) for target_date via Yahoo Finance v8.
+    Retries up to 3 times with exponential backoff on rate-limit (429) or errors.
+    """
+    import requests, time
+    url = (
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+        f"?interval=1d&range=15d"
+    )
 
-        # Pair timestamps with data
-        pairs = []
-        for i, ts in enumerate(timestamps):
-            ts_date = datetime.utcfromtimestamp(ts).date()
-            c = closes[i] if i < len(closes) else None
-            h = highs[i]  if i < len(highs)  else None
-            l = lows[i]   if i < len(lows)   else None
-            pairs.append((ts_date, c, h, l))
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+            if resp.status_code == 429:
+                time.sleep(2 ** attempt)
+                continue
+            resp.raise_for_status()
+            result = resp.json()["chart"]["result"][0]
+            timestamps = result["timestamp"]
+            quotes     = result["indicators"]["quote"][0]
+            closes     = quotes.get("close", [])
+            highs      = quotes.get("high",  [])
+            lows       = quotes.get("low",   [])
 
-        # Find target date
-        idx = next(
-            (i for i, (d, c, _, _) in enumerate(pairs) if d == target_date and c is not None),
-            None,
-        )
-        # Fallback: last valid bar
-        if idx is None:
-            for i in range(len(pairs) - 1, -1, -1):
+            # Pair timestamps with data
+            pairs = []
+            for i, ts in enumerate(timestamps):
+                ts_date = datetime.utcfromtimestamp(ts).date()
+                c = closes[i] if i < len(closes) else None
+                h = highs[i]  if i < len(highs)  else None
+                l = lows[i]   if i < len(lows)   else None
+                pairs.append((ts_date, c, h, l))
+
+            # Find target date
+            idx = next(
+                (i for i, (d, c, _, _) in enumerate(pairs) if d == target_date and c is not None),
+                None,
+            )
+            # Fallback: last valid bar
+            if idx is None:
+                for i in range(len(pairs) - 1, -1, -1):
+                    if pairs[i][1] is not None:
+                        idx = i
+                        break
+
+            if idx is None:
+                return None, None, None, None
+
+            _, close, high, low = pairs[idx]
+
+            # Prev close
+            prev_close = None
+            for i in range(idx - 1, -1, -1):
                 if pairs[i][1] is not None:
-                    idx = i
+                    prev_close = pairs[i][1]
                     break
 
-        if idx is None:
-            return None, None, None, None
+            pct = (close - prev_close) / prev_close * 100 if close and prev_close else None
+            return close, high, low, pct
 
-        _, close, high, low = pairs[idx]
+        except Exception:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
 
-        # Prev close
-        prev_close = None
-        for i in range(idx - 1, -1, -1):
-            if pairs[i][1] is not None:
-                prev_close = pairs[i][1]
-                break
-
-        pct = (close - prev_close) / prev_close * 100 if close and prev_close else None
-        return close, high, low, pct
-
-    except Exception:
-        return None, None, None, None
+    return None, None, None, None
 
 
 # ---------------------------------------------------------------------------

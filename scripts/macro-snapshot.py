@@ -119,15 +119,21 @@ def signal_alpaca(ticker, pct):
 
 def fetch_vix_history(days: int = 252) -> list[float]:
     """Fetch VIX daily closes for the past `days` calendar days."""
-    import requests
-    try:
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1y"
-        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
-        resp.raise_for_status()
-        closes = resp.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-        return [c for c in closes if c is not None]
-    except Exception:
-        return []
+    import requests, time
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1y"
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+            if resp.status_code == 429:
+                time.sleep(2 ** attempt)
+                continue
+            resp.raise_for_status()
+            closes = resp.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+            return [c for c in closes if c is not None]
+        except Exception:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+    return []
 
 
 def calc_vix_rank(current: float, history: list[float]) -> float | None:
@@ -147,21 +153,27 @@ def calc_position_multiplier(vix_rank: float | None) -> float:
 
 def fetch_direct(ticker: str):
     """Fetch (current_price, pct_change) via Yahoo Finance v8 chart API."""
-    import requests
-    try:
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
-        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
-        resp.raise_for_status()
-        result = resp.json()["chart"]["result"][0]
-        closes = result["indicators"]["quote"][0]["close"]
-        valid = [c for c in closes if c is not None]
-        if len(valid) < 2:
-            return None, None
-        current, prev = valid[-1], valid[-2]
-        pct = (current - prev) / prev * 100 if prev else None
-        return round(current, 4), pct
-    except Exception:
-        return None, None
+    import requests, time
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+            if resp.status_code == 429:
+                time.sleep(2 ** attempt)
+                continue
+            resp.raise_for_status()
+            result = resp.json()["chart"]["result"][0]
+            closes = result["indicators"]["quote"][0]["close"]
+            valid = [c for c in closes if c is not None]
+            if len(valid) < 2:
+                return None, None
+            current, prev = valid[-1], valid[-2]
+            pct = (current - prev) / prev * 100 if prev else None
+            return round(current, 4), pct
+        except Exception:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+    return None, None
 
 
 def fetch_direct_batch(items):

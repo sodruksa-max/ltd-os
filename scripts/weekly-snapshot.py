@@ -216,59 +216,68 @@ def fetch_yf_weekly(ticker: str, monday: date, friday: date):
     """
     Returns (fri_close, weekly_high, weekly_low, weekly_pct) for the week.
     weekly_pct = (this_friday - prev_friday) / prev_friday
+    Retries up to 3 times with exponential backoff on rate-limit (429) or errors.
     """
-    import requests
-    try:
-        prev_friday = monday - timedelta(days=3)
-        p1 = int(datetime.combine(prev_friday - timedelta(days=5), datetime.min.time()).timestamp())
-        p2 = int(datetime.combine(friday + timedelta(days=2),      datetime.min.time()).timestamp())
-        url = (
-            f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
-            f"?period1={p1}&period2={p2}&interval=1d"
-        )
-        resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
-        resp.raise_for_status()
-        res    = resp.json()["chart"]["result"][0]
-        tss    = res["timestamp"]
-        quotes = res["indicators"]["quote"][0]
-        closes = quotes.get("close", [])
-        highs  = quotes.get("high",  [])
-        lows   = quotes.get("low",   [])
+    import requests, time
+    prev_friday = monday - timedelta(days=3)
+    p1 = int(datetime.combine(prev_friday - timedelta(days=5), datetime.min.time()).timestamp())
+    p2 = int(datetime.combine(friday + timedelta(days=2),      datetime.min.time()).timestamp())
+    url = (
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+        f"?period1={p1}&period2={p2}&interval=1d"
+    )
 
-        pairs = [
-            (
-                datetime.utcfromtimestamp(tss[i]).date(),
-                closes[i] if i < len(closes) else None,
-                highs[i]  if i < len(highs)  else None,
-                lows[i]   if i < len(lows)   else None,
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, headers=_YF_HEADERS, timeout=10)
+            if resp.status_code == 429:
+                time.sleep(2 ** attempt)
+                continue
+            resp.raise_for_status()
+            res    = resp.json()["chart"]["result"][0]
+            tss    = res["timestamp"]
+            quotes = res["indicators"]["quote"][0]
+            closes = quotes.get("close", [])
+            highs  = quotes.get("high",  [])
+            lows   = quotes.get("low",   [])
+
+            pairs = [
+                (
+                    datetime.utcfromtimestamp(tss[i]).date(),
+                    closes[i] if i < len(closes) else None,
+                    highs[i]  if i < len(highs)  else None,
+                    lows[i]   if i < len(lows)   else None,
+                )
+                for i in range(len(tss))
+            ]
+
+            # Prev Friday close
+            prev_fri_close = None
+            for d, c, _, _ in reversed(pairs):
+                if d <= prev_friday and c is not None:
+                    prev_fri_close = c
+                    break
+
+            # This week bars
+            week_p = [(d, c, h, l) for d, c, h, l in pairs if monday <= d <= friday and c is not None]
+            if not week_p:
+                return None, None, None, None
+
+            fri_close   = week_p[-1][1]
+            weekly_high = max(h for _, _, h, _ in week_p if h is not None) if any(h for _, _, h, _ in week_p) else None
+            weekly_low  = min(l for _, _, _, l in week_p if l is not None) if any(l for _, _, _, l in week_p) else None
+            weekly_pct  = (
+                (fri_close - prev_fri_close) / prev_fri_close * 100
+                if fri_close and prev_fri_close else None
             )
-            for i in range(len(tss))
-        ]
 
-        # Prev Friday close
-        prev_fri_close = None
-        for d, c, _, _ in reversed(pairs):
-            if d <= prev_friday and c is not None:
-                prev_fri_close = c
-                break
+            return fri_close, weekly_high, weekly_low, weekly_pct
 
-        # This week bars
-        week_p = [(d, c, h, l) for d, c, h, l in pairs if monday <= d <= friday and c is not None]
-        if not week_p:
-            return None, None, None, None
+        except Exception:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
 
-        fri_close   = week_p[-1][1]
-        weekly_high = max(h for _, _, h, _ in week_p if h is not None) if any(h for _, _, h, _ in week_p) else None
-        weekly_low  = min(l for _, _, _, l in week_p if l is not None) if any(l for _, _, _, l in week_p) else None
-        weekly_pct  = (
-            (fri_close - prev_fri_close) / prev_fri_close * 100
-            if fri_close and prev_fri_close else None
-        )
-
-        return fri_close, weekly_high, weekly_low, weekly_pct
-
-    except Exception:
-        return None, None, None, None
+    return None, None, None, None
 
 
 # ---------------------------------------------------------------------------
@@ -286,6 +295,11 @@ def _fmt(val, unit="$"):
 
 
 def print_alpaca_section(data: dict):
+    # Warn if SPY week is incomplete (IEX data gap or short week)
+    spy_days = data.get("SPY", {}).get("num_days")
+    if spy_days is not None and spy_days < 5:
+        print(f"> ⚠️ **INCOMPLETE WEEK**: Alpaca IEX returned {spy_days}/5 trading days for SPY — weekly % may be misleading (holiday week or IEX data gap)\n")
+
     print("### Weekly ETF Performance (Alpaca IEX)")
     print("| ETF | Label | Fri Close | Weekly % | Weekly High | Weekly Low | Days |")
     print("|---|---|---|---|---|---|---|")
@@ -295,7 +309,8 @@ def print_alpaca_section(data: dict):
         pct   = pct_str(d.get("weekly_pct"))
         high  = f"${d['weekly_high']:.2f}" if d.get("weekly_high") else "—"
         low   = f"${d['weekly_low']:.2f}"  if d.get("weekly_low")  else "—"
-        days  = str(d.get("num_days", "—"))
+        n     = d.get("num_days")
+        days  = f"⚠️{n}" if (n is not None and n < 5) else str(n) if n is not None else "—"
         print(f"| **{ticker}** | {label} | {fri} | {pct} | {high} | {low} | {days} |")
     print()
 
