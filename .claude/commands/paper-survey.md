@@ -214,3 +214,10 @@ Gaps ที่ยังขาด:
 - ❌ Implementation Roadmap ที่ไม่ผูกกับ project จริง
 - ❌ ข้าม Gaps section — ต้องระบุเสมอแม้จะบอกว่า "ครอบคลุมแล้ว"
 - ❌ รอ confirm scope จาก user — ประเมินแล้วแจ้ง แล้ว search เลย
+
+## Commit
+
+หลัง /review ผ่าน → รัน:
+```bash
+bash scripts/safe-commit.sh "notes: paper-survey <topic>"
+```

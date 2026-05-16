@@ -126,7 +126,7 @@ Write to `## Project conventions` + `## Hard no's`
 2. Wait for user: "looks good" / specific edits / "redo section X"
 
 3. On approval:
-   - Commit: `git add vault/_memory/PREFERENCES.md && git commit -m "memory: initial onboarding (approved YYYY-MM-DD)"`
+   - Commit: `git add vault/_memory/PREFERENCES.md && bash scripts/safe-commit.sh "memory: initial onboarding (approved YYYY-MM-DD)"`
    - Log to `vault/_memory/DECISIONS.md`:
      ```
      - YYYY-MM-DD — Onboarding complete, PREFERENCES.md filled

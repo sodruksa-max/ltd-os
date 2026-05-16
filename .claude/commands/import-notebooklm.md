@@ -49,6 +49,13 @@ User just pasted a summary from NotebookLM. Your job: organize it, link it, save
 - **DO NOT fill "My take" without user input** — that section is personal synthesis
 - Keep your output short — you're a file clerk here, not an analyst
 
+## Commit
+
+```bash
+git add vault/10_research/<path>/<filename>.md
+bash scripts/safe-commit.sh "notes: import-notebooklm <slug>"
+```
+
 ## After importing
 
 Remind user (one line):

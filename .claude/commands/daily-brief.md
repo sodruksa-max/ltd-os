@@ -93,7 +93,14 @@ Format (keep short, ≤ 400 words):
   - Use HTML comment markers: `<!-- BRIEF:START -->` ... `<!-- BRIEF:END -->` so user can delete it easily
 - Show brief in chat so user can read immediately
 
-### 4. Reporting
+### 4. Commit
+
+```bash
+git add vault/daily/YYYY-MM-DD.md
+bash scripts/safe-commit.sh "notes: daily brief YYYY-MM-DD"
+```
+
+### 5. Reporting
 
 End with:
 ```
