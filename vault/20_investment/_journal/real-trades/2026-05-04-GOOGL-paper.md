@@ -1,16 +1,16 @@
----
+﻿---
 ticker: GOOGL
 direction: long
-status: open
+status: expired
 type: paper
 date_open: 2026-05-04
-date_close: ~
+date_close: 2026-05-16
 entry_usd: 385.69
 shares: 12
 fees_usd: 0
 stop_usd: 327.84
 target_usd: 501.4
-exit_usd: ~
+exit_usd: "[not tracked — expired after 2+ weeks]"
 exit_fees_usd: ~
 result: ~
 setup_source: "bot-screener Momentum"

@@ -1,16 +1,16 @@
----
+﻿---
 ticker: SPY
 direction: long
-status: open
+status: expired
 type: paper
 date_open: 2026-05-03
-date_close: ~
+date_close: 2026-05-16
 entry_usd: 558.00
 shares: 5
 fees_usd: 0
 stop_usd: 530.00
 target_usd: 614.00
-exit_usd: ~
+exit_usd: "[not tracked — expired after 2+ weeks]"
 exit_fees_usd: ~
 result: ~
 setup_source: "smoke-test"

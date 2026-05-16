@@ -1,16 +1,16 @@
----
+﻿---
 ticker: AMZN
 direction: long
-status: open
+status: expired
 type: paper
 date_open: 2026-05-04
-date_close: ~
+date_close: 2026-05-16
 entry_usd: 268.26
 shares: 18
 fees_usd: 0
 stop_usd: 228.02
 target_usd: 348.74
-exit_usd: ~
+exit_usd: "[not tracked — expired after 2+ weeks]"
 exit_fees_usd: ~
 result: ~
 setup_source: "bot-screener Momentum"
