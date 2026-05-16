@@ -200,6 +200,37 @@ Portfolio spatial view:
 - Missing jigsaw: [thesis หรือ driver ที่ขาด]
 ```
 
+5.7 **Psychopathy Kill Condition Executor — ตัดสินใจโดยไม่มี attachment**
+
+เป้าหมาย: ป้องกัน hope holding และ sunk cost fallacy ที่ disguise ตัวเองเป็น "thesis ยังไม่ break"
+
+**The one test (รันทุก holding — ไม่ใช่แค่ Invalidated):**
+> "ถ้าวันนี้ไม่ได้ถือ position นี้ — จะซื้อใหม่ตอนนี้ไหม?"
+- คำตอบ **No** → **Sell. ไม่มีข้อยกเว้น ไม่มี "รอดูก่อน"**
+- คำตอบ **Yes** → ต้องระบุ evidence ชัดเจน: "kill condition ยังไม่ trigger เพราะ [specific data]"
+  — ห้ามตอบ Yes ด้วย "น่าจะฟื้น" หรือ "ขาดทุนอยู่ไม่อยากขาย"
+
+**Rationalization detector — ตรวจ reasoning ทุก holding:**
+หา language ต่อไปนี้ใน verdict → ถ้าพบ = rationalization ไม่ใช่ analysis:
+- "น่าจะ..." / "อาจจะ..." โดยไม่มี evidence → flag `[HOPE]`
+- "รอดูก่อน" ที่ไม่มี specific trigger date/event → flag `[DELAY]`
+- "ยังถือได้" โดยไม่ cite kill condition ที่ verified intact → flag `[VAGUE HOLD]`
+- อ้างถึง entry price เป็นส่วนหนึ่งของ hold/sell reasoning → flag `[SUNK COST]`
+
+**Sunk cost purge:**
+ห้ามใช้ entry price ในการตัดสินใจ hold/sell ไม่ว่ากรณีใด
+- ตัดสินใจบน thesis integrity + kill condition status เท่านั้น
+- Entry price = irrelevant noise — ตัดออกจาก analysis ก่อน finalize
+
+รายงานก่อน recommendation:
+```
+Psychopathy Kill Check:
+- [CLEAR] TICKER — kill conditions intact, would rebuy today → hold confirmed
+- [SELL NOW] TICKER — kill condition triggered, would not rebuy → recommend sell
+- [HOPE] TICKER — reasoning contains hope language, re-evaluate with data only
+- [SUNK COST] TICKER — entry price detected in reasoning, purged + re-evaluated
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

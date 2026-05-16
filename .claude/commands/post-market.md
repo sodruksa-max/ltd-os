@@ -371,6 +371,30 @@ grep -A 3 "Kill condition" vault/Knowledge/THESIS_TRACKER.md
 
 ---
 
+### 8.5 Psychopathy Sunk Cost Audit
+
+ตรวจว่า analysis ใน review นี้ปนเปื้อน sunk cost หรือ emotional reasoning ไหม — รันก่อน print verdict
+
+**ตรวจ Setup Outcomes (full mode เท่านั้น):**
+- Setup ไหนที่ P/L ติดลบแต่ reasoning บอก "should have held longer" โดยอ้างถึง entry price → flag `[SUNK COST]`
+- Setup ที่ trigger เกิดจริงแต่ไม่ execute เพราะ "กลัวขาดทุนเพิ่ม" → flag `[LOSS AVERSION]`
+- Setup ที่ hold past invalidation โดยไม่มี thesis update → flag `[HOPE HOLD]`
+
+**ตรวจ Lessons for Next Brief:**
+- Lesson ที่มี pattern "ไม่ควรขาย X เพราะราคาลงมาแล้ว" → flag `[SUNK COST LESSON]`
+- Lesson ที่ derived จาก emotion ไม่ใช่ data (ไม่มี evidence ประกอบ) → flag `[EMOTION-DERIVED]`
+
+**ตรวจ calibration reasoning:**
+- ถ้า high confidence + ผิด: ตรวจว่า predict เพราะ evidence หรือเพราะอยากให้เป็นแบบนั้น → flag `[WISHFUL CALIBRATION]`
+
+ถ้าพบ flag → append เป็น lesson พิเศษต่อท้าย "Lessons for Next Brief" ในไฟล์ review:
+```
+⚠️ Psychopathy Sunk Cost Audit:
+- [FLAG_TYPE] <setup/section> — <description>
+```
+
+ถ้าไม่พบ flag ใดเลย → ข้ามเงียบๆ ไม่ต้องแสดง
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

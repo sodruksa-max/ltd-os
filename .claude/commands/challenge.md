@@ -15,6 +15,31 @@ Invoke `devils_advocate` agent against the file specified by the user.
 
 1. **Confirm file exists** — if not, ask user for correct path
 2. **Read the target note fully** so you understand what's being challenged
+2.5 **Psychopathy Emotional Reasoning Audit** — strip emotional language, test if argument survives
+
+ก่อน invoke devils_advocate: scan target note หา language pattern ต่อไปนี้:
+
+| Pattern | Flag | ตัวอย่าง |
+|---|---|---|
+| Hope ที่ไม่มี evidence | `[HOPE]` | "น่าจะดีขึ้น", "I believe it will recover" |
+| Loss aversion drive decision | `[LOSS AVERSION]` | "Already down 30%, can't sell now" |
+| Sunk cost in thesis | `[SUNK COST]` | "I've spent months researching this" |
+| Social proof ไม่มี own analysis | `[SOCIAL PROOF]` | "Everyone is bullish on X" |
+| Narrative attachment (รัก story มากกว่า data) | `[NARRATIVE]` | Logic ignores contradicting numbers |
+
+**Emotional strip test:**
+ลบ emotional language ออกทั้งหมด — เหลือแต่ metrics, data, conditions ที่วัดได้
+แล้วถาม: argument ยังแข็งแกร่งไหม?
+- ถ้า **ยังแข็งแกร่ง** → emotion เป็นแค่ style ไม่กระทบ core
+- ถ้า **อ่อนลงมาก** → argument depends on emotional framing → flag ให้ devils_advocate focus ตรงนี้
+
+แจ้งผล audit ก่อน proceed:
+```
+Psychopathy audit: [N] patterns found
+- [FLAG] "<excerpt>" — impact: core / style only
+Strip test: argument [holds / weakens significantly after stripping]
+```
+
 3. **Warn on cost** if this is the user's first `/challenge` today:
    ```
    Heads up: /challenge uses devils_advocate which runs 5+ web searches + deep vault scan.
