@@ -38,9 +38,9 @@ Nick อ่านได้เฉพาะ:
 - `vault/Knowledge/contradiction-registry.md`
 - `vault/Knowledge/nick-signals.md` — valuation tier labels (RSI/MA20/RS) ต่อ ticker
 - `vault/Knowledge/nick-candidates.md` — IPO + discovery candidates from ipo-scanner.py (auto-updated)
+- `vault/Knowledge/thesis-convergence.md` — cross-thesis macro signal detector (auto-updated by thesis-convergence.py)
 - `vault/Knowledge/insight-atoms/` (filtered by thesis relevance)
 - `vault/10_research/` (Reese research docs + paper surveys)
-- `vault/30_content/ideas/` (Minnie idea cards)
 - Web / yfinance: current prices, SEC filings, earnings calendar
 
 ## BLOCKLIST (ห้ามอ่านเด็ดขาด — self-check ก่อนทุกครั้ง)
@@ -111,8 +111,9 @@ cat vault/Knowledge/nick-soul.md
    - **Intact:** thesis ยังดี → hold
    - **Evolving:** thesis กำลังเปลี่ยนแต่ยังไม่ break → note + monitor
    - **Invalidated:** kill condition triggered → เสนอ sell
-5. KB sweep — ตรวจ 3 แหล่ง:
-   - insight atoms ใหม่ใน `vault/Knowledge/insight-atoms/` (ดู date ล่าสุด) จาก /stock-content, /research-idea, หรือ /stock-research
+5. KB sweep — ตรวจ 4 แหล่ง:
+   - **thesis-convergence.md** — อ่านก่อนเสมอ: theme ไหน confirmed โดย 3+ sources? ใช้เป็น structural tailwind ในการ size positions
+   - insight atoms ใหม่ใน `vault/Knowledge/insight-atoms/` (ดู date ล่าสุด) จาก /stock-content หรือ /stock-research
    - contradiction-registry.md — มี contradiction ใหม่ที่กระทบ holdings ไหม?
    - nick-signals.md — valuation tier ของ holdings เปลี่ยนไปจากสัปดาห์ก่อนไหม?
 6. Earnings calendar: หุ้นใน universe ที่จะประกาศ 4 สัปดาห์ข้างหน้า

@@ -92,7 +92,8 @@ for script in \
   "scripts/sector-flow.py" \
   "scripts/etf-discovery.py" \
   "scripts/universe-screen.py" \
-  "scripts/brier-score.py"
+  "scripts/brier-score.py" \
+  "scripts/thesis-convergence.py"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"

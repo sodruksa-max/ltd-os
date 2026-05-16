@@ -177,6 +177,12 @@ Append: `vault/Knowledge/INDEX_insights.md` (+1 line ต่อ insight)
 **Watchlist:**
 เพิ่ม ticker ลงใน `config/watchlist.txt` ถ้ายังไม่มี (append ท้ายไฟล์) → `/screen` จะจับอัตโนมัติครั้งถัดไป
 
+**Thesis convergence refresh:**
+หลัง Indie atoms บันทึกแล้ว → regenerate convergence report เพื่อให้ Nick เห็น signal ล่าสุด:
+```bash
+code/python/.venv/Scripts/python scripts/thesis-convergence.py
+```
+
 **Report back:**
 ```
 บันทึกแล้ว:
@@ -226,6 +232,7 @@ git add vault/20_investment/<TICKER>-<DATE>.md \
         vault/Knowledge/insight-atoms/<slug>-<DATE>.md \
         vault/Knowledge/INDEX_insights.md \
         vault/Knowledge/contradiction-registry.md \
+        vault/Knowledge/thesis-convergence.md \
         config/watchlist.txt
 bash scripts/safe-commit.sh "vault: stock-content <TICKER>"
 ```
