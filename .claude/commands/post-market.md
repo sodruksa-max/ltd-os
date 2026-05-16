@@ -431,6 +431,32 @@ grep -A 3 "Kill condition" vault/Knowledge/THESIS_TRACKER.md
 
 ถ้าไม่พบ flag ใดเลย → ข้ามเงียบๆ ไม่ต้องแสดง
 
+### 8.75 GAD Forward Threat Register — ความเสี่ยงที่กำลังสะสม
+
+สแกนหาภัยคุกคามที่ยังไม่เกิด แต่กำลัง build up ใต้ผิวน้ำจากข้อมูลวันนี้
+
+**Enumerate 2-3 risks ที่:**
+- ยังไม่ materialize วันนี้
+- แต่ข้อมูลวันนี้ (หรือรวมกับ context ก่อนหน้า) แสดงสัญญาณสะสม
+- ต้องระบุ: ชื่อ risk / อะไรที่สะสม / signal แรกที่จะเห็นเมื่อ materialize
+
+append ใน review file ต่อท้าย "Lessons for Next Brief":
+```
+GAD Forward Threat Register:
+- [RISK] <ชื่อความเสี่ยง> — Accumulating: <สัญญาณที่เห็น> — First signal: <อะไรจะบอกว่าเกิดแล้ว>
+- [RISK] ...
+```
+
+**Escalation rule — ตรวจข้าม review files:**
+```bash
+grep -r "\[RISK\]" vault/20_investment/_journal/ --include="*-review.md" | grep "<risk keyword>"
+```
+ถ้า risk เดิมปรากฏ ≥ 3 ครั้งข้าม review files → flag:
+> `⚠️ [GAD: ESCALATE] <risk> — ปรากฏ 3+ ครั้ง → เสนอเป็น standing rule ใน TRADING_RULES.md`
+แล้วถาม user: "ต้องการ add เป็น standing rule ไหม? (y/n)"
+
+ถ้าไม่พบ accumulating risk ใดเลย → ข้ามเงียบๆ ไม่ต้องแสดง
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

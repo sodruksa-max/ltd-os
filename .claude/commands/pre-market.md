@@ -520,6 +520,25 @@ Setup ทุกอันใช้ logic แบบ IF-THEN — การเข้
 - **Time-stop (Day เท่านั้น):** ถ้าไม่เกิด trigger ภายใน [เวลา ET] → setup void ไม่เข้า
 - **Catalyst สนับสนุน:**
 
+### GAD Pre-flight — Failure Mode Checklist (บังคับทุก setup)
+
+ต่อแต่ละ setup ที่เขียนไว้ — enumerate 3 failure modes + Plan B ก่อน finalize
+
+| Setup | Failure Mode | Early Signal | Plan B |
+|---|---|---|---|
+| Setup 1 | [อะไรทำให้ setup นี้ผิดพลาด] | [signal แรกที่บอกว่าผิด] | [ทำอะไรถ้าเกิด] |
+| Setup 1 | ... | ... | ... |
+| Setup 1 | ... | ... | ... |
+| Setup 2 | ... | ... | ... |
+| Setup 2 | ... | ... | ... |
+| Setup 2 | ... | ... | ... |
+| Setup 3 | ... | ... | ... |
+| Setup 3 | ... | ... | ... |
+| Setup 3 | ... | ... | ... |
+
+**กฎ: Setup ที่ไม่มี failure mode ครบ 3 ข้อ → flag `[GAD: INCOMPLETE]`**
+Setup ที่ถูก flag ห้ามรายงานว่า "พร้อม" — ต้องเติม failure modes ก่อนจบ brief
+
 ---
 *Sources: [ระบุทุก source พร้อม URL]*
 ```

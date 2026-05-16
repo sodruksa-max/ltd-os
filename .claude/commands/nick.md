@@ -321,6 +321,31 @@ Portfolio Color Map:
 Dissonant holdings: N — flagged for priority kill check
 ```
 
+5.10 **GAD Pre-mortem — สมมติ failure ก่อน Buy/Add ทุกรายการ**
+
+บังคับก่อน finalize recommendation ทุกรายการที่เป็น **Buy หรือ Add** — ห้ามข้าม
+
+**Pre-mortem protocol:**
+> "สมมติ holding นี้ลง 30% ใน 90 วัน — อะไรผิดพลาด?"
+
+Enumerate 3 failure paths + decision rule ต่อ path:
+
+| Failure Path | Probability | Early Warning Signal | Decision Rule |
+|---|---|---|---|
+| [สิ่งที่ทำให้ thesis พัง] | H/M/L | [signal แรกที่จะเห็น] | [ทำอะไรเมื่อเห็น signal นั้น] |
+
+**กฎ: ไม่มี pre-mortem = ไม่มี Buy/Add rec**
+ถ้า Nick ไม่สามารถ enumerate failure paths ได้ครบ 3 → conviction ไม่พอ → เปลี่ยนเป็น Watch แทน
+
+รายงานต่อแต่ละ Buy/Add:
+```
+GAD Pre-mortem: [TICKER]
+- Path 1: [failure] → Early signal: [X] → Rule: [Y]
+- Path 2: [failure] → Early signal: [X] → Rule: [Y]
+- Path 3: [failure] → Early signal: [X] → Rule: [Y]
+Pre-mortem complete: ✅ Buy confirmed / ⚠️ Watch (paths unclear)
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
