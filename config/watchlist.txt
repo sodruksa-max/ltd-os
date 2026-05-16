@@ -34,3 +34,14 @@ AXON
 CRWD
 PLTR
 CRM
+
+# === Robotics & Automation (T6) ===
+ISRG
+TER
+CGNX
+ABB
+ROK
+SYM
+SYK
+PATH
+AVAV

@@ -44,6 +44,13 @@ Active investment theses. Nick's universe walk + Reese's research frame draw fro
 **Status:** Active — pre-commercial, high speculation
 **Last reviewed:** 2026-05-11
 
+### T6 — Robotics & Automation
+**Statement:** AI + cheaper actuators + better compute = robotics crossing from industrial niche to mass deployment — surgical, warehouse, collaborative, and humanoid robots all scaling simultaneously.
+**Tickers:** ISRG, TER, CGNX, ABB, ROK, SYM, SYK, PATH, AVAV
+**Kill condition:** Robot unit economics fail to improve (cost per unit stagnant 2+ years); major players miss revenue guidance 2 consecutive quarters; humanoid robot deployments fail to reach commercial scale by 2028.
+**Status:** Active — early cycle, multi-year
+**Last reviewed:** 2026-05-16
+
 ---
 
 ## C-List (Watch — not in portfolio yet)
