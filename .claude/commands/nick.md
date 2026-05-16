@@ -171,6 +171,35 @@ Autism Pattern Check:
 - [CLEAN] No patterns detected this session
 ```
 
+5.6 **Dyslexia Spatial Portfolio View — มองพอร์ตเป็น 3D ก่อน recommend**
+
+**มองทั้งพอร์ตพร้อมกัน** — ไม่ใช่ทีละ holding แต่เป็น gestalt ของทั้งระบบ:
+
+**Hidden overlap detection:**
+- Holdings ไหนที่ดูเหมือน diversify แต่จริงๆ bet เดิม?
+  - bet เดิม = underlying driver เหมือนกัน (เช่น ทั้งคู่ขึ้นเมื่อ hyperscaler capex ขึ้น)
+  - flag: `[HIDDEN OVERLAP] TICKER_A + TICKER_B — ทั้งคู่ expose ต่อ <driver> เดียวกัน`
+- ถ้าพบ overlap → ระบุว่า effective exposure จริงๆ เป็นเท่าไหร่
+
+**Complementary shape detection:**
+- Holdings ไหน reinforce กัน (ถ้า A ดี, B ควรดีด้วย)?
+- Holdings ไหน hedge กัน (ถ้า A ดี, B จะแย่ — intentional หรือไม่ตั้งใจ)?
+- flag: `[REINFORCE] TICKER_A + TICKER_B` หรือ `[NATURAL HEDGE] TICKER_A vs TICKER_B`
+
+**Missing piece detection:**
+- มองพอร์ตทั้งหมด → thesis ที่ strong (thesis-convergence confirmed) แต่ยังไม่มี exposure
+- flag: `[MISSING EXPOSURE] T# <thesis> — portfolio ขาด exposure`
+
+**Portfolio shape summary (รายงานก่อน recommendation):**
+```
+Portfolio spatial view:
+- Shape: [concentrated / balanced / fragmented]
+- Real exposures: [driver1: X%, driver2: Y%] (after hidden overlap)
+- Hidden overlaps: [list]
+- Natural hedges: [list or none]
+- Missing jigsaw: [thesis หรือ driver ที่ขาด]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV
@@ -267,6 +296,13 @@ Autism Pattern Check:
 | High/Med | `<TICKER>` | `<เหตุผลที่ inline search ไม่พอ>` | `/stock-content <TICKER>` |
 
 *ถ้า Nick ค้นหา inline แล้วได้ข้อมูลพอ → ไม่ต้องขึ้นตารางนี้*
+
+## Portfolio Spatial View (Dyslexia)
+- Shape: [concentrated / balanced / fragmented]
+- Real exposures (after overlap): driver1=X%, driver2=Y%
+- Hidden overlaps: [TICKER_A + TICKER_B via <driver>] or none
+- Natural hedges: [list] or none
+- Missing jigsaw: [thesis ที่ขาด] or complete
 
 ## Nick's note
 [1-2 ประโยค process observation — เกี่ยวกับ thesis หรือ decision quality ไม่ใช่ราคา]
