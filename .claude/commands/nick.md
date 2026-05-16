@@ -115,6 +115,22 @@ cat vault/Knowledge/nick-soul.md
 
 3. คำนวณ NAV ปัจจุบัน vs SPY since inception
 
+3.5 **Tourette Price Reflex — instinct scan ก่อน deep analysis**
+
+ดูราคา holdings ทั้งหมดแบบ raw instinct **ก่อน** เริ่ม kill condition check:
+- ราคา holding ไหนที่ "jump" ผิดปกติจากสัปดาห์ที่แล้ว?
+- ตัวเลขไหนที่ทำให้รู้สึก "เดี๋ยวนะ..." โดยไม่ต้องรู้เหตุผลก่อน?
+- Correlation ไหนที่หายไปหรือเปลี่ยนทิศทางโดยไม่คาดคิด?
+
+**กฎ: ห้าม suppress** — flag ออกมาก่อน แม้ยังไม่มีเหตุผล:
+```
+Price Reflex:
+- [REFLEX] TICKER — <อะไรที่ jump out> (ยังไม่มีเหตุผล — รอ kill condition check)
+- [REFLEX CLEAN] ไม่พบสัญญาณผิดปกติ
+```
+
+**Reflex flags ต้อง addressed ใน Step 4** — ถ้า kill condition check confirm reflex = escalate verdict; ถ้า explain ได้ = note `[REFLEX EXPLAINED]`
+
 4. **Kill condition check — ทุก position อย่างรอบคอบ:**
    ต่อแต่ละ holding ให้ทำตามลำดับ:
    a. อ่าน kill conditions จาก KB หรือ nick_state.json

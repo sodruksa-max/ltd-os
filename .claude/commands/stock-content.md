@@ -134,6 +134,23 @@ Output format: `Chris score: KM=X / CV=X / BB=X (total X/15)`
 - Score ≥ 12/15 → ✅ Pass → ไปต่อ
 - Score < 12/15 → ⚠️ Revise → ระบุ dimension ที่ต่ำสุด + 2 จุดที่ต้องแก้ → แก้แล้ว pass (max 1 round)
 
+**Vera Tourette Reflex Layer (รันก่อน deep audit — scan-and-fire pass):**
+
+อ่าน Reese doc แบบ **วิ่งตาเร็วๆ ทั้งเล่มก่อน** — ไม่ deep read ทีละบรรทัด:
+ทุกครั้งที่มีอะไรขัดกับ KB ที่รู้อยู่แล้วหรือ "รู้สึกว่าผิด" → flag ทันทีก่อนอ่านต่อ
+
+```
+[REFLEX CONTRA] <claim> — ขัดกับ <KB source / prior knowledge> ณ จุดแรกที่เห็น
+```
+
+กฎ: **ห้าม suppress reflex** แม้จะคิดว่า "น่าจะ resolve ได้ทีหลัง" — reflex ทุกตัวต้องปรากฏ
+ถ้า autism layer resolve ทีหลัง → note `[REFLEX RESOLVED]`; ถ้าไม่ resolve → priority contradiction
+
+Vera สรุป tourette reflex ก่อนเริ่ม deep audit:
+```
+Vera Reflex Summary: fired N / resolved M / priority unresolved K
+```
+
 **Vera (fact audit) — Autism Memory Edition:**
 - Flag ⚠️ ทุก claim ที่ไม่มี source ชัดเจน
 - เปลี่ยนเป็น ❓ verify ทุกจุดที่ไม่ confirmed
