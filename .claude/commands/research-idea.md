@@ -74,11 +74,17 @@ grep -ri "<topic>" vault/Knowledge/ vault/10_research/ --include="*.md" -l
 
 | ประเภท | Query |
 |---|---|
-| Basics | `<topic> analysis 2025` |
-| Latest news | `<topic> latest news 2025` |
+| Basics | `<topic> analysis [CURRENT_YEAR]` |
+| Latest news | `<topic> latest news [CURRENT_YEAR]` |
 | Bear case | `<topic> bear case risks problems` |
 | Data/numbers | `<topic> revenue margin data statistics` |
 | Expert take | `<topic> expert analysis deep dive` |
+
+**Source date rule (บังคับทุก fact จาก web):**
+- ทุก fact ต้องระบุ: `[Source name, YYYY-MM-DD]` หรือ `[Source name, YYYY-MM]`
+- ถ้าหา date ไม่ได้ → mark `[date-unknown]` และ treat เป็น low-confidence — Vera จะ flag ใน Step 5
+- Article >30 วัน สำหรับ market/earnings data → flag ⚠️ STALE — หา source ใหม่ก่อน
+- Article >90 วัน สำหรับ macro/strategy/sector data → flag ⚠️ OLDER SOURCE
 
 ### Path B — NotebookLM (optional, เมื่อมี doc ยาว)
 ใช้เมื่อ: source เป็น PDF ยาว / earnings transcript / annual report / academic paper

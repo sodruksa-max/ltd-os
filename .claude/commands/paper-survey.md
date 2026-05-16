@@ -88,12 +88,18 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 6. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
 
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
-- Title, Authors, Year, Source (arXiv ID หรือ DOI)
+- Title, Authors, Year, Source (arXiv ID หรือ DOI — บังคับ ห้ามละ)
 - Method ใน 1-2 ประโยค
 - Key finding / contribution
 - Dataset (ตลาด, period, frequency)
 - Apply to project: concrete implementation idea
 - Tag: IMPLEMENT / REFERENCE / SKIP
+
+**Paper staleness rule:**
+- Year ≥ current_year - 2 → ✅ Recent
+- Year = current_year - 3 → ⚠️ AGING — ระบุ "check for follow-up work"
+- Year ≤ current_year - 4 → ⚠️ OLDER PAPER — ระบุ "may be superseded; search `<method> <year-1> <year>` ก่อน implement"
+- ถ้าหา arXiv ID หรือ DOI ไม่ได้ → mark `[source-unverified]` และ tag เป็น REFERENCE ไม่ใช่ IMPLEMENT
 
 **ถ้าต้องการวิเคราะห์ PDF ลึก (> 30 หน้า):**
 > แนะนำ NotebookLM — paste summary กลับมาแล้วรัน `/import-notebooklm`

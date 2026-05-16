@@ -90,6 +90,12 @@ Macro numbers (futures, VIX, yields, oil, gold, DXY) come from Step 1.5 scripts 
 5. Trading Economics (yields, VIX history)
 6. Benzinga / Polymarket (sentiment only)
 
+**News staleness rule:**
+- ทุก news fact ต้องระบุ article date — format: `[Source, YYYY-MM-DD HH:MM]` หรือ `[Source, วันที่]`
+- Article >6h สำหรับ intraday catalyst → flag ⚠️ STALE NEWS — หา update ก่อนใช้
+- Article >48h สำหรับ geopolitical / earnings / Fed → flag ⚠️ OLDER NEWS — verify ยังเป็น active ไหม
+- ถ้าหา date ไม่ได้ → `[date-unknown]` ห้ามใช้เป็น catalyst หลักโดยไม่ verify
+
 ### 1.5 Run Alpaca scripts (parallel with searches)
 
 While web searches are running, execute all three in parallel:
