@@ -120,7 +120,9 @@ cat vault/Knowledge/nick-soul.md
    a. อ่าน kill conditions จาก KB หรือ nick_state.json
    b. ตรวจว่า KB มีข้อมูลสดพอที่จะ verify แต่ละ condition ไหม
    c. ถ้า KB บางหรืออายุ > 30 วัน → **ค้นหาทันที (1-2 searches)** แทนที่จะ flag ไว้
-   d. ตัดสิน: **Intact / Evolving / Invalidated**
+   d. **Draft verdict ก่อน** (Intact / Evolving / Invalidated) พร้อมเหตุผล 1-2 ประโยค
+   e. **Self-critique**: ตรวจ draft verdict กับ KB atoms ที่เกี่ยวข้อง — มี evidence ขัดแย้งไหม? kill condition ยังวัดได้จริงไหม?
+   f. **Finalize verdict** หลัง self-critique — ถ้าเปลี่ยนจาก draft ให้ note เหตุผล
 
    Kill condition ที่ต้องการ fresh data ตัวอย่าง:
    - "hyperscaler capex guidance" → search "`<TICKER>` Q1 2026 earnings capex guidance"
@@ -130,6 +132,7 @@ cat vault/Knowledge/nick-soul.md
 5. **KB sweep — ตรวจ 4 แหล่ง:**
    - **thesis-convergence.md** — theme ไหน STRONG (3+ sources)? → structural tailwind
    - insight-atoms/ — มี atom ใหม่ที่เกี่ยวข้องกับ holdings ไหม?
+     **Keyphrase retrieval:** แทนที่จะ grep ด้วย ticker เปล่าๆ → extract keyphrases จาก kill conditions ก่อน (เช่น "hyperscaler capex", "RPO stagnation", "customer concentration") แล้วค้น atoms ด้วย keyphrases เหล่านั้น — จะ surface atoms ที่เกี่ยวข้องได้ดีกว่า
    - contradiction-registry.md — มี unresolved contradiction ที่กระทบ holdings ไหม?
    - nick-signals.md — RSI/MA20/RS tier ปัจจุบันต่อแต่ละ holding
 
