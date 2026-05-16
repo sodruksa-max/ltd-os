@@ -224,7 +224,8 @@ Researcher ใช้: N searches
 
 ## Commit
 
-หลัง /review ผ่าน → stage ทุกไฟล์ที่สร้างแล้ว commit:
+Chris+Vera (Step 6) คือ review gate ของ pipeline นี้ — ไม่ต้องรัน `/review` ซ้ำ
+Stage ทุกไฟล์ที่สร้างแล้ว commit:
 ```bash
 git add vault/20_investment/<TICKER>-<DATE>.md \
         vault/30_content/ideas/<slug>-<DATE>.md \
