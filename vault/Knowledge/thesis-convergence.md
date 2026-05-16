@@ -5,9 +5,9 @@ source: scripts/thesis-convergence.py
 ---
 
 # Thesis Convergence Report
-*Auto-generated 2026-05-16 06:06 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
+*Auto-generated 2026-05-16 23:58 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
 
-Atoms analyzed: **58** across **12** files | Themes detected: **12**
+Atoms analyzed: **60** across **14** files | Themes detected: **12**
 
 ---
 
@@ -86,4 +86,4 @@ Atoms analyzed: **58** across **12** files | Themes detected: **12**
 
 ---
 
-*58 atoms | 12 files | Generated: 2026-05-16 06:06 UTC*
+*60 atoms | 14 files | Generated: 2026-05-16 23:58 UTC*
