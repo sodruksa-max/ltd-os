@@ -110,7 +110,10 @@ for script in \
   "scripts/weekly-audit.py" \
   "scripts/junk_filter.py" \
   "scripts/_llm.py" \
-  "scripts/outcomes-index.py"
+  "scripts/outcomes-index.py" \
+  "scripts/vault-review-trigger.sh" \
+  "scripts/usage-tracker.py" \
+  "scripts/bubble-risk-monitor.py"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"
