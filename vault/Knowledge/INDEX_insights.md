@@ -86,3 +86,11 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [General] post-market-2026-05-11 — WTI >$95 sustained + Iran risk → XLE ขึ้นตาม oil แม้ใน Base scenario; "energy lags on rotation" narrative ไม่ valid เมื่อ oil momentum แรง
 - [2026-05-11] [T3] post-market-2026-05-11 — Quarterly run-rate vs FY guidance gap ≥ 3x → magnitude miss risk สูง; flag ใน brief แทนแค่ "miss probability กลาง"
 - [2026-05-11] [General] post-market-2026-05-11 — 10Y yield > 4.35% rising intraday → TLT likely ปิดลบแม้ pre-market TLT +; yield momentum ภายในวันมักต่อเนื่อง
+
+## PLTR Deep Dive (pltr-2026-05-16.md)
+- [2026-05-16] [T4] pltr-2026-05-16 — PLTR valuation post-drawdown: 46x NTM EV/Revenue (~62x trailing P/S) after -26% YTD; still 9x sector median — extreme premium tier; updates May 11 "80-115x" atom (that was peak pricing)
+- [2026-05-16] [T4] pltr-2026-05-16 — PLTR kill condition triggers: US Gov declining QoQ ≥2 qtrs OR US commercial <80% YoY Q2/Q3 2026; Q2 earnings Aug 10 is first checkpoint
+- [2026-05-16] [T4] pltr-2026-05-16 — PLTR Q2 2026 earnings August 10; company guides $1.797B–$1.801B revenue; TITAN DoD production H2 2026 is next structural catalyst
+- [2026-05-16] [T4] pltr-2026-05-16 — PLTR US commercial +130% YoY Q1 2026 (139 deals >$1M all-time high); updates +133% from May 11 — Q1 IR confirmed +130%
+- [2026-05-16] [T4] pltr-2026-05-16 — DOGE gov risk lagged 2-4 qtrs; Q1 +45% gov likely pre-DOGE pipeline; real risk window Q3-Q4 2026; IBM 15 contract cancellations = comp
+- [2026-05-16] [T4] pltr-2026-05-16 — PLTR insider selling: Karp $1.88B since 2024 + $1B plan remaining; Thiel 2M+ shares March 2026; 9.3:1 sell/buy ratio; 0 insider buys in 5 years
