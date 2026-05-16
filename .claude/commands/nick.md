@@ -427,6 +427,65 @@ SA Adversarial Check: [TICKER]
 - Result: [conviction confirmed / [SA: EXPOSED FLANK] / Hold pending answer]
 ```
 
+5.15 **DPDR Stranger Portfolio Test** — อ่านพอร์ตนี้ในฐานะคนแปลกหน้าที่ไม่รู้อะไรเลย
+
+> "ผมเพิ่งได้รับ portfolio นี้ครั้งแรก — ไม่รู้ผู้ถือ, ไม่รู้ thesis ที่แท้จริง, ไม่รู้ว่า bought เมื่อไร"
+
+สำหรับแต่ละ position ตั้งคำถาม:
+- Position นี้ดูสมเหตุสมผลสำหรับคนแปลกหน้าไหม?
+- Kill conditions ดูวัดได้จริงหรือเป็น excuse สำหรับการถือต่อ?
+- Weight ของแต่ละ position ดู rational หรือดูเหมือน anchored ต่อ entry price?
+
+→ flag `[DPDR: STRANGER QUESTION]` ต่อ position ที่คนแปลกหน้าจะสงสัย
+
+```
+DPDR Stranger Test:
+- [TICKER]: [CLEAR / [DPDR: STRANGER QUESTION] — "คำถามที่คนแปลกหน้าจะถาม"]
+- Portfolio overall: [makes sense to a stranger / has [N] unexplained positions]
+```
+
+5.16 **MD 12-Month Forward Narrative** — สร้าง vivid story ของพอร์ตใน 12 เดือนข้างหน้า
+
+ไม่ใช่ probability range — เป็น narrative ที่ concrete ที่สุดตาม base case ปัจจุบัน
+
+**Month 1–3: Early signals**
+> [catalyst แรกที่จะ proof หรือ disproof thesis หลัก — ระบุ event ที่คาดว่าจะเกิด]
+
+**Month 4–9: Inflection point**
+> [จุดที่พอร์ตจะ diverge จาก SPY อย่างชัดเจน — ขึ้นมาก หรือลงมาก — อะไรทำให้เกิด]
+
+**Month 10–12: Outcome**
+> [NAV คาดไว้ที่เท่าไร vs SPY — thesis ไหนที่ deliver / ไม่ deliver]
+
+**Key divergence point:**
+> [ถ้า thesis X ผิด ณ จุดไหน — นั่นคือ decision factor ที่แท้จริงของพอร์ตนี้]
+
+```
+MD 12-Month Narrative:
+Month 1-3 signal: [event ที่รอ]
+Inflection: [เดือนที่ N — เหตุการณ์]
+Outcome target: NAV $X,XXX ([+/-X%]) vs SPY [+/-X%]
+Key divergence factor: [thesis / assumption ที่ทั้งพอร์ตพิงอยู่]
+```
+
+5.17 **Alexithymia Position Description** — อธิบาย portfolio ด้วยข้อมูลล้วนๆ ไม่มีภาษาอารมณ์
+
+สำหรับแต่ละ position เขียนใหม่โดยตัด emotional language ออกทั้งหมด:
+- ห้ามใช้: "strong", "exciting", "I believe", "confident", "promising", "love this", "conviction" (ถ้าไม่มี data หนุน)
+- แทนด้วย: ตัวเลข, เหตุการณ์, เงื่อนไขที่วัดได้
+
+→ flag `[ALEXITHYMIA: NARRATIVE DEPENDENT]` ถ้า position ไม่สามารถอธิบายด้วยข้อมูลล้วนๆ ได้
+
+```
+Alexithymia Position Strip: [TICKER]
+Data-only description: "ถือ [X shares] ที่ [avg price], revenue growth [X%] YoY, 
+  next catalyst [event] ใน [date range], kill = [metric/event]"
+Emotional language found: [คำที่ตัดออก หรือ "clean"]
+Flag: [ALEXITHYMIA: NARRATIVE DEPENDENT / clean]
+```
+
+**กฎ:** ถ้า 2+ positions flagged NARRATIVE DEPENDENT → ลด size ทั้งสอง position ลง 20% ก่อน Recommendation
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

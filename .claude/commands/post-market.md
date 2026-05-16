@@ -478,6 +478,59 @@ Schizotypal Anomaly: [date]
 
 ถ้าไม่พบ anomaly → ข้ามเงียบๆ ไม่ต้องแสดง
 
+### 8.9 Alexithymia — Emotional Residue Detector
+
+สแกน review ทั้งวันหา emotional language ที่ฝังอยู่ใน decision rationale — ตัวเลขอาจ objective แต่ภาษาที่ใช้อธิบาย decision บอก bias ที่ซ่อนอยู่
+
+**Pattern ที่ตรวจหา:**
+
+| Flag | Pattern | ตัวอย่าง Thai | ตัวอย่าง English |
+|---|---|---|---|
+| Regret | ภาษาเสียดาย | "น่าเสียดาย", "ถ้าไม่..." | "unfortunately", "I should have" |
+| Hope-as-plan | ใช้ความหวังเป็นแผน | "น่าจะดีขึ้น", "คงจะ..." | "should recover", "hopefully" |
+| Fear-driven exit | ออกเพราะกลัว ไม่ใช่ข้อมูล | "กลัวว่า", "ไม่กล้า" | "scared of", "afraid it might" |
+| Revenge trade setup | วางแผน revenge | "ต้องเอาคืน", "trade ถัดไปจะต้อง" | "need to make it back", "must recover" |
+| Excitement override | ตื่นเต้นจนข้าม process | "ตื่นเต้นมาก", "รู้สึกว่าแน่นอน" | "very excited", "I'm sure this time" |
+
+→ flag `[ALEXITHYMIA: EMOTIONAL RESIDUE] "<phrase>" — type: [regret / hope-as-plan / fear / revenge / excitement]`
+
+**Impact assessment:**
+- ถ้าพบ `revenge` หรือ `fear-driven exit` → append ใน review: "⚠️ Emotional state may have affected today's decisions — revisit tomorrow with fresh eyes"
+- ถ้าพบ `excitement override` → check ว่า trade นั้นผ่าน pre-flight checklist ครบไหม
+
+```
+Alexithymia Residue: [N] patterns found
+- [ALEXITHYMIA: EMOTIONAL RESIDUE] "<phrase>" — type: [type]
+  Decision affected: [trade/decision ที่อาจ contaminated]
+Recommendation: [none / revisit tomorrow / mandatory re-check entry criteria]
+```
+
+ถ้าไม่พบ → ข้ามเงียบๆ ไม่ต้องแสดง
+
+### 8.95 DPDR — Third-Person Calibration Debrief
+
+อ่าน review วันนี้ทั้งหมดในฐานะคนแปลกหน้าที่ไม่รู้จักผู้เทรด context ใดๆ เลย
+
+> "ผมเพิ่งได้รับ trading journal ของ trader คนนึง — ไม่รู้อะไรเกี่ยวกับเขาเลย..."
+
+ตั้งคำถาม 3 ข้อจากมุม outsider:
+
+**1. Decision quality:** "ดูจากข้อมูลที่มี — trader คนนี้ตัดสินใจดีไหม?" (ไม่นับผล P&L — นับ process)
+
+**2. Consistency:** "trader คนนี้ทำตาม rules ที่ตัวเองตั้งไว้ไหม? ถ้าไม่ — ทำไม?"
+
+**3. Blind spots:** "มีอะไรที่ trader คนนี้ดูเหมือนจะไม่เห็น แต่คนภายนอกเห็นได้ชัด?"
+
+```
+DPDR Third-Person Debrief:
+Decision quality: [sound / questionable — reason]
+Rule consistency: [followed / [N] violations — which rules]
+Blind spot identified: [อะไรที่ outsider เห็น หรือ "none obvious"]
+Outsider verdict: [1 ประโยค summary จากมุมมองคนแปลกหน้า]
+```
+
+ถ้าไม่พบสิ่งผิดปกติ → `DPDR debrief: no outsider flags ✅`
+
 ### 9. Print verdict + personal note prompt
 
 แสดงให้ user:

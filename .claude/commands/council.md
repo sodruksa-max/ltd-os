@@ -101,6 +101,21 @@ Synthesizer reads brief + 5 proposals + 20 critiques + **expertise findings**. P
 
 Devils_advocate challenges synthesis. Save `final-challenge.md`.
 
+## Phase 5.5: Maladaptive Daydreaming — Alternative History Stress Test
+
+ก่อนเขียน DECISION.md — รัน vivid alternative history simulation สำหรับ top 2 options
+
+> "ย้อนกลับไป 18 เดือน ถ้าเลือก [Option X] วันนั้น — timeline ที่ concrete ที่สุดคืออะไร?"
+
+ต่อแต่ละ top 2 options:
+- **Month 1–3:** early signal แรกที่ proof หรือ disproof decision
+- **Month 4–9:** inflection point — จุดที่รอดหรือพัง
+- **Month 10–18:** outcome ที่ vivid ไม่ใช่ probability กลางๆ
+
+บันทึก key divergence point: จุดที่ทั้ง 2 options เริ่มแยกทางกัน — นั่นคือ decision factor ที่แท้จริง
+
+Save ใน `brief.md` section "MD Alternative History" และ reference ใน DECISION.md
+
 ## Phase 6: Final document
 
 Combine into `DECISION.md`:

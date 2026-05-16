@@ -290,6 +290,63 @@ Vera Misophonia Summary:
 ```
 ถ้าไม่พบ trigger → `Misophonia scan: clean ✅`
 
+**Vera Layer 7 — HSP Communication Shift Detection**
+
+เปรียบเทียบ tone ของ management communication ระหว่างรอบนี้กับรอบก่อน — HSP จับ shift เล็กๆ ที่ตัวเลขไม่บอก
+
+ตรวจ 3 shift patterns:
+
+**1. Confidence Shift** — เปรียบ earnings call transcript รอบนี้กับรอบก่อน:
+- คำที่หายไป: "we are confident", "strong demand", "accelerating" → replaced by hedging language
+- คำที่เพิ่มขึ้น: "monitoring", "remain cautious", "dependent on", "subject to"
+→ flag `[HSP: CONFIDENCE SHIFT]` — "CFO tone เปลี่ยนจาก [X] เป็น [Y]: [quote]"
+
+**2. Specificity Drop** — management เริ่มตอบคำถามด้วย narrative แทน numbers:
+- Q: "guidance Q4?" → A: "we expect to perform well in line with market conditions" (ไม่มีตัวเลข)
+- Q: "margin pressure?" → A: "we're focused on operational excellence" (ไม่ตอบตรง)
+→ flag `[HSP: SPECIFICITY DROP]` — "คำถาม X ตอบด้วย narrative ไม่ใช่ตัวเลข"
+
+**3. Body Language Signals** (สำหรับ video earnings calls เท่านั้น):
+- ถ้าไม่มี video → ข้ามขั้นตอนนี้
+
+```
+HSP Communication Shift: [TICKER]
+Prior call tone: [confident / neutral / cautious]
+Current call tone: [confident / neutral / cautious]
+Shift direction: [more confident / no change / less confident]
+Flags: [HSP: CONFIDENCE SHIFT / HSP: SPECIFICITY DROP / none]
+Signal: [1 ประโยค — implication ต่อ thesis]
+```
+
+ถ้าไม่มี prior call data → `HSP Communication Shift: baseline only (no prior to compare) ✅`
+
+**Vera Layer 8 — Alexithymia Emotional Language Purge**
+
+อ่าน research doc ทั้งหมดอีกครั้งในฐานะผู้ตรวจสอบที่ไม่มีความรู้สึก — ลบทุกภาษาที่มี emotional loading
+
+ตรวจหาและ flag แต่ละ instance:
+
+| Pattern | ตัวอย่าง | แทนด้วย |
+|---|---|---|
+| Excitement language | "exciting opportunity", "remarkable growth" | "revenue grew X% YoY" |
+| Hope language | "should recover", "expected to improve" | "consensus estimates +X% — verify source" |
+| Narrative dependency | "the story is compelling" | "thesis depends on [metric] reaching [X]" |
+| Vague conviction | "strong management team" | "CEO tenure X years, [specific achievement]" |
+| Disaster language | "catastrophic risk", "could collapse" | "downside scenario: -X% revenue if [condition]" |
+
+→ flag `[ALEXITHYMIA: VAGUE] "<phrase>" → replace: "<data-based alternative>"`
+
+ถ้าพบ 3+ instances → append note ใน Reese doc: "⚠️ Alexithymia audit: doc contains emotional language — verify core claims with data before acting"
+
+```
+Alexithymia Purge: [N] emotional phrases found
+- [ALEXITHYMIA: VAGUE] "<phrase>" → "[replacement]"
+Overall doc tone: [data-driven / partially emotional / heavily emotional]
+Action needed: [none / verify [N] claims / rewrite section]
+```
+
+ถ้าไม่พบ → `Alexithymia purge: clean ✅`
+
 ---
 
 ## STEP 6 — INDIE ATOMS

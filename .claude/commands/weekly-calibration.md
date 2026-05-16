@@ -163,6 +163,26 @@ Schizotypal Convergence:
 ```
 ถ้าไม่พบ cluster → ข้ามเงียบๆ
 
+**3j. HSP — Atmosphere Signal Accuracy Tracker**
+
+ถ้า pre-market brief ใน N วันมี HSP atmosphere flags — ตรวจว่าแม่นแค่ไหน:
+- นับ `[HSP: ATMOSPHERE]` / `[HSP: TEXTURE MISMATCH]` / `[HSP: DIVERGENCE]` flags ทั้งหมด
+- เทียบกับ outcome วันนั้น: atmosphere flag predict ได้จริง หรือ noise
+
+```
+HSP Signal Accuracy = (atmosphere flags ที่ match outcome) / (flags ทั้งหมด)
+```
+- > 60% → signals มี predictive value — maintain sensitivity
+- 40–60% → `[HSP: SIGNAL NOISY]` — ลด weight ใน scenario formation
+- < 40% → `[HSP: RECALIBRATE]` — ปรับ threshold ก่อนใช้ต่อ
+
+แสดงใน Pattern Summary:
+```
+HSP Signal Accuracy: X% (N flags / M correct)
+Status: [valuable / [HSP: SIGNAL NOISY] / [HSP: RECALIBRATE]]
+```
+ถ้าไม่มี HSP flags ใน window → ข้ามเงียบๆ
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
