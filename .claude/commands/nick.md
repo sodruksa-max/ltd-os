@@ -486,6 +486,56 @@ Flag: [ALEXITHYMIA: NARRATIVE DEPENDENT / clean]
 
 **กฎ:** ถ้า 2+ positions flagged NARRATIVE DEPENDENT → ลด size ทั้งสอง position ลง 20% ก่อน Recommendation
 
+5.18 **Aphantasia — Explicit Logic Chain Audit**
+
+ทุก thesis ต้องถูก decompose เป็น IF-THEN chain ที่ explicit — ห้าม thesis แบบ holistic / hand-wave
+
+สำหรับแต่ละ position สร้าง logic chain:
+```
+IF [condition A — metric/event ชัดเจน]
+AND [condition B — metric/event ชัดเจน]
+→ THEN [outcome C — price target / timeline / catalyst]
+ELSE IF chain breaks at [A or B] → kill = [action]
+```
+
+ตัวอย่าง valid chain:
+> IF revenue growth > 20% YoY (next 2 quarters) AND gross margin expands > 2pp → THEN multiple re-rate to 25x forward PE ($X price target in 12 months)
+
+ตัวอย่าง invalid (hand-wave):
+> "Management is executing well and the TAM is large" → `[APHANTASIA: IMPLICIT LEAP]`
+
+→ flag `[APHANTASIA: IMPLICIT LEAP]` ถ้า thesis ไม่สามารถเขียนเป็น IF-THEN ได้ภายใน 2 steps
+→ ถ้า flagged → downgrade conviction 1 ระดับ (high→med, med→low) และ ห้าม Add position จนกว่าจะ explicit ได้
+
+```
+Aphantasia Chain: [TICKER]
+IF: [condition A]
+AND: [condition B]
+THEN: [outcome]
+ELSE: [kill action]
+Status: [explicit ✅ / [APHANTASIA: IMPLICIT LEAP]]
+```
+
+5.19 **BPD — 5-Second Binary Hold Test**
+
+ก่อน Recommendation — ทดสอบ gut signal แบบ uncensored สำหรับทุก position
+
+> "ถ้าต้องตัดสินใจ hold หรือ sell ภายใน 5 วินาที โดยไม่คิดวิเคราะห์ — คำตอบคืออะไร?"
+
+ตีความ:
+- **Gut = Hold, Analysis = Hold** → conviction aligned ✅
+- **Gut = Sell, Analysis = Hold** → `[BPD: AMBIVALENT HOLD]` — ต้องระบุ 1 เหตุผลที่ชัดเจนว่าทำไม analysis override gut ก่อน proceed (ถ้าหาเหตุผลไม่ได้ภายใน 1 ประโยค → trim 25%)
+- **Gut = Hold, Analysis = Sell** → kill condition triggered แต่ emotion ขัดขวาง → `[BPD: EMOTIONAL ANCHOR]` — execute sell ตาม analysis ไม่ฟัง gut
+- **Gut = Sell, Analysis = Sell** → ออกแน่นอน ✅
+
+```
+BPD Hold Test: [TICKER]
+5-second gut: [Hold / Sell]
+Analysis: [Hold / Sell]
+Alignment: [aligned / [BPD: AMBIVALENT HOLD] / [BPD: EMOTIONAL ANCHOR]]
+Override justification: [1 ประโยค data-based หรือ "none — trim 25%"]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

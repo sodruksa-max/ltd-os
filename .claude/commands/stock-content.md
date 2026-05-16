@@ -347,6 +347,35 @@ Action needed: [none / verify [N] claims / rewrite section]
 
 ถ้าไม่พบ → `Alexithymia purge: clean ✅`
 
+**Vera Layer 9 — AIWS Magnitude Audit**
+
+เทียบ market reaction กับ fundamental impact จริงๆ — ตรวจว่า market กำลัง misprice ขนาดของ event นี้ไหม
+
+**Over-reaction pattern** (ราคา react มากกว่า fundamental warrant):
+- EPS miss/beat X% แต่ราคาเปลี่ยน > 3×X%
+- ข่าว one-time (CEO comment, analyst upgrade) ทำให้ราคาเปลี่ยน > 5% โดยไม่มี fundamental shift
+- Revenue miss เล็กน้อย (<3%) แต่ตลาดลงมากกว่า historical avg สำหรับ miss ขนาดนี้
+→ flag `[AIWS: OVER-REACTION] "<event>" — price moved X%, fundamental impact = Y%`
+→ implication: mean-reversion opportunity ภายใน 2-4 สัปดาห์
+
+**Under-reaction pattern** (ราคา react น้อยกว่า fundamental warrant):
+- Revenue growth accelerated อย่างมีนัยสำคัญ แต่ราคา flat หลัง earnings
+- Margin expansion เกิน consensus estimate แต่ตลาดไม่ re-rate multiple
+- Catalyst structural (ไม่ใช่ one-time) แต่ตลาด treat เป็น noise
+→ flag `[AIWS: UNDER-REACTION] "<event>" — price moved X%, implied fundamental impact = Y%`
+→ implication: accumulation opportunity ก่อนตลาดรับรู้ delayed impact
+
+```
+AIWS Magnitude Audit: [TICKER]
+Event: [most recent significant event]
+Price reaction: [+/-X%]
+Fundamental impact estimated: [+/-Y% to revenue/EPS/margin]
+Scale verdict: [PROPORTIONAL / [AIWS: OVER-REACTION] / [AIWS: UNDER-REACTION]]
+Trade signal: [none / mean-revert / accumulate ahead of repricing]
+```
+
+ถ้าไม่มี recent significant event → `AIWS magnitude: no event to calibrate ✅`
+
 ---
 
 ## STEP 6 — INDIE ATOMS

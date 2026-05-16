@@ -183,6 +183,37 @@ Status: [valuable / [HSP: SIGNAL NOISY] / [HSP: RECALIBRATE]]
 ```
 ถ้าไม่มี HSP flags ใน window → ข้ามเงียบๆ
 
+**3k. Aphantasia — Visual vs Explicit Prediction Accuracy Split**
+
+ตรวจว่า predictions ที่ใช้ภาษา visual/intuitive มี accuracy ต่างจาก predictions ที่ใช้ criteria ชัดเจนแค่ไหน
+
+**ขั้นตอน:**
+1. สแกน pre-market briefs ใน N-day window หา 2 ประเภท prediction:
+   - **Visual/intuitive:** ใช้ pattern names, "looks like", "feels like", "seems to be forming" → นับเป็น V-type
+   - **Explicit/criteria:** ใช้ตัวเลข, conditions, thresholds → นับเป็น E-type
+
+2. เทียบกับ outcome ใน post-market reviews: prediction ถูกหรือผิด?
+
+3. คำนวณ:
+```
+Visual Accuracy = (V-type predictions ที่ถูก) / (V-type ทั้งหมด)
+Explicit Accuracy = (E-type predictions ที่ถูก) / (E-type ทั้งหมด)
+Aphantasia Gap = Explicit Accuracy - Visual Accuracy
+```
+
+**Interpretation:**
+- Gap > +15% → explicit criteria มี edge ชัดเจน → `[APHANTASIA: EXPLICIT ADVANTAGE]` — เสนอ rule: "ห้าม setup ที่ไม่มี explicit criteria"
+- Gap -15% ถึง +15% → ไม่ต่างกันมีนัยสำคัญ → maintain current balance
+- Gap < -15% → visual/intuitive มี edge → หมายความว่า explicit criteria อาจ over-fitted → flag `[APHANTASIA: CHECK CRITERIA]`
+
+แสดงใน Pattern Summary:
+```
+Aphantasia Accuracy Split: V-type: X% (N predictions) | E-type: Y% (M predictions)
+Gap: [+/-Z%] — [EXPLICIT ADVANTAGE / balanced / CHECK CRITERIA]
+Proposal: [none / "require explicit criteria for all setups" / "review criteria for over-fitting"]
+```
+ถ้าไม่มี data เพียงพอ (< 5 predictions แต่ละประเภท) → ข้ามเงียบๆ
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว
