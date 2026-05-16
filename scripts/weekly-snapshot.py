@@ -380,12 +380,27 @@ def main():
         }
     print_macro_section(macro)
 
-    # Cross-validate SPY: Alpaca vs Yahoo Finance — flag if diff > 1pp
-    spy_yf_close, _, _, spy_yf_pct = fetch_yf_weekly("SPY", monday, friday)
-    spy_alpaca_pct = (alpaca_data or {}).get("SPY", {}).get("weekly_pct")
-    if spy_alpaca_pct is not None and spy_yf_pct is not None:
-        if abs(spy_alpaca_pct - spy_yf_pct) > 1.0:
-            print(f"> ⚠️ **SPY SOURCE CONFLICT**: Alpaca IEX {pct_str(spy_alpaca_pct)} vs Yahoo Finance {pct_str(spy_yf_pct)} — diff {abs(spy_alpaca_pct - spy_yf_pct):.2f}pp — verify before using\n")
+    # Cross-validate key tickers: Alpaca IEX vs Yahoo Finance (threshold: 1pp)
+    CROSS_VALIDATE = [("SPY", "SPY"), ("QQQ", "QQQ"), ("GLD", "GLD")]
+    conflicts = []
+    clean = 0
+    for alpaca_ticker, yf_ticker in CROSS_VALIDATE:
+        yf_close, _, _, yf_pct = fetch_yf_weekly(yf_ticker, monday, friday)
+        alpaca_pct = (alpaca_data or {}).get(alpaca_ticker, {}).get("weekly_pct")
+        if alpaca_pct is not None and yf_pct is not None:
+            diff = abs(alpaca_pct - yf_pct)
+            if diff > 1.0:
+                conflicts.append((alpaca_ticker, alpaca_pct, yf_pct, diff))
+            else:
+                clean += 1
+    if conflicts:
+        for ticker, ap, yp, diff in conflicts:
+            print(f"> ⚠️ **{ticker} SOURCE CONFLICT**: Alpaca IEX {pct_str(ap)} vs Yahoo Finance {pct_str(yp)} — diff {diff:.2f}pp — verify before using")
+        print()
+    # Data quality summary
+    total = clean + len(conflicts)
+    quality = "CLEAN" if not conflicts else f"CONFLICTS: {len(conflicts)}/{total}"
+    print(f"*Data quality: {quality} (cross-validated SPY/QQQ/GLD Alpaca vs YF)*\n")
 
     # Regime verdict
     spy = (alpaca_data or {}).get("SPY", {})

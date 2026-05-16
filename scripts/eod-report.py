@@ -267,8 +267,11 @@ def print_real_section():
 
 def main():
     load_env()
-    today = datetime.now().strftime("%Y-%m-%d")
-    print(f"## EOD Report -- {today}\n")
+    now = datetime.utcnow()
+    today = now.strftime("%Y-%m-%d")
+    fetched_at = now.strftime("%Y-%m-%d %H:%M UTC")
+    print(f"## EOD Report -- {today}")
+    print(f"*Source: Alpaca paper positions + real-trades/ | fetched: {fetched_at}*\n")
 
     print_paper_section()
     print_real_section()

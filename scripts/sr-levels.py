@@ -238,8 +238,9 @@ def main():
     load_env()
     tickers = [t.upper() for t in args.tickers]
 
+    fetched_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     print(f"# S/R Levels — {date.today()}" + (" (brief)" if args.brief else ""))
-    print(f"*Source: Alpaca | Pivots = prev day OHLC | Swings = last {args.days} days*\n")
+    print(f"*Source: Alpaca | Pivots = prev day OHLC | Swings = last {args.days} days | fetched: {fetched_at}*\n")
 
     try:
         all_bars = get_bars(tickers, args.days)
