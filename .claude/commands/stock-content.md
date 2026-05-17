@@ -99,6 +99,46 @@ Reese doc: vault/10_research/<slug>-reese-<date>.md (<N> days old)
 
 ---
 
+**WebSearch Cognitive Stack — รันก่อนและระหว่าง search queries (ข้าม ถ้า Tier 1):**
+
+**ก่อน search แต่ละครั้ง — check 3 gates:**
+- **[Anton]** ข้อมูลนี้มีอยู่ใน context แล้วไหม? → ถ้ามีห้าม search → `[ANTON: CONTEXT-FIRST VIOLATION]`
+- **[KLS]** query นี้รันไปแล้วใน session นี้ภายใน 4h ไหม? → ถ้าใช่ ใช้ผลเดิม → `[KLS: SKIP IF SAME-DAY]`
+- **[Dermatographia]** ข้อมูลนี้ important พอกับ search cost ไหม? → micro data point ไม่ควรเสีย 1 search เต็ม
+
+**ออกแบบ query — เพิ่ม channels ที่คนอื่นไม่ได้ค้น (นับใน budget รวม):**
+- **[Tetrachromacy]** บังคับเพิ่ม invisible channel queries:
+  - `<TICKER> site:glassdoor.com reviews` / `<TICKER> site:reddit.com/r/stocks`
+  - `<TICKER> patent filing site:patents.google.com` / supplier or customer earnings mentions
+- **[PTSD]** ถ้า budget เหลือ → เพิ่ม ambient threat queries:
+  - `<TICKER> insider selling SEC form 4` / `<TICKER> credit default swap`
+- **[Aura]** ถ้า macro context ผิดปกติ → เพิ่ม peripheral query ก่อน headline:
+  - `<SECTOR> bond-equity divergence` / `<TICKER> [supply chain partner name]`
+- **[FOP]** ถ้าทุก search ไปแค่ Yahoo/CNBC/SeekingAlpha → บังคับ vary ≥1 query ไปยัง alternative source
+
+**ประเมิน results ก่อนคลิก:**
+- **[Paranoid]** ดู domain ก่อน: sell-side PR? investor relations? short seller site? → flag incentive แต่ไม่ dismiss
+- **[Autism]** ถ้า top 5 results ล้วน cite PR เดียวกัน → `[ECHO: search dominated by single source]` — refine query หา independent source
+- **[Tourette]** snippet ไหนที่ "jump out" ขัดกับ expectation → `[REFLEX: <snippet>]` ก่อนคลิก
+
+**หลัง search หมด budget:**
+- **[Narcolepsy]** decisive answer ปรากฏใน search ≤2 → หยุดทันที ไม่ต้อง exhaust budget
+- **[Sleep Paralysis]** กำลัง re-search dimension เดิมด้วย query ต่างออกเล็กน้อยไหม? → stop + mark `❓ SYSTEMATIC GAP`
+- **[Savant]** ตัวเลขจาก snippet → ต้องคลิกหา exact value + date + source — ไม่รับ approximation
+
+รวม flags ไว้ใน **[E] Data conflicts** พร้อม summary:
+```
+WebSearch Cognitive Stack:
+- [ANTON/KLS] searches skipped: N — data in context/cache
+- [TETRACHROMACY] invisible channels: [list searched]
+- [PARANOID] incentive flags: N | [ECHO] detected: Y/N
+- [TOURETTE] reflex flags: [list]
+- [NARCOLEPSY] early exit: Y/N (at search N/5)
+- [SAVANT] approximations caught + clicked to verify: N
+```
+
+---
+
 **Research Cognitive Stack — รันขณะอ่าน sources ทุก document (ข้าม ถ้า Tier 1):**
 
 **[Hyperlexia]** อ่าน fine print ที่คนข้าม:
