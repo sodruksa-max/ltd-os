@@ -3,6 +3,15 @@
 *(auto-updated by /healthcheck — keeps last 5 runs)*
 *(used by OCD persistent WARN escalation layer)*
 
+## 2026-05-18
+- PASS: 141 | WARN: 0 | FAIL: 1 — DEGRADED
+- [FAIL — FIXED] 8 commits unpushed → pushed origin/main ✓
+- [FIXED] Orphan scripts cluster: deleted bot.sh, bot-real.sh, screen.sh, eod.sh, stats-paper-trade.py; archived stock-screener.py, screener-performance.py, crypto-screener.py → vault/90_archive/scripts-archive/
+- [FIXED] secret-rotate.sh untracked → renamed key-rotate.sh + committed
+- [FIXED] /healthcheck not in healthcheck.sh → added to system commands list
+- [KNOWN] dashboard.py, dashboard.sh, discovery.py, update-sectors.py, update-universe.py — CCR/Streamlit utilities, intentionally not in healthcheck
+- [KNOWN] backup.sh, new-project.sh, install-cron.sh — general utilities, kept
+
 ## 2026-05-17 (รอบ 3)
 - PASS: 125 | WARN: 0 | FAIL: 0 — ALL SYSTEMS GO
 - [ACCEPTED] scripts/trade-log.json — runtime-generated, accepted prior run, no change
