@@ -137,13 +137,189 @@ step-1 (ข้อมูล A) → step-2 (ใช้ A) → step-4 (ใช้ A+B
 
 ---
 
-### 7. Self-critique pass — Devil's advocate
+### 7. Cognitive Trait Review Pass (รันก่อน draft — 7 layers)
 
-ก่อน draft workflow สุดท้าย — วิจารณ์ design เอง:
+#### 7.1 Tourette — Reflex Scan (ก่อนทุกอย่าง — 30 วินาที)
 
-> "ถ้า workflow นี้รันใน worst-case scenario (ข้อมูลล่าช้า, script fail 1 ตัว, user ไม่ได้อยู่หน้าจอ) — อะไรจะพัง และ workflow ยังให้ output ที่ useful ได้ไหม?"
+อ่าน design ทั้งหมดแบบ **scan เร็วๆ** ก่อน deep analysis:
+- step ไหนที่ "jump out" ว่าผิดปกติหรือ feels off?
+- ลำดับไหนที่รู้สึกว่า "เดี๋ยวนะ..." โดยไม่รู้เหตุผลก่อน?
+- อะไรที่ดูเหมือน "ขาดอะไรบางอย่าง" ก่อนที่จะอ่านรายละเอียด?
 
-ระบุ 2-3 weakness ที่เห็น → แก้ใน design ก่อน save
+**กฎ: ห้าม suppress reflex** — flag ออกมาก่อน แม้ยังไม่มีเหตุผล:
+```
+[DESIGN REFLEX] <สิ่งที่ jump out> — ยังไม่รู้เหตุผล รอยืนยันใน layers ถัดไป
+```
+ถ้าไม่มีอะไร → `[REFLEX CLEAN]`
+
+Reflex flags ต้องถูก addressed ใน layers ถัดไป — ถ้า resolve ได้ = note `[REFLEX RESOLVED]`; ถ้าไม่ = แก้ design
+
+---
+
+#### 7.2 OCD — Symmetry Audit
+
+ตรวจ structural completeness — ทุก field ต้องครบทุก step:
+
+| Field | ต้องมีทุก step |
+|---|---|
+| `cmd:` หรือ `yes-cmd:` | ✓ — ถ้าไม่มี = step ไม่สมบูรณ์ |
+| `on-fail:` | ✓ — ถ้าไม่ระบุ = undefined behavior |
+| `on-success:` | ✓ — ถ้าไม่ระบุ = อาจ stop ผิด |
+| condition `no:` branch | ✓ ถ้ามี condition — ต้องมีทั้ง yes และ no |
+| `why:` | ✓ — ถ้าอธิบายไม่ได้ว่าทำไม = ตัดออก |
+
+Flag: `[OCD: INCOMPLETE STEP] step-N — missing field: <field>`
+
+ตรวจ command references — ต่อทุก `cmd:`:
+```bash
+ls .claude/commands/<name>.md scripts/<name>.py scripts/<name>.sh 2>/dev/null
+```
+Flag: `[OCD: BROKEN-REF] step-N: '<cmd>' does not exist`
+
+```
+OCD Symmetry: [N issues / PASS]
+- [OCD: INCOMPLETE STEP] step-N — missing: on-fail
+- [OCD: BROKEN-REF] step-3: '/screen2' not found
+```
+
+---
+
+#### 7.3 ADHD — Gap Finder + Novelty Radar
+
+**Gap Finder** — หา steps ที่ linear thinker มองข้าม:
+
+สำหรับ workflow นี้ ตรวจ 4 categories ที่มักหายไป:
+- **Pre-flight** — มี step ที่ตรวจ pre-conditions ก่อนเริ่ม? (data available? system online? market open?)
+- **Error recovery** — ถ้า step ล้มเหลว user รู้ไหม? มี fallback? หรือ workflow แค่หยุดเงียบ?
+- **Output validation** — มี step ที่ตรวจว่า output ของ step ก่อนสมเหตุสมผลก่อนส่งต่อ?
+- **Cleanup** — หลัง workflow เสร็จ มีอะไรที่ต้อง commit/save/close ที่อาจถูกลืม?
+
+**Novelty Radar** — ดู scripts และ commands ที่เพิ่งถูก add ใน 30 วัน:
+```bash
+git log --oneline --since="30 days ago" --diff-filter=A -- '.claude/commands/*.md' 'scripts/*.py' 'scripts/*.sh'
+```
+สำหรับแต่ละ new item → ถาม: "workflow นี้ควร include มันไหม?"
+
+```
+ADHD Gap Scan:
+- [GAP: PRE-FLIGHT] ไม่มี step ตรวจ pre-conditions — เพิ่ม step-0?
+- [GAP: CLEANUP] ไม่มี step commit output — เพิ่ม step สุดท้าย?
+- [NOVELTY] /new-command added 3 days ago — should it be in this workflow?
+```
+
+---
+
+#### 7.4 Dyslexia — Holistic Shape View
+
+มองทั้ง workflow เป็น shape พร้อมกัน — ไม่ใช่ทีละ step:
+
+**Flow shape** — วาด dependency chain:
+```
+step-1 → step-2 → step-3 (conditional)
+                ↘ step-4 (fallback)
+```
+ตรวจว่า shape สมเหตุสมผลไหม:
+- มีจุดที่ทุก path ต้องผ่าน (chokepoint) ที่ on-fail: stop หรือเปล่า?
+- มีกิ่งที่ไปไหนไม่ถึง (orphan step)?
+- flow รู้สึก linear เกินไป (ไม่มี branch ทั้งที่ควรมี)?
+
+**Weight distribution** — เวลาของแต่ละ step:
+- ถ้า 1 step กินเวลา > 60% ของ total → ควร break ออกหรือเปล่า?
+- ถ้า steps หลายตัวเล็กมากติดกัน → ควร collapse เป็น step เดียวหรือเปล่า?
+
+```
+Dyslexia Shape View:
+- Shape: [linear / branching / parallel-converge]
+- Chokepoints: step-1 (all paths pass through)
+- Orphan steps: [none / step-N has no path to done]
+- Weight: step-2 = ~70% of total time — consider splitting?
+```
+
+---
+
+#### 7.5 Psychopathy — Step Elimination Test
+
+สำหรับทุก step — **ถามโดยไม่มี attachment**:
+
+> "ถ้าตัด step นี้ออก workflow นี้ยังทำงานได้ไหม? output ยังมีคุณภาพพอไหม?"
+
+- คำตอบ **ใช่** → step นี้ไม่จำเป็น — ตัดออก
+- คำตอบ **ไม่** + เพราะ output ของ step นี้ถูกใช้ใน step ถัดไป → KEEP
+- คำตอบ **ไม่** + เพราะ "น่าจะมีดีกว่าไม่มี" → WARNING — นี่คือ bloat
+
+**Bloat test:** ถ้า step มีอยู่เพราะ "ดูเหมือน thorough" แต่ไม่มี downstream consumer → ตัด
+
+```
+Psychopathy Pass:
+- step-1: KEEP — output used by steps 2,3,4
+- step-3: CUT — output never used, cosmetic only
+- step-5: WARNING — "nice to have" — no clear downstream need
+Steps eliminated: N | Steps kept: M
+```
+
+---
+
+#### 7.6 GAD — Workflow Pre-mortem
+
+> "สมมติ workflow นี้รันแล้ว fail อย่างเงียบๆ ใน 30 วัน — อะไรผิดพลาด?"
+
+Enumerate 3 failure paths + early warning ต่อ path:
+
+| Path | Probability | Early Warning | Mitigation in design? |
+|---|---|---|---|
+| [failure mode 1] | H/M/L | [signal แรก] | [step ที่ handle / ยังไม่มี] |
+| [failure mode 2] | H/M/L | [signal แรก] | [step ที่ handle / ยังไม่มี] |
+| [failure mode 3] | H/M/L | [signal แรก] | [step ที่ handle / ยังไม่มี] |
+
+ถ้า mitigation = "ยังไม่มี" → เพิ่ม step หรือ condition ก่อน save
+
+```
+GAD Pre-mortem: [N paths — N mitigated / N unmitigated]
+Unmitigated paths → added to design: [step / condition]
+```
+
+---
+
+#### 7.7 Depressive Realism — Strip Coverage Optimism
+
+ตรวจ optimism bias ใน JTBD coverage claim:
+
+> "Comprehensiveness checklist ผ่านทุกข้อ — แต่ base rate ของ 'workflow ที่ design ในครั้งเดียวครอบคลุมทุก edge case' คือเท่าไหร่?"
+
+**กฎ DR สำหรับ workflow design:**
+- ถ้า checklist ผ่านทุกข้อ → ระบุ "coverage: high claim" + note ว่า N edge cases ที่ explicitly NOT covered (แทนที่จะบอกว่า "ครอบคลุมหมด")
+- ถ้าประมาณการ time เป็น optimistic range (best case) → replace ด้วย P50 estimate (median, not best)
+- ถ้า step มี `on-fail: continue` มากกว่า 1 → ตรวจว่า workflow ยังให้ useful output ได้ถ้าหลาย steps fail พร้อมกัน
+
+```
+DR Coverage Audit:
+- Coverage claim: high / medium / low (base rate adjusted)
+- Explicitly NOT covered: [N edge cases listed]
+- Time estimate: [optimistic → adjusted P50]
+- Multi-failure scenario: [workflow still useful? yes / degraded / broken]
+```
+
+---
+
+#### 7. Trait Summary (before Step 8)
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cognitive Trait Review — <workflow name>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tourette reflex:   [N flags / CLEAN]
+OCD symmetry:      [N issues / PASS]
+ADHD gaps:         [N gaps found / N novelty items]
+Dyslexia shape:    [linear / branching / issues found]
+Psychopathy:       [N steps eliminated / N kept]
+GAD pre-mortem:    [N paths — N mitigated]
+DR coverage:       [optimistic / realistic / conservative]
+
+Changes made to design from trait review: N
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Design อัปเดตตาม flags ทั้งหมดก่อนไปขั้น 8
 
 ---
 

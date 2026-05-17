@@ -93,6 +93,125 @@ git log --oneline --since="30 days ago" --diff-filter=A -- '.claude/commands/*.m
 
 ---
 
+### 2.5 OCD Layer — Re-verify + Persistent WARN Escalation
+
+**Re-verify ทุก WARN จาก 2 sources:**
+ต่อแต่ละ flag ที่พบใน 2A-2E:
+- หา source อิสระที่ 2 ที่ยืนยัน flag นั้น (เช่น broken-ref → ตรวจทั้ง `ls` และ `grep` ใน commands อื่น)
+- ถ้ายืนยันได้จาก 2 sources → `[OCD: CONFIRMED]`
+- ถ้ายืนยันไม่ได้ → downgrade เป็น `[OCD: UNCONFIRMED — monitor]` ไม่ใช่ FAIL
+
+**Persistent WARN escalation:**
+อ่าน prior audit log จาก WORKFLOWS.md:
+```bash
+grep -A 20 "### Audit:" vault/_memory/WORKFLOWS.md | tail -40
+```
+- ถ้า WARN เดิมปรากฏใน audit ก่อนหน้า 1 ครั้ง → mark `[PERSISTED]`
+- ถ้าปรากฏ 2+ ครั้ง → escalate เป็น `[FAIL — PERSISTED N audits]` — ต้องแก้ในรอบนี้
+
+```
+OCD Re-verify: N confirmed / N unconfirmed / N escalated to FAIL
+```
+
+---
+
+### 2.6 ADHD Layer — Cluster Detection + Novelty Radar
+
+**Cluster detection:**
+จัดกลุ่ม flags ทั้งหมดตาม root cause:
+- หลาย workflows มี broken-ref ไปที่ command เดียวกัน → `[CLUSTER] /cmd-name broken in N workflows — fix once, fix all`
+- หลาย workflows ไม่ได้รับ new commands จาก domain เดียวกัน → `[CLUSTER] domain: trading — 3 workflows missing recent commands`
+- หลาย workflows มี auto-log skipping pattern ในช่วงเวลาเดียวกัน → `[CLUSTER] temporal — N workflows degraded after commit <hash>`
+
+Check correlation กับ git log:
+```bash
+git log --oneline --since="30 days ago" -- '.claude/commands/*.md' 'scripts/*.py' | head -10
+```
+ถ้า cluster correlate กับ commit → `[ADHD: REGRESSION] cluster may trace to commit <hash>`
+
+**Novelty Radar:**
+สแกนหา commands/scripts ที่ added แต่ไม่อยู่ใน workflow ใดเลย:
+```bash
+comm -23 <(ls .claude/commands/*.md | sed 's|.*/||;s|\.md||' | sort) \
+          <(grep -h "cmd:" vault/_workflows/*.md | sed 's|.*cmd:.*/?||;s| .*||' | sort -u)
+```
+Flag: `[NOVELTY: ORPHAN CMD] /<name> — added N days ago, not in any workflow`
+
+```
+ADHD Pass: N clusters / N orphan commands / N regressions
+```
+
+---
+
+### 2.7 Autism Layer — Cross-Audit Consistency
+
+เปรียบเทียบ findings ในรอบนี้กับ prior audit:
+
+**Pattern drift detection:**
+- ถ้า flag ที่ reject ใน prior audit กลับมาอีก → `[AUTISM: DRIFT] issue rejected in prior audit returned — was fix temporary?`
+- ถ้า workflow ที่ผ่าน clean ใน prior audit กลับมา fail → `[AUTISM: REGRESSION] <workflow> was CLEAN — something changed`
+- ถ้า fix ที่ approved ใน prior audit ไม่ได้ถูก apply จริง → `[AUTISM: FIX NOT APPLIED] approved change from <date> still missing`
+
+**Cross-workflow inconsistency:**
+- workflows ที่ cover domain เดียวกัน (เช่น trading) ควรมี common steps ที่ consistent
+- ถ้า morning.md ใช้ threshold VIX > 20 แต่ weekly.md ใช้ VIX > 18 → `[AUTISM: THRESHOLD INCONSISTENCY] morning vs weekly`
+
+```
+Autism Cross-Audit:
+- [AUTISM: DRIFT] N / [AUTISM: REGRESSION] N / [AUTISM: FIX NOT APPLIED] N
+- Threshold inconsistencies: N
+```
+
+---
+
+### 2.8 Paranoid Layer — Distrust Auto-Log
+
+**ก่อนเชื่อ auto-log pattern — ตั้ง adversarial questions:**
+
+ต่อทุก pattern จาก 2C:
+- "step always skipped" → ตรวจว่า: condition evaluation logic ถูกต้องไหม? หรือ Claude misread condition ทุกครั้ง?
+- "workflow always fails at step-N" → ตรวจว่า: script จริงๆ fail หรือ Claude mark failed เพราะ output format ไม่ตรงที่คาด?
+- "workflow never run" → ตรวจว่า: workflow ถูก discover ไหม? ชื่อชัดเจนไหม? อยู่ในที่ที่หาได้ไหม?
+
+**Representative sampling check:**
+- auto-log มี N runs — N นั้นมากพอที่จะ conclude pattern ไหม?
+- ถ้า N < 3 → `[PARANOID: INSUFFICIENT DATA] pattern from <N> runs only — cannot conclude`
+- ถ้า N runs ทั้งหมดอยู่ใน time window เดียว (เช่น ทั้งหมดอยู่ใน market crash week) → `[PARANOID: BIASED SAMPLE] all runs in unusual period`
+
+```
+Paranoid Auto-Log Check:
+- [PARANOID: INSUFFICIENT DATA] N patterns with < 3 runs
+- [PARANOID: BIASED SAMPLE] N patterns from unrepresentative period
+- Patterns confirmed reliable: N
+```
+
+---
+
+### 2.9 Savant Layer — Condition Threshold Verification
+
+สำหรับทุก condition threshold ใน workflow definitions:
+
+**ตรวจว่า threshold มี source:**
+- VIX > 20 → มาจากไหน? paper? TRADING_RULES.md? user decision? หรือ default ที่ไม่มีที่มา?
+- Search ใน vault:
+  ```bash
+  grep -ri "VIX.*20\|threshold\|condition" vault/Knowledge/ vault/_memory/TRADING_RULES.md 2>/dev/null | head -10
+  ```
+- ถ้าไม่มี source → `[SAVANT: UNANCHORED THRESHOLD] condition '<x>' — no source found`
+
+**ตรวจว่า threshold ยัง current:**
+- ถ้า threshold ถูกตั้งไว้มากกว่า 6 เดือนโดยไม่มี calibration → `[SAVANT: STALE THRESHOLD] '<x>' — last calibrated <date>`
+- Cross-check กับ auto-log: threshold produce useful branching ไหม? หรือ branch เดียวกันตลอด?
+
+```
+Savant Threshold Audit:
+- [SAVANT: UNANCHORED] N thresholds without source
+- [SAVANT: STALE] N thresholds >6 months without calibration
+- Well-calibrated thresholds: N
+```
+
+---
+
 ### 3. Generate audit report
 
 ```
@@ -131,6 +250,13 @@ Commands available: N | Scripts available: N
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Summary: PASS: N | WARN: N | FAIL: N
 Issues: N broken-ref | N stale | N patterns | N missing
+
+Cognitive Trait Passes:
+  OCD:      N confirmed / N escalated to FAIL
+  ADHD:     N clusters / N orphan cmds
+  Autism:   N drift / N regressions
+  Paranoid: N unreliable patterns flagged
+  Savant:   N unanchored thresholds
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
