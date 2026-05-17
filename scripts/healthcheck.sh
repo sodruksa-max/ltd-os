@@ -165,7 +165,7 @@ done
 
 echo ""
 echo "-- Slash commands (system)"
-for cmd in review daily-brief handoff context condense weekly-learnings onboard analyst challenge council; do
+for cmd in review daily-brief handoff context condense weekly-learnings onboard analyst challenge council healthcheck; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
     p "/${cmd}"
   else
