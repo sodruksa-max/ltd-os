@@ -21,6 +21,8 @@ Save session state → next session reads it first.
 
 2. **Create/overwrite `.claude/handoff.md`**:
 
+*(arXiv:2603.19935 Memori: ใช้ semantic triples + narrative summary แทน free-text prose — 67% fewer tokens เมื่อ resume; เขียน triples ก่อน narrative เสมอ)*
+
 ```markdown
 ---
 created: YYYY-MM-DD HH:MM
@@ -30,34 +32,24 @@ session_duration: ~XX hours
 
 # Session Handoff
 
-## What I was doing
-<1-3 sentences — the main task in progress>
+## Semantic Triples (resume เร็ว — อ่านส่วนนี้ก่อน)
+<!-- format: (decided: X | about: Y | result: Z) -->
+- (decided: <action/choice> | about: <topic/file> | result: <outcome/state>)
+- (decided: <action/choice> | about: <topic/file> | result: <outcome/state>)
+- (in-progress: <task> | about: <file/goal> | blocked-by: <blocker or "none">)
 
-## Current state
-- **Active plan**: `path/to/plan.md` (step X of Y done)
-- **Files modified**: 
-  - `path/to/file1` — <what changed>
-  - `path/to/file2` — <what changed>
-- **Uncommitted changes**: yes/no
-- **Tests status**: passing/failing/not run
-
-## Decisions made this session (don't re-litigate)
-- <decision 1 + 1-line reason>
-- <decision 2 + 1-line reason>
-
-## Open questions for next session
-- <question 1>
-- <question 2>
+## Narrative Summary (context ที่ triples ไม่ capture)
+<2-3 ประโยค — เหตุผลที่ decisions เหล่านั้นถูกทำ, constraint พิเศษ, หรือ context ที่สำคัญ>
 
 ## Next step
-<exactly what to do first in the next session>
-
-## Context that matters
-<key facts/constraints the next session needs to know — e.g. "API key is in .env", "project is for client X not Y">
+<exactly what to do first in the next session — 1 action>
 
 ## Files to read first next session
 1. `<file>` — <why>
 2. `<file>` — <why>
+
+## Open questions
+- <question 1>
 ```
 
 3. **Report to user**:

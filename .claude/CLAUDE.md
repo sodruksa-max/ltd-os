@@ -182,6 +182,17 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - ✅ Chunk: earnings transcript (signal local per quarter), long research PDF (signal per section), log files
 - ❌ อย่า chunk: /council debate (cross-agent reasoning dependencies สูง), kill condition verification (context ต้องครบ)
 
+**Vault-wide synthesis → file-system navigator pattern (arXiv:2603.20432):**
+เมื่อ task ต้องการ cross-vault synthesis (หลายไฟล์) — ใช้ Grep/Glob tool calls isolate relevant spans ก่อนเสมอ; อย่า bulk-load หลายไฟล์พร้อมกัน
+- ✅ grep ก่อน → Read เฉพาะ matching lines/sections
+- ❌ Read ทุกไฟล์ที่คิดว่า relevant แล้วค่อย filter ใน context
+
+**Multi-step pipeline tool selection (arXiv:2512.17052 DTDR):**
+ใน multi-step pipeline (เช่น /stock-content Researcher→Reese→Vera→Indie) — prior tool call outcomes เป็น context สำหรับ select tool ถัดไป:
+- ถ้า step ก่อนหน้าพบ contradiction → step ถัดไปต้อง weight contradiction-registry lookup สูงกว่า
+- ถ้า step ก่อนหน้าพบ data gap → step ถัดไปต้อง search gap นั้นก่อนสิ่งอื่น
+- อย่า follow fixed tool sequence blindly เมื่อ prior outcomes บอกให้ pivot
+
 ### 8. Task-scoped memory loading
 (From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)
 - **Trading tasks** (pre-market, post-market, market-log, screen, eod, paper-trade, weekly-calibration): โหลด PREFERENCES.md + OUTCOMES.md (Trading Calibration Log section only) + TRADING_RULES.md
@@ -197,6 +208,7 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - ถ้า dynamic content อยู่ก่อน static → prefix cache break ทุก API call → cost เพิ่มทันที
 - ใช้กับทุก workflow: /pre-market (handbook ก่อน, script output หลัง), /council (brief ก่อน, proposals หลัง), /nick-weekly (soul.md ก่อน, price data หลัง), /stock-content (vault atoms ก่อน, web search หลัง)
 - ห้ามแก้ CLAUDE.md บ่อยโดยไม่จำเป็น — ทุกครั้งที่เปลี่ยน = cache miss session ถัดไป
+- **Parallel multi-agent calls (arXiv:2605.06046):** ใน /council และ /stock-content pipeline — static system prompt prefix ต้องเป็น byte-identical ทุก parallel agent; role/mindset differentiation ต้องอยู่ใน human turn เท่านั้น ห้ามอยู่ใน static prefix → cache hit rate สูงสุด
 
 ## Memory system
 
