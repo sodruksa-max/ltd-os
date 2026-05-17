@@ -37,6 +37,29 @@ Produce a verified pre-market brief for US trading. All numbers must come from l
 
 ## Steps
 
+### -1. KLS Same-Day Cache Check (รันก่อนทุก step — ประหยัด scripts ที่รันแล้ว)
+
+```bash
+ls vault/daily/$(date '+%Y-%m-%d')*.md 2>/dev/null | head -3
+```
+
+- ถ้าพบ brief วันนี้ → ถาม user: "มี pre-market brief วันนี้แล้วที่ `<path>` — ต้องการ refresh macro/news sections ไหม หรือใช้ผลเดิม?"
+  - ถ้า refresh เฉพาะ macro → รันเฉพาะ macro-snapshot.py + news-snapshot.py, ข้าม cognitive layers ที่รันแล้ว
+  - ถ้าใช้ผลเดิม → โหลดไฟล์นั้นเป็น context แทน ไม่ต้องรัน scripts ซ้ำ
+- ถ้าไม่พบ → ดำเนินต่อตามปกติ
+
+**Dermatographia depth check:**
+ก่อน Step 0.6–0.98 — ตรวจ market magnitude ของวันนี้จาก pre-flight data ที่มี:
+- SPY range คาด < 0.3% AND VIX < 18 AND ไม่มี major catalyst (FOMC / CPI / earnings หลัก) → **[DERMO: QUIET DAY]** ข้าม steps 0.97 (PTSD) และ 0.98 (Aura) เพื่อประหยัด token
+- ถ้าไม่รู้ magnitude ยังไม่มีข้อมูล → ดำเนินต่อปกติ ตรวจ dermo หลัง Synesthesia (step 0.8) แทน
+
+```
+[KLS: CACHE CHECK] brief today: [found <path> / none]
+[DERMO: QUIET / ACTIVE / UNKNOWN] — PTSD+Aura: [skip / run / defer]
+```
+
+---
+
 ### 0. Load TRADING_RULES.md (ถ้ามี)
 
 ```bash

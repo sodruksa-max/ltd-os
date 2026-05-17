@@ -108,6 +108,32 @@ cat vault/Knowledge/nick-soul.md
 
 1. อ่าน nick-soul.md
 
+1.5 **Session Depth Decision — ตัดสิน tier ก่อนโหลดทุกอย่าง**
+
+**Narcolepsy Flash — 1 ประโยคก่อนดูข้อมูล:**
+> "สถานะพอร์ตตอนนี้ใน 1 ประโยค — ดึงจาก nick-soul.md และ memory เท่านั้น (ยังไม่มีราคาปัจจุบัน)"
+
+```
+[NARCOLEPSY: WEEKLY FLASH] <1 ประโยค> — e.g. "Portfolio leaning semi/AI, 3 holdings near kill zone per last session"
+```
+
+**Dermatographia Quiet Check — ตรวจก่อนรัน 43 steps:**
+
+| เงื่อนไข | Tier | Steps ที่รัน |
+|---|---|---|
+| Quiet week: SPY range < 1.5%, ไม่มี earnings หลัก, ไม่มี macro shock | **Tier 2** | Steps 0-6, ข้าม 5.29-5.43 (cognitive layers) |
+| Active week: SPY range ≥ 1.5% หรือ major earnings หรือ macro event | **Tier 3** | Steps 0-6 ทั้งหมด รวม 5.29-5.43 |
+| User flag `--quick` | **Tier 1** | Steps 0-4 only (score + soul + prices + kill check) |
+| User flag `--deep` | **Tier 3** | ทุก step บังคับ |
+
+ตรวจ quiet/active จาก: SPY % change 5 วันล่าสุด + ดู earnings ใน universe 7 วัน
+
+```
+[DERMO: QUIET WEEK / ACTIVE WEEK] — Tier: [1/2/3]
+Reason: SPY [+/-X%], Earnings: [none / TICKER on DATE]
+Steps 5.29-5.43: [SKIP — Tier 2 / RUN — Tier 3]
+```
+
 2. **ดึงราคา + ข่าวสำคัญ (web — 3-4 searches)**
    - ราคาปัจจุบันทุก holdings + SPY + VIX
    - ข่าวสำคัญสัปดาห์นี้ต่อแต่ละ holding (1 search รวม)

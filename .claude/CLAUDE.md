@@ -220,6 +220,43 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - ห้ามแก้ CLAUDE.md บ่อยโดยไม่จำเป็น — ทุกครั้งที่เปลี่ยน = cache miss session ถัดไป
 - **Parallel multi-agent calls (arXiv:2605.06046):** ใน /council และ /stock-content pipeline — static system prompt prefix ต้องเป็น byte-identical ทุก parallel agent; role/mindset differentiation ต้องอยู่ใน human turn เท่านั้น ห้ามอยู่ใน static prefix → cache hit rate สูงสุด
 
+### 10. Token Management Cognitive Rules
+
+**§10.1 Anton's Gate — Context-First before every tool call**
+ก่อนรัน WebSearch / WebFetch / Bash script ทุกครั้ง → ตรวจว่าข้อมูลนั้นมีอยู่ใน context แล้วไหม:
+- VIX / futures มีใน macro-snapshot output แล้ว → ไม่ต้อง search ซ้ำ
+- Earnings date มีใน catalyst-calendar output แล้ว → ไม่ต้อง search ซ้ำ
+- Kill condition data มีใน KB vault และอายุ < 7 วัน → ใช้ vault ก่อน
+→ flag `[ANTON: CONTEXT-FIRST VIOLATION]` ถ้า fetch ซ้ำข้อมูลที่มีอยู่แล้ว
+
+**§10.2 KLS Gate — Same-day data cache**
+ข้อมูลที่เปลี่ยนน้อยกว่า 1×/วัน ไม่ต้อง re-fetch ถ้า fetch แล้วใน session เดียวกันภายใน 4 ชั่วโมง:
+- macro-snapshot.py, news-snapshot.py, sector-flow.py, sr-levels.py
+- vault/Knowledge/*.md ทุกไฟล์ที่อ่านแล้วใน session นี้
+→ ใช้ร่วมกับ §7 Same-session skip rule
+
+**§10.3 Narcolepsy Tier Gate — Depth decision before loading**
+ทุก command ที่มี pipeline ลึก (stock-content, nick-weekly, pre-market) ต้องตัดสิน tier ก่อนเริ่ม:
+- **Tier 1 — Flash** (`--quick`): read KB flash only, no deep audit → ~30% token cost
+- **Tier 2 — Standard** (default): standard pipeline, skip advanced cognitive layers → ~60% token cost
+- **Tier 3 — Deep** (`--deep`): full pipeline, all cognitive layers → 100% token cost
+Trigger: KB fresh (< 30 วัน) + quiet market → Tier 2; KB stale + major event → Tier 3; `--quick` flag → Tier 1 เสมอ
+
+**§10.4 Dermatographia Gate — Minor input → limited depth**
+ถ้า input magnitude เล็ก → ลด pipeline depth อัตโนมัติ:
+- Market flat (SPY < 0.3%, VIX < 18) → /pre-market ข้าม PTSD + Aura layers
+- Portfolio quiet week (no kill trigger, no earnings) → /nick-weekly ข้าม steps 5.29-5.43
+- Ticker มี Reese doc อายุ < 30 วัน → /stock-content ใช้ Tier 2
+
+**§10.5 DID Isolation — Step reads only its required context**
+แต่ละ step ใน pipeline โหลดเฉพาะ context ที่ step นั้นต้องการ — ไม่ bulk-load ทุกอย่างตั้งแต่ต้น:
+- Research step → อ่านเฉพาะ KB ที่เกี่ยวกับ ticker นั้น
+- Kill condition step → อ่านเฉพาะ kill conditions + ข้อมูลที่จำเป็น
+- Synthesis step → ทำงานจาก context ที่สะสมใน session แล้ว ไม่อ่านไฟล์ใหม่
+ใช้ร่วมกับ §8 Task-scoped memory loading
+
+ใช้ `/token-audit` เพื่อ audit waste ครบ 9 lenses
+
 ## Memory system
 
 6 layers protecting against "Claude ลืม":

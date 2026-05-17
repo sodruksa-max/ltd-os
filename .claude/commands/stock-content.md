@@ -40,6 +40,39 @@ ls vault/20_investment/ | grep -i <TICKER>
 
 ---
 
+## STEP 1.5 — NARCOLEPSY TIER GATE
+
+ตัดสิน pipeline depth ก่อนเริ่ม research — อย่าโหลดทุก layer โดย default
+
+**ตรวจ KB freshness สำหรับ ticker นี้:**
+```bash
+ls vault/10_research/*<TICKER>* vault/20_investment/*<TICKER>* 2>/dev/null
+```
+
+| สถานะ | Tier | Pipeline |
+|---|---|---|
+| User flag `--quick` | **Tier 1 — Flash** | Step 2 Researcher only, ไม่มี Reese/Vera/Indie |
+| Reese doc อายุ < 30 วัน + ไม่มี `--deep` | **Tier 2 — Standard** | Step 2-5 แต่ข้าม Vera layers 13-23 |
+| KB empty / Reese doc อายุ > 30 วัน / `--deep` | **Tier 3 — Full** | Step 2-6 ทุก Vera layer |
+
+**Tier 1 Flash output:**
+```
+[NARCOLEPSY: TIER 1] KB fresh — Flash mode. Researcher only, no full audit.
+Reese doc: vault/10_research/<slug>-reese-<date>.md (<N> days old)
+→ รัน /stock-content <TICKER> --deep เพื่อ full pipeline
+```
+
+**Tier 2 Standard output:**
+```
+[NARCOLEPSY: TIER 2] KB available — Standard mode. Vera layers 1-12 only.
+→ ข้าม Vera layers 13-23 (EDS, FAS, Tetrachromacy, Capgras, Supertaster, Color Blindness, Anton's, Narcolepsy, FOP, AIWS, Aura, Split-Brain, Satiation)
+→ รัน --deep เพื่อ full audit
+```
+
+**Tier 3 Full — ไม่แสดงอะไร ดำเนินต่อ**
+
+---
+
 ## STEP 2 — RESEARCHER
 
 **Budget: 5 searches max**
