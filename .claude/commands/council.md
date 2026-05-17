@@ -64,6 +64,10 @@ Invoke 5 mindset proposers IN PARALLEL with same brief:
 
 Each writes `proposal-<role>.md` independently. Don't share between agents.
 
+**SelfBudgeter rule (arXiv:2505.11274) — ทุก proposer ต้องทำก่อน generate:**
+> "This proposal will address [X core arguments] in max [N] words."
+ห้ามเกิน budget ที่ declare — ถ้าเกิน = cut ทิ้ง ไม่ใช่ extend; ลด verbose output ~60% โดยไม่เสียคุณภาพ
+
 After all 5 done → 1-line summary of each.
 
 ## Phase 3: Cross-critique (MARS pattern — arXiv:2509.20502)

@@ -19,6 +19,8 @@
 | 10 | AgentDropout (arXiv:2503.18891, 2025) | Agent elimination | /council: ตัด duplicate critiques → ลด synthesizer input 20%+ |
 | 11 | Thinking with Reasoning Skills (arXiv:2604.21764, 2026) | Reasoning reuse | store reasoning skills vault → ลด cognitive reasoning tokens |
 | 12 | ACON (arXiv:2510.00615, 2025) | Context compression | guidelines-driven compression — 26-54% peak token reduction |
+| 13 | SelfBudgeter (arXiv:2505.11274, 2025) | Output budget | agent ประกาศ output scope ก่อน generate → −61% output length ผลไม่ตก |
+| 14 | Long-Term Memory EDU (arXiv:2511.17208, 2025) | Session history | restructure tool outputs เป็น discourse atoms → retrieve แทน keep ใน context |
 
 ---
 
@@ -389,3 +391,89 @@
 ---
 
 *Appendix scope: 4 themes | Searches: 9/9 | Papers: 7 — 4 IMPLEMENT, 3 REFERENCE | Total survey: 12 themes, 26 papers — 15 IMPLEMENT, 11 REFERENCE*
+
+---
+
+## Appendix — 2026-05-17 รอบ 3
+
+*4 themes ใหม่: output budget control, conversation history restructuring, LLM routing, token pruning MDP | 10 searches | 6 papers (2 IMPLEMENT, 4 REFERENCE)*
+
+---
+
+### Theme 13: Output Budget Control
+
+#### SelfBudgeter: Adaptive Token Allocation for Efficient LLM Reasoning — Zheng Li et al. (arXiv:2505.11274, May 2025)
+- **Source:** [arXiv:2505.11274](https://arxiv.org/abs/2505.11274)
+- **Method:** Model ประเมิน reasoning budget ที่ต้องการก่อน generate จริง จากนั้นใช้ GRPO RL training ให้ปรับ output ตาม self-declared budget; หลัก: "preview scope before generating"
+- **Key finding:** −61% average response length on math reasoning tasks โดย accuracy คงเดิม; user preset token limits → model adapts depth accordingly
+- **Dataset:** Math reasoning benchmarks (MATH, GSM8K)
+- **Apply to project:** Prompt-level implementation ไม่ต้องการ training: ก่อน generate ทุก /council proposer + /pre-market cognitive layer → declare output scope ("I will cover X in N sentences"); ถ้า declare แล้วเกิน = forced cut; ลด verbose proposal output ใน /council ได้ทันที
+- **Tag:** IMPLEMENT
+
+#### Precise Length Control in Large Language Models — Bradley Butcher et al. (arXiv:2412.11937, Dec 2024)
+- **Source:** [arXiv:2412.11937](https://arxiv.org/abs/2412.11937)
+- **Method:** Length-Difference Positional Encoding (LDPE) — secondary positional encoding ที่ count down ถึง target length; แก้ปัญหา hard termination โดยไม่เสียคุณภาพ
+- **Key finding:** Mean token error < 3 tokens จาก target length; quality maintained on QA + summarization
+- **Apply to project:** Model-level modification ไม่ applicable กับ Claude API; takeaway: add explicit word-count ceiling ใน agent role definitions ใน council.md ("max 300 words per proposal section")
+- **Tag:** REFERENCE
+
+---
+
+### Theme 14: Conversation History Restructuring
+
+#### A Simple Yet Strong Baseline for Long-Term Conversational Memory — Sizhe Zhou, Jiawei Han (arXiv:2511.17208, Nov 2025)
+- **Source:** [arXiv:2511.17208](https://arxiv.org/abs/2511.17208)
+- **Method:** Decompose conversation turns เป็น Elementary Discourse Units (EDUs) — self-contained statements + normalized entity + source-turn attribution; organize เป็น heterogeneous graph; retrieve via dense similarity search + LLM filter แทน keep ทั้ง history ใน context
+- **Key finding:** Matches/exceeds baselines บน LoCoMo + LongMemEval_S benchmarks ด้วย "much shorter QA contexts"; non-compressive: preserve information แต่ restructure ไม่ใช่ lose
+- **Dataset:** LoCoMo (long-term conversation), LongMemEval_S
+- **Apply to project:** Claude Code sessions ที่รัน 1+ ชั่วโมง (many tool calls): แทนที่จะ keep raw tool call outputs ใน context → restructure แต่ละ tool result เป็น EDU ("Read TRADING_RULES.md turn 12: position_size = VIX×HSP×PTSD×TACHY"); EDU concept ตรงกับ insight-atoms/ pattern ที่มีอยู่แล้ว — extend ไป tool outputs ด้วย; ทำใน compression-guidelines.md (session >70% context)
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 15: LLM Routing / Model Cascade
+
+#### Dynamic Model Routing and Cascading for Efficient LLM Inference: A Survey — Yasmin Moslem, John D. Kelleher (arXiv:2603.04445, Mar 2026)
+- **Source:** [arXiv:2603.04445](https://arxiv.org/abs/2603.04445)
+- **Method:** Survey ของ routing paradigms: query difficulty assessment, preference-based, uncertainty quantification, RL-based; 3-dimension framework: (1) when decision made, (2) what info used, (3) how computed
+- **Key finding:** Well-designed routing "outperforms even the most powerful individual models"; quality estimator accuracy = critical bottleneck
+- **Apply to project:** ใช้กับ Python scripts ที่เรียก Anthropic API โดยตรง (nick-score.py, universe-screen.py): route simple lookups → Haiku; complex synthesis → Sonnet; ไม่ applicable กับ Claude Code CLI sessions (fixed model per session)
+- **Tag:** REFERENCE (applicable to code/ scripts, not interactive Claude Code sessions)
+
+#### A Unified Approach to Routing and Cascading for LLMs — Jasper Dekoninck et al. (arXiv:2410.10347, Oct 2024)
+- **Source:** [arXiv:2410.10347](https://arxiv.org/abs/2410.10347)
+- **Method:** Derives theoretically optimal cascade routing — unifies routing (one model per query) + cascading (try small → escalate if uncertain); proves both are special cases of one framework
+- **Key finding:** Cascade routing outperforms individual routing/cascading "by a large margin"; confidence calibration = binding constraint
+- **Apply to project:** Cascade pattern for Anthropic API scripts: first call Haiku → check output confidence heuristic → escalate to Sonnet if uncertain; could halve API costs on routine script runs (vault lookups, screening)
+- **Tag:** REFERENCE
+
+---
+
+### Theme 1 Extension: Token Pruning via RL/MDP
+
+#### Dynamic Compressing Prompts for Efficient LLM Inference — Jinwu Hu et al. (arXiv:2504.11004, Apr 2025)
+- **Source:** [arXiv:2504.11004](https://arxiv.org/abs/2504.11004)
+- **Method:** Frames token pruning เป็น Markov Decision Process — RL agent sequentially removes redundant tokens โดย adapt ต่อ dynamic context; Hierarchical Prompt Compression ใช้ curriculum learning (easy compressions ก่อน, hard หลัง); ไม่ต้องการ external LLM เป็น scorer
+- **Key finding:** Outperforms SOTA LLMLingua-style methods ที่ high compression ratios; no external LLM overhead; ยังไม่มี published exact % (paper under review Apr 2025)
+- **Apply to project:** MDP framing ให้ theoretical basis สำหรับ existing observation masking policy: identify load-bearing tokens (kill conditions, exact figures, causal connectives) vs. skippable (narrative headers, boilerplate) — ใช้เป็น principled upgrade ของ UNSAFE/SAFE table ใน compression-guidelines.md; ไม่ต้อง implement RL agent — ใช้ principle เป็น heuristic
+- **Tag:** REFERENCE (no published numbers; await publication before implementing)
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-17 รอบ 3)
+
+16. **Output budget declaration (SelfBudgeter)** → เพิ่มใน /council proposer instructions: ก่อน generate ต้อง state "Proposal will cover [X] in max [N] words" → complexity: **low** (เพิ่ม instruction ใน council.md)
+
+17. **EDU restructuring ใน compression-guidelines.md** → เมื่อ session context >70%: แทน raw tool call outputs ด้วย attributed EDU format ("Read [file] turn [N]: [key fact]") → ตัด verbose context โดยไม่เสีย traceability → complexity: **low** (update compression-guidelines.md)
+
+---
+
+### Gaps — อัพเดต (2026-05-17 รอบ 3)
+
+- **LLM Routing** — applicable เฉพาะ Anthropic API scripts (code/ python), ไม่ใช่ Claude Code CLI sessions ที่ fixed model per session
+- **Token pruning MDP (arXiv:2504.11004)** — ยังไม่มี published benchmark numbers; ใช้ principle เป็น heuristic ก่อน
+- **TRIM two-stage pipeline** — ต้องการ second LM สำหรับ reconstruction; ไม่ applicable กับ LTD-OS setup
+
+---
+
+*Appendix รอบ 3 scope: 4 new themes | Searches: 10 | Papers: 6 — 2 IMPLEMENT, 4 REFERENCE | Total survey: 15 themes, 32 papers — 17 IMPLEMENT, 15 REFERENCE*

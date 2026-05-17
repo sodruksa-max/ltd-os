@@ -55,6 +55,27 @@ purpose: ระบุ section ที่ compress ได้ vs ห้าม compr
 
 ---
 
+## EDU Restructuring — Tool Call History (context >70%, arXiv:2511.17208)
+
+เมื่อ session ยาว (1+ ชั่วโมง, tool calls มาก) — แทนที่จะ keep raw tool outputs ทั้งก้อนใน context → restructure เป็น attributed Elementary Discourse Units (EDUs):
+
+**Format:**
+```
+[EDU] Read <file> turn <N>: <key fact in 1 line>
+[EDU] Bash <script> turn <N>: <numeric result or label>
+[EDU] WebSearch turn <N>: <source, date, key data point>
+```
+
+**กฎ:**
+- 1 EDU = 1 self-contained fact + source attribution
+- ถ้า tool output ให้ข้อมูลหลายข้อ → แยกเป็นหลาย EDUs
+- EDU ที่ contain kill conditions / exact prices → ใส่ tag `[UNSAFE-keep]`
+- EDU ที่ contain boilerplate หรือ raw output ที่ process แล้ว → ตัดออก
+
+**ผล:** verbose tool history 20+ lines → 3-5 EDUs ที่ traceable + retrievable โดยไม่เสีย fidelity
+
+---
+
 ## Vault File Compression (เมื่อ /condense)
 
 | File | Compressible | Keep verbatim |
