@@ -796,6 +796,101 @@ Cotard's Driver Check:
 Portfolio: [N alive / N dying / N zombie]
 ```
 
+5.33 **Color Blindness — Portfolio Without Categorical Labels**
+
+ดูพอร์ตทั้งหมดโดยไม่ใช้ label เชิงคุณภาพที่ซ่อนตัวเลขจริง — ทุก position ต้องอธิบายได้ด้วยตัวเลขล้วนๆ
+
+| Label ที่ห้ามใช้ | แทนด้วย |
+|---|---|
+| "strong performer" | "RS tier [N], +[X]% vs SPY [Y]% = outperform [Z]%" |
+| "weak holding" | "-[X]% vs entry, kill condition [metric] at [Y] vs threshold [Z]" |
+| "low risk" | "kill condition distance [X]%, stop [Y]% from current" |
+| "momentum positive" | "RSI [X], MA20 [Y]% above/below, RS vs SPY [N]-week trend [up/flat/down]" |
+| "high conviction" | "N kill conditions verified, last verified [date], N data points supporting" |
+| "too expensive" | "P/S [X] vs 3Y own avg [Y], vs peer median [Z]" |
+
+→ flag `[COLORBLIND: LABEL] TICKER — "<vague>" → "<quantified version>"`
+
+```
+Color Blind Portfolio Check:
+- Labels flagged: N
+- [COLORBLIND: LABEL] TICKER: "<vague>" → "<quantified>"
+Portfolio readability: [quantified ✅ / N labels need replacement]
+```
+
+5.34 **Narcolepsy Flash — 1-Sentence Clarity Test Per Position**
+
+ก่อนรัน kill condition check อย่างละเอียด — capture flash instinct ต่อแต่ละ holding ใน 1 ประโยค:
+
+> "สำหรับ TICKER — thesis ยังชัดอยู่ไหม? ตอบ 1 ประโยค ก่อนดูข้อมูลใดๆ"
+
+บันทึก flash ก่อน → รัน kill check → เปรียบเทียบ:
+- Flash = "thesis intact, hold" + kill check confirm → `[NARCOLEPSY: FLASH CONFIRMED]` — conviction real
+- Flash = "hold" + kill check reveal weakness → `[NARCOLEPSY: FLASH-CHECK CONFLICT]` — gut มั่นใจเกินข้อมูล
+- Flash = "unsure" + kill check all green → `[NARCOLEPSY: FLASH-CHECK CONFLICT]` — narrative ของ position ไม่ชัดพอ
+
+```
+Narcolepsy Flash:
+- TICKER flash: "[1-sentence read]" → Kill check: [confirm / conflict]
+- [NARCOLEPSY: FLASH CONFIRMED N / NARCOLEPSY: FLASH-CHECK CONFLICT M]
+Signal: [conviction matches data ✅ / gut-data misalignment — review position narrative]
+```
+
+5.35 **Anton's Syndrome — Unverified High-Conviction Assumptions**
+
+Anton-Babinski = ตาบอดแต่ไม่รู้ตัวว่าตาบอด — มั่นใจอย่างยิ่งในสิ่งที่ไม่สามารถมองเห็นได้
+
+ใน portfolio: positions ที่ถือด้วย "obvious conviction" แต่ kill conditions ไม่เคยถูก verify จริงๆ
+
+ตรวจ 3 patterns ต่อทุก holding:
+1. Kill condition "known to be intact" แต่ verify date > 30 วัน → `[ANTON: UNVERIFIED KILL]`
+2. "Strong moat" / "defensible position" อยู่ใน thesis แต่ไม่มี specific moat evidence ใน KB → `[ANTON: MOAT PHANTOM]`  
+3. Weight ≥15% ของ NAV แต่ conviction มาจาก narrative ล้วน (ไม่มี earnings data, ไม่มี RS confirmation) → `[ANTON: BLIND WEIGHT]`
+
+→ flag `[ANTON: BLIND CONFIDENCE] TICKER — assumption: [X] — evidence: [none/thin] — last verified: [date]`
+
+```
+Anton's Syndrome Check:
+- [ANTON: UNVERIFIED KILL] TICKER: kill condition last verified [date]
+- [ANTON: MOAT PHANTOM] TICKER: moat claimed but not evidenced in KB
+- [ANTON: BLIND WEIGHT] TICKER: [X]% NAV — conviction = narrative only
+Portfolio: [N blind confidence positions — require evidence before next hold]
+```
+ถ้าไม่พบ → `Anton's: all conviction positions have evidence base ✅`
+
+5.36 **FOP (Fibrodysplasia Ossificans Progressiva) — Ossified Positions & Kill Conditions**
+
+FOP = โรคที่เนื้อเยื่ออ่อนทุกส่วนกลายเป็นกระดูกเมื่อได้รับบาดเจ็บ — ร่างกายค่อยๆ ล็อคตัวเองจนขยับไม่ได้
+
+ใน portfolio: kill conditions, position sizes, and thesis text ที่ถูกตั้งขึ้นครั้งเดียวแล้วไม่เคยถูก re-examine — กลายเป็นกระดูกที่แข็งทื่อโดยไม่ตั้งใจ
+
+ตรวจ 4 ossification patterns:
+
+**1. Kill condition คำเดิมไม่เคยเปลี่ยน ≥8 สัปดาห์:**
+- เปรียบ kill conditions session นี้กับ weekly rec ล่าสุด — ถ้าเหมือนเดิมทั้งหมด = ossified
+
+**2. Position size ไม่เคย adjust ตั้งแต่ init:**
+- NAV เปลี่ยนแต่ weight % เดิม = ไม่ได้ rebalance = ossified default
+
+**3. Kill condition ใช้ภาษา vague ที่ไม่มีตัวเลข:**
+- "deteriorating", "losing momentum", "competitive pressure increases" → ไม่สามารถ trigger ได้จริง = functional ossification
+
+**4. Thesis text เดิมตั้งแต่ Nick init / Reese doc เก่า >90 วัน ไม่เคย refresh:**
+- Thesis เขียนตาม market conditions ที่อาจเปลี่ยนไปแล้ว
+
+→ flag `[FOP: OSSIFIED] TICKER — [kill condition / size / thesis] — last reviewed: [date] — calcification: [low/medium/high]`
+
+กฎ: ถ้า ≥2 holdings มี [FOP: OSSIFIED] → mandatory re-evaluation ก่อน finalize Recommendation
+
+```
+FOP Ossification Scan:
+- [FOP: OSSIFIED] TICKER: kill condition unchanged [N weeks], last reviewed [date]
+- [FOP: OSSIFIED] TICKER: position size = init default, NAV changed [X]%
+- [FOP: VAGUE KILL] TICKER: "[vague condition]" — cannot trigger without metric
+- Portfolio calcification: [low / medium / [FOP: HIGH — re-evaluate before trade]]
+```
+ถ้าไม่พบ → `FOP: no ossified positions detected ✅`
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

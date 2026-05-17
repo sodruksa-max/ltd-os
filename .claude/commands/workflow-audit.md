@@ -274,6 +274,72 @@ Zombie candidate for retirement: [list]
 
 ---
 
+### 2.12 Anton's Syndrome Layer — Confident Phantom Workflows
+
+Anton-Babinski = ตาบอดแต่ไม่รู้ตัวว่าตาบอด — มั่นใจ 100% ว่าเห็น สร้าง narrative ของสิ่งที่ "เห็น" ทั้งที่จริงๆ มองไม่เห็นอะไรเลย
+
+ใน workflows: workflows ที่ถูก document ว่า "ทำงานได้ดี" แต่ไม่มีหลักฐานการรันจริงๆ — confidence สูงกว่า execution evidence
+
+ตรวจ 3 patterns ต่อทุก workflow:
+
+**1. Documented as "working" but run count = 0:**
+- อ่าน run log (`.claude/workflow-logs/` หรือ `vault/_memory/WORKFLOWS.md`) — workflow ไหนที่ mark ว่า "ready" แต่ไม่มี completion entry
+→ flag `[ANTON: CONFIDENT PHANTOM] <workflow> — documented ready, actual runs: 0`
+
+**2. Steps that assert their own success without output verification:**
+- Step ที่เขียนว่า "สำเร็จแล้ว" หรือ "ไม่มีปัญหา" แต่ไม่มี output ที่ step ถัดไปตรวจสอบได้
+→ flag `[ANTON: UNVERIFIED STEP] <workflow>/<step> — success asserted, not verified`
+
+**3. High-confidence documentation with no runtime data:**
+- Comment / description ที่บอกว่า workflow "proven effective" / "well-tested" แต่ timestamp ของ last run ไม่ปรากฏ
+→ flag `[ANTON: EVIDENCE-FREE CLAIM] <workflow> — confidence claim: "<text>" — evidence: none`
+
+```
+Anton's Workflow Audit:
+- [ANTON: CONFIDENT PHANTOM] N — documented ready, never run
+- [ANTON: UNVERIFIED STEP] N — steps asserting success without output
+- [ANTON: EVIDENCE-FREE CLAIM] N — high-confidence text with no runtime backing
+Action: mark as [UNVALIDATED] in workflow definition until first successful run logged
+```
+ถ้าไม่พบ → `Anton's: all documented workflows have execution evidence ✅`
+
+### 2.13 FOP Layer — Ossified Workflow Conditions
+
+FOP (Fibrodysplasia Ossificans Progressiva) = เนื้อเยื่ออ่อนกลายเป็นกระดูกเมื่อได้รับบาดเจ็บ — สิ่งที่เคยยืดหยุ่นค่อยๆ แข็งทื่อจนขยับไม่ได้
+
+ใน workflows: conditions, thresholds, และ rules ที่เริ่มต้นเป็น "flexible guidelines" แต่ค่อยๆ กลายเป็น hard mandatory rules โดยไม่มีการตัดสินใจชัดเจน
+
+ตรวจ 4 ossification patterns:
+
+**1. Threshold ที่ตั้งครั้งเดียวไม่เคย review:**
+- VIX threshold, day count, percentage cut — ตั้งตอน create แล้วไม่เคยมีคนตั้งคำถาม
+- ตรวจ: อ่าน workflow definition → หาตัวเลขที่ hardcoded → ตรวจ git log ว่า threshold นั้น commit ครั้งเดียวไม่เคยเปลี่ยน
+→ flag `[FOP: CALCIFIED THRESHOLD] <workflow>/<step> — threshold: [X] — set: [date] — never reviewed`
+
+**2. "Optional" ที่กลายเป็น mandatory ใน practice:**
+- Step ที่ definition บอกว่า optional / "ถ้ามีเวลา" แต่ workflow ทุก run ทำ step นี้ทุกครั้ง
+→ flag `[FOP: MANDATORY CREEP] <step> — defined as optional, treated as required`
+
+**3. Guidelines ที่กลายเป็น absolute rules:**
+- ภาษาใน step เปลี่ยนจาก "พิจารณา..." / "ถ้าเหมาะสม..." → "ต้อง..." / "ห้าม..." โดยไม่มี decision log
+→ flag `[FOP: LANGUAGE OSSIFICATION] <step> — original: flexible → current: absolute`
+
+**4. Workflow ที่ถูก run แบบ autopilot ≥4 สัปดาห์ ไม่มีการตั้งคำถาม:**
+- ดู run history — ถ้า workflow รัน > 4 ครั้งโดยไม่มี skip หรือ variation เลย → calcification risk สูง
+→ flag `[FOP: AUTOPILOT RISK] <workflow> — N consecutive runs, zero variations — may need re-evaluation`
+
+```
+FOP Workflow Audit:
+- [FOP: CALCIFIED THRESHOLD] N — thresholds never reviewed
+- [FOP: MANDATORY CREEP] N — optional steps treated as required
+- [FOP: LANGUAGE OSSIFICATION] N — flexible guidelines now absolute
+- [FOP: AUTOPILOT RISK] N — consecutive runs without re-examination
+Calcification level: [low / medium / [FOP: HIGH — schedule deliberate re-eval]]
+```
+ถ้าไม่พบ → `FOP: workflows remain flexible ✅`
+
+---
+
 ### 3. Generate audit report
 
 ```
@@ -321,6 +387,8 @@ Cognitive Trait Passes:
   Savant:      N unanchored thresholds
   KLS:         N hibernating / N pre-awakening / N never-run
   Cotard's:    N zombie workflows / N dead steps / N identity drift
+  Anton's:     N confident phantoms / N unverified steps / N evidence-free claims
+  FOP:         N calcified thresholds / N mandatory creep / N autopilot workflows
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

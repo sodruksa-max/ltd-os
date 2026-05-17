@@ -305,6 +305,45 @@ Action: [none / require fresh evidence search before next hold decision]
 
 ถ้าไม่มี stop triggers ใน window → ข้ามเงียบๆ
 
+**3r. FOP — Rule Ossification Check**
+
+FOP (Fibrodysplasia Ossificans Progressiva) = guidelines ที่ค่อยๆ กลายเป็นกระดูกแข็งโดยไม่ตั้งใจ — trading rules ที่เริ่มต้นเป็น hypothesis หรือ pilot แต่กลายเป็น immovable mandate
+
+อ่าน `vault/_memory/TRADING_RULES.md`:
+
+**ตรวจ 4 ossification patterns:**
+
+**1. Rules approved >8 weeks ago ไม่เคยถูกตั้งคำถามอีก:**
+- ตรวจ git log: `git log --follow --format="%ai %s" vault/_memory/TRADING_RULES.md | head -10`
+- Rule ที่ commit ครั้งเดียวแล้วไม่เคยแก้ใน N สัปดาห์ = calcification candidate
+→ flag `[FOP: CALCIFIED RULE] "<rule text>" — approved: [date] — weeks since review: N`
+
+**2. Absolute language ที่ไม่มี documented rationale:**
+- Rules ที่ใช้ "always", "never", "must", "ห้าม" โดยไม่มี why clause หรือ context limit
+- ถ้าไม่รู้ว่า rule นี้มาจาก pattern ใด / incident ใด → calcification risk สูง
+→ flag `[FOP: UNDOCUMENTED ABSOLUTE] "<rule>" — reason: unknown`
+
+**3. Pilot/experiment rules ที่กลายเป็น permanent:**
+- ดู DECISIONS.md: rules ที่ approve ด้วย "ลองก่อน", "pilot", "ทดสอบ N สัปดาห์" แต่ไม่เคยถูก formal review
+→ flag `[FOP: PILOT GONE PERMANENT] "<rule>" — original intent: experiment — formal review: never`
+
+**4. Rules ที่ไม่เคย trigger ใน N-day window = functional zombie:**
+- Rule ที่มีอยู่แต่ไม่เคยปรากฏใน review logs ว่า trigger หรือ apply = อาจ irrelevant แล้ว
+→ flag `[FOP: ZOMBIE RULE] "<rule>" — last seen applied: [date/never]`
+
+**Escalation:** ถ้า ≥2 rules flagged → เสนอ "Rule Re-evaluation Session" เป็น proposal ใน Step 4
+
+```
+FOP Rule Ossification:
+- Rules in TRADING_RULES.md: N total
+- [FOP: CALCIFIED RULE] N — approved >8 weeks, never re-questioned
+- [FOP: UNDOCUMENTED ABSOLUTE] N — absolute language without rationale
+- [FOP: PILOT GONE PERMANENT] N — experiments never formally reviewed
+- [FOP: ZOMBIE RULE] N — exist but never triggered in window
+Action: [none / [FOP: RE-EVAL SESSION] — N rules need scheduled review]
+```
+ถ้าไม่พบ → `FOP: trading rules remain current and documented ✅`
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว

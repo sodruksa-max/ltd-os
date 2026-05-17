@@ -603,6 +603,83 @@ Cotard's Thesis Driver Check:
 ```
 ถ้าไม่พบ → `Cotard's: all thesis drivers verified alive ✅`
 
+**Vera Layer 16 — Color Blindness: Categorical Label Strip** [COLORBLIND: LABEL]
+
+สแกน Reese doc และ research sections หาคำที่เป็น qualitative categorical ที่ไม่มี quantified backing — ภาษาที่ "ดูดี/ดูแย่" โดยไม่มีตัวเลข:
+
+| Banned label | แทนด้วย |
+|---|---|
+| "strong growth" | "revenue grew X% YoY vs sector median Y%" |
+| "weak competitor" | "[competitor] revenue share dropped from X% to Y% in [period]" |
+| "best-in-class margin" | "gross margin X% vs peer median Y% — top Z percentile" |
+| "attractive valuation" | "P/E X.X vs 3Y own avg Y.Y = [premium/discount]%" |
+| "deteriorating fundamentals" | "[metric] declined from X to Y over [N quarters]" |
+| "high-quality business" | "[moat indicator] = [specific metric/fact]" |
+| "secular tailwind" | "market growing X% CAGR per [source] through [year]" |
+
+→ flag `[COLORBLIND: LABEL] "<vague term>" → "<quantified replacement>"`
+ถ้า ≥3 labels พบ → prepend `⚠️ Color Blind count: N — research reads as qualitative, not quantitative`
+
+```
+Color Blind Check:
+- Labels found: N
+- [COLORBLIND: LABEL] "<term>" → "<replacement>"
+Doc tone: [quantified ✅ / partially labeled / [COLORBLIND: LABEL] — requires replacement]
+```
+ถ้าไม่พบ label → `Color Blind: doc is quantified ✅`
+
+**Vera Layer 17 — Anton's Syndrome: Confident Blindness Audit** [ANTON: BLIND CONFIDENCE]
+
+Anton-Babinski syndrome = ผู้ป่วยตาบอดแต่ไม่รู้ตัวว่าตาบอด — มั่นใจ 100% ว่ามองเห็น สร้าง narrative ของสิ่งที่ "เห็น" ทั้งที่จริงๆ มองไม่เห็นอะไรเลย
+
+ใน research: claim ที่ stated ด้วย high confidence แต่ไม่มีข้อมูลรองรับ — researcher "เห็น" fact ที่ไม่มีอยู่จริง
+
+ตรวจ 3 patterns:
+
+**1. High-confidence bare assertion:** claim ที่พูดเหมือนเป็นความจริงที่รู้กันทั่วไปแต่ไม่มี source:
+- "Company X is the leader in [market]" — ไม่มี market share data
+- "Management has a strong track record" — ไม่มี specific achievement cited
+- "The moat is defensible" — ไม่มี competitive data
+
+**2. Evidence gap at conviction peak:** section ที่ confidence language สูงสุดแต่ footnote/source หายไป:
+- "Clearly, the company..." / "Obviously, demand will..." / "It's well known that..." → ไม่มีข้อมูลตามมา
+
+**3. Unverified forward projection:** projection ที่ไม่มี base case methodology:
+- "Revenue should reach $X by [year]" โดยไม่ระบุ assumptions หรือ model
+
+→ flag `[ANTON: BLIND CONFIDENCE] "<claim>" — evidence: none | must add source or convert to ❓`
+
+```
+Anton's Syndrome Audit:
+- [ANTON: BLIND CONFIDENCE] N — confident claims with zero data
+- [ANTON: EVIDENCE GAP] M — high-confidence language at empty sections
+- [ANTON: UNVERIFIED PROJECTION] K — forward projections without methodology
+- Verdict: [clear ✅ / N blind confidence claims — must source or flag ❓]
+```
+ถ้าไม่พบ → `Anton's: all high-confidence claims have evidence ✅`
+
+**Vera Layer 18 — Narcolepsy Flash Insight** [NARCOLEPSY: FLASH]
+
+Narcolepsy ใช้ hypnagogic state — ช่วงเปลี่ยนระหว่างตื่นกับหลับที่บางครั้งให้ insight ที่ analysis ยาวๆ ไม่ได้ให้ Vera รัน flash scan ก่อน deep audit:
+
+**ก่อนอ่าน Reese doc อย่างละเอียด — จับ 1-sentence thesis read ทันที:**
+> "ถ้าต้องสรุป thesis นี้ใน 1 ประโยคโดยไม่ดูรายละเอียด — thesis คืออะไร?"
+
+บันทึก flash read ก่อน ห้ามแก้ทีหลัง
+
+**หลัง deep audit เสร็จ — เปรียบเทียบ:**
+- ถ้า flash ตรงกับ conclusion → `[NARCOLEPSY: FLASH CONFIRMED]` — thesis ชัดเจนพอที่จะจับได้โดยสัญชาตญาณ
+- ถ้า flash ไม่ตรง → `[NARCOLEPSY: FLASH-AUDIT CONFLICT]` — thesis ซับซ้อนเกินหรือ Reese doc ไม่ได้สื่อ narrative หลักชัดพอ
+- ถ้า flash ชัดกว่า conclusion ใน Reese doc → flag: narrative ใน Reese doc อาจ diluted เกินไป
+
+```
+Narcolepsy Flash:
+- Flash read: "[1-sentence thesis before analysis]"
+- Audit conclusion: "[what deep analysis found]"
+- Match: [NARCOLEPSY: FLASH CONFIRMED / NARCOLEPSY: FLASH-AUDIT CONFLICT]
+- Signal: [narrative clear ✅ / doc needs cleaner thesis statement / thesis too complex]
+```
+
 ---
 
 ## STEP 6 — INDIE ATOMS
