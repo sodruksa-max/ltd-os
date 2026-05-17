@@ -58,6 +58,11 @@ Index ของ atomic insights ทั้งหมดใน `vault/Knowledge/ins
 - [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — WFE market record $145B 2026; LRCX SAM expanding mid-30s% → high-30s% = share gain on expanding base
 - [2026-05-11] [T1,T2] lrcx-etch-equipment-2026-05-11 — HBM tool revenue +50% YoY; GAA+HBM combined >$3B 2025, runway through HBM4/HBM5 era
 
+## LRCX Q3 FY2026 Update (lrcx-q3-fy2026-2026-05-17.md)
+- [2026-05-17] [T1,T2] lrcx-q3-fy2026-2026-05-17 — Q3 FY2026 GM 49.9% exceeded guided 48.5% — China replacement working faster than feared; bear case #1 partially resolved
+- [2026-05-17] [T1,T2] lrcx-q3-fy2026-2026-05-17 — CSBG hit $2.0B/quarter first time = ~$8B annualized recurring revenue; structural buffer against WFE cyclicality confirmed
+- [2026-05-17] [T1,T2] lrcx-q3-fy2026-2026-05-17 — EPS $1.47 record +41% YoY, revenue $5.84B +24% YoY — pricing power intact post-China mix shift; EPS growth outpacing revenue growth
+
 ## AI Networking MRVL+CRDO (ai-networking-mrvl-crdo-2026-05-11.md)
 - [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — Ethernet rebellion: all major hyperscalers → Ethernet; UEC 1.0 June 2025; Microsoft 100% Ethernet by summer 2026
 - [2026-05-11] [T1,T2] ai-networking-mrvl-crdo-2026-05-11 — Copper dead at 800G+ (≤5m limit); clusters >100K GPUs require all-optical; MRVL leads 800G optical — structural beneficiary of cluster scale-up

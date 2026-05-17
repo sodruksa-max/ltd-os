@@ -55,3 +55,70 @@ Q Sep 2025: revenue $5.32B (+27.7% YoY), gross margin record 50.6%, operating ma
 - BeyondSPX/EveryTicker: LRCX AI-Driven Etch Leadership Meets Record Margin Expansion (Nov 2025)
 - FinancialContent/MarketMinute: AI Infrastructure Supercycle — Lam Research (Jan 2026)
 - NotebookLM AI Capex Cycle 2026 notebook query (May 2026)
+
+---
+
+## Q3 FY2026 Addendum — quarter ended March 29, 2026 (reported April 22, 2026)
+
+*Added: 2026-05-17 | Source: LRCX Q3 FY2026 Earnings Release, PR Newswire April 22, 2026*
+
+### Financial update
+
+| Metric | Q1 FY2026 (Sep 2025) | Q3 FY2026 (March 2026) |
+|---|---|---|
+| Revenue | $5.32B (+27.7% YoY) | **$5.84B** (+24% YoY, +9% QoQ) |
+| Gross margin (non-GAAP) | 50.6% record | **49.9%** (exceeded guided 48.5%) |
+| Gross margin (GAAP) | ❓ | **49.8%** |
+| EPS (non-GAAP) | ❓ | **$1.47** record +41% YoY |
+| CSBG quarterly revenue | ❓ | **$2.0B** (first time — milestone) |
+| WFE market guidance | $145B est. (analyst) | **$140B+** upside bias (management) |
+
+⚠️ WFE discrepancy: May 11 research used $145B analyst estimate; management's own Q3 guidance floor is $140B+. Monitor for convergence.
+
+### Thesis update
+
+**Bear case #1 — partially resolved:** Gross margin reached 49.9% vs management-guided 48.5% (+140bps beat). China replacement from global multinationals is working faster than guided. The margin compression narrative from May 11 is less severe than feared.
+
+**Bear case #2 — unchanged:** China revenue still <30% of total; full H2 2026 recovery not proven until Q4 FY2026 (Aug 2026) earnings. Management claim directionally confirmed but not complete.
+
+**Structural reinforcement:** CSBG hit $2.0B/quarter for the first time — approximately $8B annualized run-rate of recurring, margin-rich installed-base revenue. This is an annuity-like buffer against WFE cyclicality that was not fully quantified in May 11 research.
+
+### Kill condition status (updated Q3 FY2026)
+
+| Kill | Threshold | Q3 Status |
+|---|---|---|
+| 1 — AI capex collapse | 2 consecutive quarters below prior year | NOT triggered — all 4 hyperscalers raised Q1 2026 |
+| 2 — AMAT/TEL GAA etch win | Press release or earnings disclosure of major win | NOT triggered — watch |
+| 3 — China recovery stall | Q4 FY2026 GM ≤48.5% AND China <28% | CHECK due Aug 2026 — margin recovering ahead of guide |
+| 4 — Gross margin collapse | <46% for 2 consecutive quarters | DISTANT — 49.9% is 390bps above threshold |
+
+### AIWS Magnitude Audit
+
+- Event: Broad market selloff May 15–16, 2026 (inflation/bond fears; "soaring crude oil prices")
+- LRCX price reaction: -6.28% May 15, -1.24% May 16 (total ~-7.4% from ~$299 → ~$277 est.)
+- Company-specific change: None — Q3 beat all metrics, no negative news post-April 22
+- Broad market May 16: -1.24%
+- **[AIWS: OVER-REACTION]** — LRCX moved ~5x market on May 15 with no company catalyst. Long-duration hardware/WFE names carry higher rate sensitivity (inflation → discount rate → multiple compression). If macro fear eases, mean-reversion toward $290–300 is thesis-consistent within 2–4 weeks.
+
+### Chris+Vera addendum check
+
+**Chris score (addendum claims):** KM=5 / CV=4 / BB=4 (total 13/15) ✅ Pass
+- KM: Kill condition checks tied to Q4 FY2026 date (Aug 2026) + exact thresholds ✅
+- CV: Revenue/EPS/GM sourced from PR Newswire April 22, 2026; AIWS claim inferred from context ⚠️
+- BB: Bear case #2 (China replacement unproven) remains intact as steelman ✅
+
+**Vera flags:**
+- ⚠️ WFE $140B+ (management) vs $145B (analyst prior): possible single-source chain — not independent replication `[ECHO: verify]`
+- ⚠️ CSBG $2.0B: GAAP vs non-GAAP basis not explicitly stated; assumed GAAP from PR Newswire context
+- [HYPERLEXIA: ADJUSTED METRIC] EPS $1.47 is non-GAAP; GAAP EPS ❓ not confirmed
+- [AURA: SCOTOMA] Customer concentration: top customer % of revenue still unverified
+- [AURA: SCOTOMA] 80%+ etch share: stated across sources but no independent third-party verification
+- Scotoma count: 2 → ⚠️ preserved from May 11
+- Savant numbers archived: Revenue $5.84B, EPS $1.47, GM 49.9%/49.8% → savant-numbers.md
+- Alexithymia: clean ✅
+- Semantic satiation: clean ✅
+
+**HSP Communication Shift:**
+- Prior (May 11 guidance): "GM guided 48.5%" — management cautious post-China controls
+- Current (Q3 actuals): "49.9% delivered, beat own guidance" — management MORE CONFIDENT
+- HSP: CONFIDENCE SHIFT positive → bullish execution signal; management credibility improved

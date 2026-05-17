@@ -32,6 +32,12 @@ Exact numbers collected by Nick and Vera during research and weekly reviews.
 
 *(Vera appends after each /stock-content: exact EPS, revenue, margin — with FY/quarter period and source date)*
 
+[LRCX] [2026-05-17] [Q3 FY2026 Revenue] = $5.84B | Source: PR Newswire, April 22, 2026 | Relevant to: T1/T2 thesis validation, WFE supercycle (+24% YoY, +9% QoQ)
+[LRCX] [2026-05-17] [Q3 FY2026 EPS non-GAAP] = $1.47 | Source: PR Newswire, April 22, 2026 | Relevant to: kill condition 4 (pricing power baseline); record +41% YoY
+[LRCX] [2026-05-17] [Q3 FY2026 Gross Margin non-GAAP] = 49.9% | Source: PR Newswire, April 22, 2026 | Relevant to: kill condition 3+4 monitoring; exceeded guided 48.5%
+[LRCX] [2026-05-17] [Q3 FY2026 Gross Margin GAAP] = 49.8% | Source: PR Newswire, April 22, 2026 | Relevant to: kill condition 3+4 monitoring (GAAP baseline)
+[LRCX] [2026-05-17] [CSBG Q3 FY2026 Quarterly Revenue] = $2.0B | Source: PR Newswire, April 22, 2026 | Relevant to: recurring revenue buffer; first $2B quarter milestone
+
 ---
 
 ## Macro Benchmarks — Exact

@@ -1,13 +1,13 @@
 ---
 type: kb-convergence
-updated: 2026-05-16
+updated: 2026-05-17
 source: scripts/thesis-convergence.py
 ---
 
 # Thesis Convergence Report
-*Auto-generated 2026-05-16 23:58 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
+*Auto-generated 2026-05-17 00:58 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
 
-Atoms analyzed: **60** across **14** files | Themes detected: **12**
+Atoms analyzed: **63** across **15** files | Themes detected: **12**
 
 ---
 
@@ -53,6 +53,12 @@ Atoms analyzed: **60** across **14** files | Themes detected: **12**
 - *...+1 more sources*
 - **Nick:** 2 theses confirm — treat as structural macro tailwind, not single-thesis risk
 
+### China / Export Risk [🟡 MODERATE]
+- **Theses:** T1 + T2 | **Sources:** 2 independent files
+- **LRCX — Etch Equipment AI Supercycle** (2026-05-11): China revenue ของ LRCX จะลดจาก 43% เหลือ <30% ของ revenue ใน 2026 เพราะ U.S. export restrictions = -$600M headwind
+- **LRCX — Q3 FY2026 Earnings Update (quarter ended March 29, 2026)** (2026-05-17): LRCX Q3 FY2026 gross margin (non-GAAP) came in at 49.9%, exceeding management-guided 48.5% by +140bps.
+- **Nick:** 2 theses align — watch for 3rd confirmation before sizing up
+
 ### Custom Silicon / ASIC [🟡 MODERATE]
 - **Theses:** T1 + T2 | **Sources:** 2 independent files
 - **AI Capex Cycle 2026** (2026-05-10): AVGO designs and manufactures custom ASICs (XPUs) for GOOGL, META, and ByteDance — it benefits from the custom chip trend regardle...
@@ -71,19 +77,14 @@ Atoms analyzed: **60** across **14** files | Themes detected: **12**
 - **Space & Defense AI — T3 (RKLB, ASTS, LUNR, KTOS, BBAI)** (2026-05-11): Rocket Lab has a validated two-layer moat — Electron (87 launches, proven small-lift workhorse) generates recurring revenue while...
 - **Nick:** 2 theses align — watch for 3rd confirmation before sizing up
 
-### China / Export Risk [🟡 MODERATE]
-- **Theses:** T1 + T2 | **Sources:** 1 independent files
-- **LRCX — Etch Equipment AI Supercycle** (2026-05-11): China revenue ของ LRCX จะลดจาก 43% เหลือ <30% ของ revenue ใน 2026 เพราะ U.S. export restrictions = -$600M headwind
-- **Nick:** 2 theses align — watch for 3rd confirmation before sizing up
-
 ---
 
 ## Within-Thesis Multi-Source Confirmation
 
-- ✅ **T1** — confirmed by 5 independent files: `ai-capex-2026-2026-05-10.md, ai-networking-mrvl-crdo-2026-05-11.md, lrcx-etch-equipment-2026-05-11.md, memory-semiconductors-2026-05-11.md, smci-ai-server-2026-05-11.md`
-- ✅ **T2** — confirmed by 5 independent files: `ai-capex-2026-2026-05-10.md, ai-networking-mrvl-crdo-2026-05-11.md, lrcx-etch-equipment-2026-05-11.md, memory-semiconductors-2026-05-11.md, semiconductor-moats-t2-2026-05-11.md`
+- ✅ **T1** — confirmed by 6 independent files: `ai-capex-2026-2026-05-10.md, ai-networking-mrvl-crdo-2026-05-11.md, lrcx-etch-equipment-2026-05-11.md, lrcx-q3-fy2026-2026-05-17.md, memory-semiconductors-2026-05-11.md, smci-ai-server-2026-05-11.md`
+- ✅ **T2** — confirmed by 6 independent files: `ai-capex-2026-2026-05-10.md, ai-networking-mrvl-crdo-2026-05-11.md, lrcx-etch-equipment-2026-05-11.md, lrcx-q3-fy2026-2026-05-17.md, memory-semiconductors-2026-05-11.md, semiconductor-moats-t2-2026-05-11.md`
 - 🔵 **T4** — confirmed by 2 independent files: `ai-software-monetization-t4-2026-05-11.md, pltr-2026-05-16.md`
 
 ---
 
-*60 atoms | 14 files | Generated: 2026-05-16 23:58 UTC*
+*63 atoms | 15 files | Generated: 2026-05-17 00:58 UTC*

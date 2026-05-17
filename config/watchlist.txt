@@ -21,6 +21,7 @@ IBKR
 ARKK
 ELF
 SMCI
+LRCX
 
 # === Research / paper-only (over $350/share) ===
 # Good for strategy testing but too expensive for 50k THB real account
