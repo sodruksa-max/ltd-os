@@ -88,7 +88,7 @@ Next earnings date + consensus EPS
 - กรอกทุก section ด้วยข้อมูลจาก Step 2
 - **ห้ามเขียน Thesis ให้ user** — เว้นไว้ว่างๆ
 - ใส่ `❓ verify` ทุกที่ที่ไม่มีข้อมูลยืนยัน
-- Kill conditions: ต้องวัดได้ (metric/event) ไม่ใช่ vague
+- Kill conditions: **SPO triplet format** — Subject (metric) + Predicate (condition) + Object (exact threshold + duration) + Time horizon (when to check) + Source — เช่น `gross margin | falls below | 40% GAAP for 2 consecutive quarters | check at each earnings | company IR` — ถ้า kill condition ยังไม่สามารถแปลงเป็น SPO ได้ → ไม่ผ่าน Step 4.5
 
 **เพิ่มใน Decision log:**
 - ถ้า ticker อยู่ใน THESIS_TRACKER → note thesis link
@@ -103,7 +103,7 @@ Next earnings date + consensus EPS
 - **Narrative:** ทำไม story นี้สำคัญตอนนี้ (2-3 ย่อหน้า)
 - **Bull case (3):** specific claims ไม่ใช่ vague positive
 - **Bear case (3):** steelman — เหตุผลที่ thesis ผิดได้
-- **Kill conditions:** metric/event ชัดเจน วัดได้
+- **Kill conditions:** SPO triplet — Subject (metric) + Predicate (threshold condition) + Object (exact value + duration) + Time horizon (when to check) + Source (verifiable source) — ดู Step 4.5 Claim Extraction สำหรับ validation; ถ้า kill condition ใดแปลงเป็น SPO ไม่ได้ = not measurable, ต้องแก้
 - **Upside/downside scenario:**
   - Upside: ถ้า bull case ถูก → implied price target (rough multiple expansion)
   - Downside: ถ้า kill condition trigger → implied drawdown
@@ -169,9 +169,58 @@ Save: `vault/10_research/<slug>-reese-<date>.md`
 
 ---
 
+## STEP 4.5 — CLAIM EXTRACTION (Reese → Vera bridge)
+
+*จาก arXiv:2505.19197 (KPI schema extraction) + arXiv:2602.11886 (SPO triplets)*
+
+> **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ
+
+แปลง bull case, bear case, และ kill conditions ของ Reese ทุกข้อเป็น **Claim Records** — Vera จะ audit records เหล่านี้แทน free text ทำให้ตรวจจับ hallucination ได้แม่นกว่ามาก
+
+**Format ต่อ claim:**
+```
+[CLAIM-RECORD]
+Claim: <exact claim text จาก Reese — 1 ประโยค active voice>
+Type: bull / bear / kill-condition / data-point
+Subject: <metric หรือ entity หลัก>
+Predicate: <relationship — "exceeds" / "falls below" / "grows faster than" / "captures share from">
+Object: <threshold หรือ comparison point — exact value ถ้ามี>
+Time horizon: <quarter / year / event ที่ claim จะ verifiable>
+Source reference: <URL / earnings release / filing — หรือ ❓>
+Verifiable now: yes / no / partial
+```
+
+**Kill condition SPO rule (บังคับ):**
+Kill condition ทุกข้อต้องแปลงเป็น SPO triplet ที่วัดได้:
+- **Subject** = metric ที่วัดได้ (เช่น "gross margin")
+- **Predicate** = threshold condition (เช่น "falls below")
+- **Object** = exact threshold + duration (เช่น "40% for 2 consecutive GAAP quarters")
+- ถ้า kill condition ใดยังไม่สามารถแปลงเป็น SPO ได้ → flag `[KILL: NOT MEASURABLE]` + แก้ Reese doc ก่อนผ่าน Step 5
+
+**Passive voice pre-processing:**
+ก่อนแปลง claim ใดเป็น record — flip passive constructions เป็น active form ก่อนเสมอ:
+- "Revenue was guided down by management" → "Management guided revenue down"
+- ถ้า subject เปลี่ยนหลัง flip → บันทึก subject ใหม่ใน record
+
+**Output ท้าย Step 4.5:**
+```
+Claim Extraction Summary:
+- Bull claims: N records
+- Bear claims: N records
+- Kill condition SPO triplets: N (all measurable ✅ / M [KILL: NOT MEASURABLE] ⚠️)
+- Claims with source reference: N / total
+- Claims needing passive-voice flip: N
+```
+
+Claim records อยู่ใน context — Vera ใช้ใน Step 5 แทน free text
+
+---
+
 ## STEP 5 — CHRIS + VERA
 
 > **Observation masking:** ทำงานจาก Reese doc ใน context — ห้าม re-read ไฟล์ซ้ำ
+
+> **Parallel execution rule (arXiv:2511.07784):** Chris และ Vera ต้อง run อิสระจากกัน — **Vera ห้ามเห็น Chris critique ก่อนที่ Vera จะ run fact-check เสร็จ** เพื่อป้องกัน conformity bias รัน Chris ก่อน (บันทึก output ไว้ในใจ) → รัน Vera โดยไม่ใช้ Chris output เป็น context → reconcile ทั้งคู่หลังเสร็จ; ถ้า Chris และ Vera ขัดแย้งกัน → เชื่อ Vera (data-first) ไม่ใช่ Chris (logic-first)
 
 **Chris (critic) — structured scorecard:**
 ให้คะแนน 3 dimensions (1-5, 5=ดีที่สุด):
@@ -204,6 +253,7 @@ Vera Reflex Summary: fired N / resolved M / priority unresolved K
 - Flag ⚠️ ทุก claim ที่ไม่มี source ชัดเจน
 - เปลี่ยนเป็น ❓ verify ทุกจุดที่ไม่ confirmed
 - **FAITH numerical rule:** ตัวเลขทุกตัว (revenue, growth rate, EPS, market size, margin) ต้อง trace กลับ source ได้ก่อน mark ✓ — ถ้า verify ไม่ได้ → flag ⚠️ UNVERIFIED NUMERIC (ไม่ใช่แค่ ❓)
+- **Passive voice rule (arXiv:2602.11886):** ก่อน check subject identity ของ claim ใดๆ — flip passive constructions เป็น active form ก่อนเสมอ ("Revenue was guided down" → "Management guided revenue down") — passive voice คือ root cause หลักของ subject hallucination ใน financial text; ถ้า subject เปลี่ยนหลัง flip → re-verify claim ใหม่ทั้งหมด
 - ถ้า 2 sources ขัดแย้งกัน → **append ใน `vault/Knowledge/contradiction-registry.md` ทันที**
 
 **Vera Autism Layer (รันหลัง flag เสร็จ — cross-document memory):**
