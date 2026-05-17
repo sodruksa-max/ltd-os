@@ -97,6 +97,49 @@ Reese doc: vault/10_research/<slug>-reese-<date>.md (<N> days old)
 
 **Adaptive rewriter rule (arXiv:2502.15684 FinSearch):** หลังแต่ละ search call → ตรวจว่า dimension ไหนใน [A]-[E] ยังขาดข้อมูล → reformulate sub-query ถัดไปโดย target gap นั้นโดยตรง (ไม่ใช่ fixed query plan) — หยุดเมื่อ dimensions ครบหรือ budget หมด
 
+---
+
+**Research Cognitive Stack — รันขณะอ่าน sources ทุก document (ข้าม ถ้า Tier 1):**
+
+**[Hyperlexia]** อ่าน fine print ที่คนข้าม:
+- ทุก footnote, MD&A Risk Factors, earnings call Q&A ทุกข้อ (ไม่ใช่แค่ prepared remarks)
+- ถ้าพบ qualifier: "excluding", "adjusted", "constant currency", "assuming no further" → flag `[HYPERLEXIA: QUALIFIED]` + หา unadjusted value
+- ถ้า analyst ถามซ้ำ 2+ ครั้งแต่ management ยังไม่ตอบตรง → flag `[HYPERLEXIA: EVASION]`
+
+**[Tetrachromacy]** เพิ่ม 4 invisible source channels นอก mainstream (1 search รวม หรือ spot-check):
+- **Employee:** Glassdoor reviews, LinkedIn job freeze signals, hiring direction
+- **Customer:** Reddit/forum complaints, App Store ratings trend, churn signals
+- **Supply chain:** supplier earnings calls ที่กล่าวถึง ticker, freight data
+- **Patent:** recent patent filings หรือ abandonments ที่ signal R&D direction change
+
+**[Paranoid]** ตรวจ source incentive ก่อนเชื่อทุก source:
+- Analyst upgrade มี banking relationship กับ company ไหม?
+- 3 sources ที่ดู independent cite จาก press release เดียวกันทั้งหมดไหม? → echo
+- Bear thesis มาจาก short seller ที่มี disclosed position ไหม? → flag แต่ไม่ dismiss ทันที
+
+**[Autism]** ตรวจ independence + gaps อย่างเป็นระบบ:
+- Echo detection: trace chain — ถ้าหลาย sources cite original เดียวกัน → `[ECHO: single-source consensus]`
+- Systematic gap: dimension ที่ search ครบ budget แล้วยังหาไม่ได้ → `❓ SYSTEMATIC GAP: <dimension>`
+- Cross-quarter: claim นี้ตรงกับ prior filing ไหม หรือ narrative เปลี่ยนเงียบๆ?
+
+**[Supertaster]** จับ faint bitter signals ในเอกสาร:
+- Audit letter มี going concern qualifier หรือ emphasis of matter ไหม?
+- CFO hedge language เพิ่มขึ้นในส่วนที่ก่อนหน้าพูดตรงๆ?
+- Board member ลาออกเงียบๆ หรือ audit committee เปลี่ยนพร้อมกัน?
+→ flag `[SUPERTASTER: FAINT SIGNAL] <observation>`
+
+รวม flags ทั้งหมดไว้ใน **[E] Data conflicts** พร้อม summary:
+```
+Research Cognitive Stack:
+- [HYPERLEXIA] N flags — [list]
+- [TETRACHROMACY] channels: [found signals / clean]
+- [PARANOID] echo: [Y/N] | incentive conflicts: N
+- [AUTISM] systematic gaps: [list] | echo count: N
+- [SUPERTASTER] faint signals: [N / clean]
+```
+
+---
+
 **Output format — คืนเป็น 5 sections นี้เท่านั้น (ห้าม list vault files — vault context โหลดแล้ว ไม่ใช่ findings):**
 
 **[A] Business & Financials**
