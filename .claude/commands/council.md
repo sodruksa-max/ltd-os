@@ -55,6 +55,31 @@ Write `brief.md` (context, goal, constraints, stakes, open questions, prior deci
 
 Show user: "Brief done. Auto-picked expertise lens: <X>. Starting parallel proposals..."
 
+## Phase 1.5: Brief Clarity Stack (always — ก่อน spawn proposers)
+
+### Schizophrenia — Wrong Problem Detector
+
+> "ถ้า topic นี้เป็น symptom — root cause ที่แท้จริงคืออะไร?"
+
+Force-generate 2 alternative framings:
+- **Reframe 1:** [topic จาก angle ที่ใหญ่กว่า — ปัญหาระดับ system]
+- **Reframe 2:** [topic จาก angle ที่เล็กกว่า / ลึกกว่า — root constraint ที่แท้จริง]
+
+ถ้า alternative framing ทำให้ proposals ที่จะเกิดเปลี่ยนทิศทางอย่างมีนัย → flag `[SCHIZO: WRONG PROBLEM?]` และแสดงให้ user ก่อนดำเนินต่อ — user ยืนยัน topic เดิมหรือ reframe ก่อน spawn
+ถ้าไม่ → ดำเนินต่อเงียบๆ
+
+### Autism — Prior Council Cross-check
+
+```bash
+grep -i "<topic-keyword>" vault/_memory/COUNCIL_LOG.md | head -5
+```
+
+ถ้าพบ similar decision:
+- แสดง: "เคย council เรื่องนี้เมื่อ [date] — outcome: [result]"
+- ถาม: "มีอะไรที่เปลี่ยนไปจากครั้งก่อนที่ทำให้ต้อง council ใหม่?" (รอ user confirm ก่อนดำเนิน)
+
+ถ้าไม่พบ → ดำเนินต่อเงียบๆ
+
 ## Phase 2: Proposals (5 parallel)
 
 Invoke 5 mindset proposers IN PARALLEL with same brief:
@@ -71,6 +96,29 @@ Each writes `proposal-<role>.md` independently. Don't share between agents.
 ห้ามเกิน budget ที่ declare — ถ้าเกิน = cut ทิ้ง ไม่ใช่ extend; ลด verbose output ~60% โดยไม่เสียคุณภาพ
 
 After all 5 done → 1-line summary of each.
+
+## Phase 2.5: Proposal Scan Stack (always — หลังรับ 5 proposals ก่อน critique)
+
+### ADHD — Missing Angle Scan
+
+อ่าน 5 proposals พร้อมกันเป็น gestalt (ห้าม read ทีละตัว) → ถาม:
+> "มุมมองหรือ dimension อะไรที่ **ทั้ง 5 proposers ไม่มีใครพูดถึงเลย**?"
+
+Angles ที่มักโดนข้ามโดย proposers ทุก mindset:
+- Exit strategy / reversibility — ถ้าตัดสินใจแล้วผิด กลับได้ไหม?
+- Opportunity cost — สิ่งที่จะ **ไม่ได้ทำ** เพราะเลือก option นี้คืออะไร?
+- 3rd-party dependency — มีอะไรที่ควบคุมไม่ได้ แต่ทุก option ต้องพึ่งพา?
+- Timeline asymmetry — อะไรที่ต้องทำตอนนี้ vs อะไรที่รอได้โดยไม่เสียเปรียบ?
+- Regulatory / compliance — ถ้า domain มีกฎหมายเกี่ยวข้อง มีใครพูดถึงไหม?
+
+```
+[ADHD: MISSING ANGLES]
+- [angle ที่ขาด 1] — ไม่มีใครพูดถึงใน 5 proposals
+- [angle ที่ขาด 2] — ไม่มีใครพูดถึงใน 5 proposals
+```
+
+Synthesizer ต้องเพิ่ม missing angles เหล่านี้ใน "Open questions" section ของ synthesis.md — ห้ามข้าม
+ถ้าไม่มี missing angles → `[ADHD: FULL COVERAGE] ✅`
 
 ## Phase 3: Cross-critique (MARS pattern — arXiv:2509.20502)
 
@@ -112,6 +160,40 @@ Synthesizer reads brief + 5 proposals + 20 critiques (after dedup) + **expertise
 - Hybrid options
 - Open questions
 
+## Phase 4.5: Synthesis Audit Stack (always — synthesizer รันก่อนเขียน decision matrix)
+
+### Dyslexia — False Diversity Check
+
+มองทั้ง 5 proposals พร้อมกันเป็น gestalt ไม่ใช่ทีละตัว:
+> "proposals ไหนที่ดูเหมือนต่างกันแต่จริงๆ bet เดิม — driver เดียวกัน, risk เดียวกัน?"
+
+ถ้าพบ pair ที่ underlying assumption overlap > 70% → flag `[FALSE DIVERSITY] proposal-A ≈ proposal-B — ทั้งคู่ bet on [driver]`
+→ Synthesizer ต้อง merge เป็น 1 option ใน matrix ไม่แสดงเป็น 2 ทางเลือกปลอม — false diversity = ลวงว่ามีทางเลือกมากกว่าความจริง
+
+### OCD — Matrix Symmetry Check
+
+ก่อนเขียน decision matrix บังคับตรวจ:
+- ทุก proposal ต้องถูกประเมินบน **dimension เดียวกันทุกข้อ** ห้ามมี cell ว่าง
+- ถ้า dimension ไหนไม่มีข้อมูลสำหรับ proposal บางตัว → บังคับระบุ `[unknown — ต้องหาข้อมูล]` ไม่ใช่เว้นว่าง
+- ถ้า matrix asymmetric → flag `[OCD: MATRIX GAP] proposal-X ขาด dimension Y` → แก้ก่อน finalize
+
+### Depressive Realism — Base Rate Calibration
+
+ก่อน synthesizer สรุป recommendation framework:
+> "decisions ประเภทนี้ใน domain นี้ — historical success rate โดยทั่วไปคือเท่าไหร่?"
+
+ตัวอย่าง calibration:
+- "เปลี่ยน strategy ใหม่ทั้งหมด" → base rate success ~20-30%
+- "ทำ incremental improvement บน system ปัจจุบัน" → base rate ~60-70%
+- "รอก่อนแล้วค่อยตัดสินใจ" → delayed decision leading to better outcome ~40%
+
+```
+[DR: BASE RATE] decisions ประเภทนี้: success ~X% | failure mode ที่พบบ่อย: [Y]
+```
+
+Synthesizer ต้อง reference base rate นี้ใน recommendation framework — ห้าม ignore
+ถ้าประเมิน base rate ไม่ได้ → `[DR: BASE RATE UNKNOWN]` — บันทึกเป็น open question
+
 ## Phase 5: Devil's advocate final
 
 Devils_advocate challenges synthesis. Save `final-challenge.md`.
@@ -130,6 +212,23 @@ Devils_advocate challenges synthesis. Save `final-challenge.md`.
 บันทึก key divergence point: จุดที่ทั้ง 2 options เริ่มแยกทางกัน — นั่นคือ decision factor ที่แท้จริง
 
 Save ใน `brief.md` section "MD Alternative History" และ reference ใน DECISION.md
+
+## Phase 5.7: Pre-mortem Stack (always — ก่อนเขียน DECISION.md)
+
+### GAD — Pre-mortem on Top Recommendation
+
+สำหรับ option ที่ synthesizer rank ไว้สูงสุด (หรือ top 2 ถ้า synthesizer ไม่ rank):
+
+> "สมมติเลือก option นี้แล้วล้มเหลวใน 12 เดือน — 3 failure paths ที่ concrete ที่สุด?"
+
+| Path | Failure scenario | Early warning signal (ภายใน 30-60 วัน) | Decision rule เมื่อเห็น signal |
+|---|---|---|---|
+| 1 | [สิ่งที่ทำให้พัง] | [signal แรก] | [ทำอะไร] |
+| 2 | [สิ่งที่ทำให้พัง] | [signal แรก] | [ทำอะไร] |
+| 3 | [สิ่งที่ทำให้พัง] | [signal แรก] | [ทำอะไร] |
+
+บันทึกใน DECISION.md section "Pre-mortem" — ห้ามข้าม
+ถ้า synthesizer ไม่สามารถ enumerate 3 failure paths ได้ครบ → conviction ไม่พอ → downgrade recommendation เป็น "explore further" ใน DECISION.md
 
 ## Phase 6: Final document
 
