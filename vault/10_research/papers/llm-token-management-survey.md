@@ -21,6 +21,8 @@
 | 12 | ACON (arXiv:2510.00615, 2025) | Context compression | guidelines-driven compression — 26-54% peak token reduction |
 | 13 | SelfBudgeter (arXiv:2505.11274, 2025) | Output budget | agent ประกาศ output scope ก่อน generate → −61% output length ผลไม่ตก |
 | 14 | Long-Term Memory EDU (arXiv:2511.17208, 2025) | Session history | restructure tool outputs เป็น discourse atoms → retrieve แทน keep ใน context |
+| 15 | AgentDiet (arXiv:2509.23586, 2025) | Trajectory pruning | strip expired tool outputs หลัง handoff แต่ละ stage → −40-60% input tokens ไม่เสีย quality |
+| 16 | MemAgent (arXiv:2507.02259, 2025) | Chunk-sequential | อ่าน PDF/transcript เป็น chunks + rolling summary → linear complexity แทน O(n²) |
 
 ---
 
@@ -477,3 +479,94 @@
 ---
 
 *Appendix รอบ 3 scope: 4 new themes | Searches: 10 | Papers: 6 — 2 IMPLEMENT, 4 REFERENCE | Total survey: 15 themes, 32 papers — 17 IMPLEMENT, 15 REFERENCE*
+
+---
+
+## Appendix — 2026-05-17: Gap Search รอบ 4 (KV Cache / ICL Selection / Trajectory / Speculative / Chunking)
+
+*Context: Gap search covering 5 areas not in prior themes. 5 searches → 2 IMPLEMENT, 2 REFERENCE, 5 SKIP (3 infrastructure-only). 2 entire gap categories confirmed not actionable for API-based deployments.*
+
+---
+
+### Theme 16: Agentic Trajectory Pruning
+
+#### Reducing Cost of LLM Agents with Trajectory Reduction (AgentDiet) — Xiao, Gao, Peng, Yingfei Xiong (arXiv:2509.23586, Sep 2025)
+- **Source:** [arXiv:2509.23586](https://arxiv.org/abs/2509.23586)
+- **Venue:** arXiv preprint Tier D → code available + strong results → effective Tier C
+- **Citations:** [unverified — paper Sep 2025]
+- **Code:** Not linked, but method is workflow-level (no custom model needed)
+- **Critics:** [no known critics ✓]
+- **Method:** Automatically identifies and removes "useless, redundant, and expired" information from agent trajectories at inference time — targeting accumulated tool outputs and assistant messages that accumulate across multi-step agentic loops; strips expired context after each agent handoff
+- **Key finding:** −39.9% to −59.7% input tokens; −21.1% to −35.9% total compute cost; no performance loss on software engineering benchmarks
+- **Apply to project:** ตรงกับ `/stock-content` pipeline pain point — Researcher → Reese → Chris → Vera → Indie แต่ละขั้นอ่าน transcript ของขั้นก่อน ซึ่งรวม raw web search results ที่ "expired" แล้วหลัง Reese synthesis; principle: หลัง handoff แต่ละ stage ให้ drop raw intermediate tool results, keep structured output เท่านั้น — เพิ่มใน stock-content.md เป็น workflow rule
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 17: Chunk-Sequential Long Document Processing
+
+#### MemAgent: Reshaping Long-Context LLM with Multi-Conv RL-based Memory Agent — Yu, Chen, Feng et al., Microsoft/Tsinghua (arXiv:2507.02259, 2025)
+- **Source:** [arXiv:2507.02259](https://arxiv.org/abs/2507.02259)
+- **Venue:** arXiv preprint Tier D → Microsoft Research + strong numbers → effective Tier C
+- **Citations:** [unverified — 2025]
+- **Code:** [not linked publicly yet]
+- **Critics:** [no known critics ✓]
+- **Method:** RL-trained memory agent reads text in fixed-size chunks sequentially; after each chunk updates a fixed-length memory via overwrite strategy; total compute per chunk stays O(1) linear in number of chunks — extrapolates to 3.5M token inputs trained at 32K
+- **Key finding:** 95%+ accuracy on 512K RULER benchmark; extrapolates to 3.5M token QA tasks with <5% degradation; strict linear complexity eliminates quadratic attention blowup
+- **Apply to project:** Applies to `/stock-content` long earnings transcripts and `_assets/` PDFs — อ่าน full doc เข้า context แบบ monolithic เป็น bottleneck; principle: ใช้ Read tool ด้วย offset+limit อ่านเป็น chunks + rolling fixed-length summary accumulator แทน; เป็น extension ของ partial-read policy ใน CLAUDE.md §7 จาก single-file reads → sequential multi-chunk reads
+- **Tag:** IMPLEMENT
+
+#### When Does Divide and Conquer Work for Long Context LLMs? — (arXiv:2506.16411, 2025)
+- **Source:** [arXiv:2506.16411](https://arxiv.org/abs/2506.16411)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified]
+- **Code:** [none]
+- **Critics:** [no known critics ✓]
+- **Method:** Noise decomposition framework analyzing when divide-and-conquer (chunking) helps vs hurts for long-context tasks; identifies task types where chunking is beneficial vs harmful based on signal locality vs cross-chunk dependency
+- **Key finding:** Chunking works best when signal is locally concentrated and noise distributed; fails when cross-chunk dependencies are high; provides decision criteria for when to chunk vs load full context
+- **Apply to project:** Decision rule ที่ขาดสำหรับ MemAgent — บอกว่า WHEN ควร chunk: earnings transcripts (chunk by quarter, local signal ✓) vs /council debate (cross-agent reasoning dependencies สูง → ไม่ควร chunk ✗)
+- **Tag:** REFERENCE
+
+---
+
+### Theme 18: In-Context Learning Example Selection
+
+#### Sample Efficient Demonstration Selection for In-Context Learning (CASE) — Purohit, Venktesh, Bhattacharya, Anand (arXiv:2506.08607, 2025)
+- **Source:** [arXiv:2506.08607](https://arxiv.org/abs/2506.08607)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Formulates few-shot example selection เป็น stochastic linear bandit problem (top-m bandit); maintains challenger shortlist ลด full LLM evaluations ที่จำเป็นสำหรับ finding best demonstrations
+- **Key finding:** 7x speedup in runtime; 87% fewer LLM calls for exemplar selection setup; no performance degradation vs exhaustive search
+- **Apply to project:** Principle: ใน `/council` และ `/pre-market` prompt construction — แทนที่จะ load OUTCOMES.md ทั้งหมดเพื่อหา relevant examples ให้ใช้ challenger shortlist heuristic: score examples by query similarity → keep top 3 → ลด few-shot token block; ไม่ต้องการ bandit algorithm เต็มรูปแบบ — ใช้เป็น heuristic ใน CLAUDE.md §8 task-scoped loading
+- **Tag:** REFERENCE
+
+---
+
+### Confirmed NOT ACTIONABLE for API-based deployments
+
+**KV Cache Compression (tensor-level):** KVComp (arXiv:2509.00579), KV Cache Compression Survey (arXiv:2508.06297) — ทำงานที่ CUDA/GPU memory layer; Anthropic manages KV cache server-side; ไม่มี user-accessible lever ผ่าน API; revisit ถ้า LTD-OS ย้ายไป local inference
+
+**Speculative Decoding:** Speculative Verification (arXiv:2509.24328, ACL 2026) — server-side inference optimization; ไม่ configurable ผ่าน Anthropic API; Anthropic อาจใช้อยู่แล้ว internally
+
+→ อย่า search gap categories เหล่านี้อีก — confirmed infrastructure-only สำหรับ API users
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-17 รอบ 4)
+
+18. **Trajectory pruning discipline in /stock-content (AgentDiet)** → หลัง Researcher handoff ให้ Reese: drop raw web search results, keep structured A-E sections เท่านั้น → complexity: **low** (เพิ่ม workflow rule ใน stock-content.md)
+
+19. **Chunk-sequential read สำหรับ long PDFs (MemAgent principle)** → เพิ่มใน CLAUDE.md §7: "PDF > 30 pages → อ่านเป็น chunks ด้วย offset+limit + rolling summary accumulator; อย่า load ทั้งไฟล์" → complexity: **low** (update CLAUDE.md policy)
+
+### Gaps — อัพเดต (2026-05-17 รอบ 4)
+
+- **KV cache compression** — confirmed not actionable via Anthropic API; infrastructure-only
+- **Speculative decoding** — confirmed not actionable; server-side inference layer
+- **Dynamic Tool Dependency Retrieval (arXiv:2512.17052)** — appeared in search but not fetched; may reduce tool schema token overhead; optional follow-up
+- **Coding Agents as Long-Context Processors (arXiv:2603.20432)** — appeared in search but not fetched; may have chunk strategy insights for code-agent context; optional follow-up
+
+---
+
+*Appendix รอบ 4 scope: 3 new themes, 2 confirmed-not-actionable categories | Searches: 5 | Papers: 4 active — 2 IMPLEMENT, 2 REFERENCE | Total survey: 18 themes, 36 papers — 19 IMPLEMENT, 17 REFERENCE*
