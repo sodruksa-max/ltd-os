@@ -338,6 +338,65 @@ Calcification level: [low / medium / [FOP: HIGH — schedule deliberate re-eval]
 ```
 ถ้าไม่พบ → `FOP: workflows remain flexible ✅`
 
+### 2.14 Alien Hand Syndrome Layer — Unintended Workflow Behaviors
+
+Alien Hand = มือข้างหนึ่งทำสิ่งที่ conscious intent ไม่ได้สั่ง — workflow steps ที่ execute สิ่งที่ไม่ได้ design ไว้
+
+ตรวจ 3 unintended behavior patterns:
+
+**1. Side effect steps — outputs ที่ไม่มีใครใช้:**
+- Step ใดที่ write file / generate output แต่ไม่มี step ถัดไปหรือ command อื่น consume output นั้น
+- ตรวจ: grep output paths ของแต่ละ step → ดูว่ามีอะไรที่ reference output นั้นต่อไหม
+→ flag `[ALIEN HAND: SIDE EFFECT] <workflow>/<step> — writes: [path] — consumed by: nothing`
+
+**2. Undocumented coupling — trigger ที่ไม่ได้ตั้งใจ:**
+- Workflow A ทำให้ Workflow B หรือ script C ถูก trigger โดยไม่มีใน workflow definition — เช่น PostToolUse hook ที่ fire unexpectedly
+- ตรวจ: grep `vault-review-trigger.sh` + `.claude/settings.local.json` hooks — match กับ workflow step outputs
+→ flag `[ALIEN HAND: COUPLING] <workflow> triggers <other> — undocumented in definition`
+
+**3. Scope creep execution — step ทำมากกว่าที่ documented:**
+- Step description บอก "ตรวจ X" แต่ implementation check Y, Z ด้วย — documented scope < actual scope
+→ flag `[ALIEN HAND: SCOPE CREEP] <step> — documented: [X] — actual: [Y, Z]`
+
+```
+Alien Hand Workflow Check:
+- [ALIEN HAND: SIDE EFFECT] N — outputs no consumer
+- [ALIEN HAND: COUPLING] N — undocumented workflow triggers
+- [ALIEN HAND: SCOPE CREEP] N — steps executing beyond documented scope
+Action: [document intentionally / remove unused outputs / explicit coupling declaration]
+```
+ถ้าไม่พบ → `Alien Hand: all workflow behaviors are intentional ✅`
+
+### 2.15 Sleep Paralysis Layer — Aware-But-Frozen Workflow Points
+
+Sleep Paralysis = รู้ว่าต้องขยับ — aware of the situation — แต่ขยับไม่ได้
+
+Applied: workflow ที่มี decision points หรือ conditional steps แต่ไม่เคย execute ทางอื่นนอกจาก default
+
+ตรวจ 3 paralysis patterns:
+
+**1. Permanent default — decision ที่ไม่ได้ decide:**
+- Step ที่มี "ถ้า X → Y, ถ้าไม่ใช่ → Y" — result เหมือนกันทุกกรณี = ไม่ใช่ decision จริงๆ
+- หรือ step ที่ branch ไป option เดียวทุก run ใน history
+→ flag `[SLEEP PARALYSIS: PERMANENT DEFAULT] <step> — always takes same path regardless of condition`
+
+**2. Broken escalation path — รู้ว่า FAIL แต่ไปไม่ถึงไหน:**
+- Step ที่บอก "ถ้า FAIL → escalate" แต่ escalation destination ไม่มี = paralysis loop
+→ flag `[SLEEP PARALYSIS: BROKEN ESCALATION] <step> — escalate path has no destination`
+
+**3. Frozen optional — condition met แต่ step ไม่ถูก run:**
+- Optional step ที่ condition ถูก satisfy ใน run history แต่ step ยังถูก skip ทุกครั้ง
+→ flag `[SLEEP PARALYSIS: FROZEN OPTIONAL] <step> — condition met [N times], always skipped`
+
+```
+Sleep Paralysis Workflow Check:
+- [SLEEP PARALYSIS: PERMANENT DEFAULT] N — non-decisions masking as decisions
+- [SLEEP PARALYSIS: BROKEN ESCALATION] N — FAIL paths with no destination
+- [SLEEP PARALYSIS: FROZEN OPTIONAL] N — conditions met but steps skipped
+Action: [redesign decision tree / add escalation destination / remove dead optional]
+```
+ถ้าไม่พบ → `Sleep Paralysis: all workflow decision points are functional ✅`
+
 ---
 
 ### 3. Generate audit report
@@ -389,6 +448,8 @@ Cognitive Trait Passes:
   Cotard's:    N zombie workflows / N dead steps / N identity drift
   Anton's:     N confident phantoms / N unverified steps / N evidence-free claims
   FOP:         N calcified thresholds / N mandatory creep / N autopilot workflows
+  Alien Hand:  N side effects / N couplings / N scope creep steps
+  Sleep Para.: N permanent defaults / N broken escalations / N frozen optionals
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

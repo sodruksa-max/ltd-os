@@ -891,6 +891,137 @@ FOP Ossification Scan:
 ```
 ถ้าไม่พบ → `FOP: no ossified positions detected ✅`
 
+5.37 **Dermatographia — Position Hypersensitivity Detection**
+
+Dermatographia = ผิวที่ react รุนแรงต่อ stimulus เล็กน้อย — applied: holdings ที่เคลื่อนไหวมากกว่าสัดส่วนต่อ macro event
+
+ตรวจ holdings ทั้งหมด: เปรียบ 4w price move vs SPY ใน event เดียวกัน
+- ถ้า holding เคลื่อน >2.5× ของ SPY ต่อ macro event เดียวกัน = dermatographic
+- ถ้า move ใหญ่กว่า implied beta >50% = idiosyncratic hypersensitivity
+
+→ flag `[DERMATOGRAPHIA] TICKER — N× SPY sensitivity — reduce size in volatile regimes`
+
+```
+Dermatographia Portfolio:
+- TICKER: [N×] sensitivity — [NORMAL / [DERMATOGRAPHIA: HYPERSENSITIVE]]
+- Highest sensitivity: [ticker] at [N×] — sizing caution during stress periods
+```
+
+5.38 **DID (Dissociative Identity Disorder) — Independent Identity Evaluation**
+
+DID = multiple distinct identities แยกกันสมบูรณ์ — ไม่มี identity รู้ว่า identity อื่นคิดอะไร
+
+ก่อน Recommendation — evaluate แต่ละ holding จาก 3 identities แยกกัน ห้าม contaminate:
+
+**Identity A — Pure Fundamentals** (ไม่รู้ว่าถือ position นี้อยู่ ไม่รู้ entry price):
+> "จาก KB ที่มี — would you initiate TICKER today? Y/N + 1-line reason"
+
+**Identity B — Pure Risk Manager** (ไม่รู้ entry price ไม่รู้ P&L):
+> "Kill conditions: intact / approaching / triggered? Size appropriate for current volatility?"
+
+**Identity C — Pure Thesis Monitor** (ไม่รู้ P&L ไม่รู้ entry price):
+> "Is the original thesis still the reason this position exists? Or has the holding reason drifted?"
+
+Merge หลัง 3 identities run:
+- ทั้ง 3 agree → `[DID: CONSENSUS]` — conviction real
+- A disagrees → `[DID: FUNDAMENTALS DOUBT]` — would not initiate today
+- B disagrees → `[DID: RISK CONCERN]` — size or kill condition issue
+- C disagrees → `[DID: THESIS DRIFT]` — holding for reason different from original
+
+```
+DID Evaluation:
+- TICKER — A: [initiate/not] B: [ok/concern] C: [aligned/drifted]
+  → [DID: CONSENSUS / DID: FUNDAMENTALS DOUBT / DID: RISK CONCERN / DID: THESIS DRIFT]
+Portfolio: [N consensus / N identity conflicts — reconcile before Recommendation]
+```
+
+5.39 **Alien Hand Syndrome — Unintended Portfolio Behaviors**
+
+Alien Hand = มือข้างหนึ่งทำสิ่งที่จิตใต้สำนึกไม่ได้ตั้งใจ — portfolio กระทำโดยไม่มี conscious intent
+
+ตรวจ 3 unintended behaviors:
+1. **Unintended concentration**: portfolio คิดว่า diversified แต่ effective exposure ต่อ single driver >50% NAV (เช่น hyperscaler capex)
+2. **Unintended short**: positions ที่ implicitly benefit เมื่อ thesis บางตัวพัง — natural short โดยไม่ตั้งใจ
+3. **Beta creep**: portfolio beta โดยรวมเพิ่มขึ้นโดยไม่มีใครตัดสินใจเพิ่ม risk
+
+→ flag `[ALIEN HAND] <behavior> — intended: [X] — actual: [Y] — correction: [what to fix]`
+
+```
+Alien Hand Check:
+- Concentration: [diversified / [ALIEN HAND] effective exposure to [driver]: X% NAV]
+- Unintended short: [none / [ALIEN HAND] TICKER implicitly shorts [thesis]]
+- Beta: current [X] vs target [Y] — [intentional / [ALIEN HAND: BETA CREEP]]
+Action: [none / rebalance to remove unintended behavior]
+```
+
+5.40 **Capgras Delusion — Per-Holding Impostor Check**
+
+Capgras = คนที่รู้จักถูกแทนที่ด้วย impostor ที่เหมือนกันภายนอกทุกอย่าง — ใช้ต่อ holding ที่ thesis อาจ drift โดยไม่สังเกตเห็น
+
+ต่อแต่ละ holding ตรวจ 3 quick checks:
+1. Revenue mix: segment ที่เป็น thesis driver ยัง % of revenue ใกล้เดิมไหม? (>30% shift = impostor signal)
+2. Competitive position: moat basis ยัง intact ไหม? หรือถูก commoditize/disrupt แล้ว
+3. Management: CEO/CFO ที่ thesis อ้างถึง track record ยังอยู่ไหม?
+
+→ flag `[CAPGRAS: IMPOSTOR] TICKER — [component] changed significantly since thesis was written`
+→ ≥2 flags → thesis rewrite required ก่อน hold decision
+
+```
+Capgras Check:
+- TICKER: revenue mix [intact/changed X%], moat [intact/eroded], management [same/changed]
+  → [ORIGINAL INTACT ✅ / [CAPGRAS: IMPOSTOR] — N components shifted]
+Portfolio: [N impostors — require thesis rewrite before confirming hold]
+```
+
+5.41 **Sleep Paralysis — Portfolio Paralysis Detection**
+
+Sleep Paralysis = รู้ตัวและรู้ว่าต้องขยับ แต่ขยับไม่ได้ — awareness without action
+
+ตรวจ 2 paralysis patterns:
+1. **Acknowledged kill**: kill condition ที่ถูก acknowledge ใน session ก่อน ("approaching" / "concern") แต่ยังไม่มี action ใน Recommendation
+2. **DID-confirmed doubt**: position ที่ DID Identity A บอก "would not initiate" แต่ยัง hold เพราะ "รอดูก่อน" โดยไม่มี specific trigger date
+
+→ flag `[SLEEP PARALYSIS] TICKER — kill acknowledged [N sessions ago], no action — must decide this session`
+
+กฎ: [SLEEP PARALYSIS] = ห้ามรออีก — finalize sell/hold พร้อม explicit reason ใน Recommendation นี้
+
+```
+Sleep Paralysis Check:
+- TICKER: kill acknowledged [date], action: [taken / [SLEEP PARALYSIS: STILL HELD]]
+- DID doubt + still held: [SLEEP PARALYSIS: KNOWN-BUT-FROZEN]
+Portfolio: [N paralyzed positions — must resolve today]
+```
+ถ้าไม่พบ → `Sleep Paralysis: all concerns have been acted on ✅`
+
+5.42 **EDS — Structural Fragility of Holdings**
+
+Quick EDS check per holding — 2 structural markers ที่ดึงได้จาก nick-signals.md + KB:
+1. **Leverage trend**: debt/EBITDA ขึ้น 2+ ปีติดกันโดยไม่มี acquisition = leverage creep
+2. **Non-GAAP reliance**: GAAP negative แต่ non-GAAP positive ≥2 ปีติดกัน = structural flex
+
+→ flag `[EDS: FRAGILE] TICKER — [leverage creep / non-GAAP reliance] — fragility: [medium/high]`
+
+```
+EDS Portfolio Fragility:
+- TICKER: leverage [stable/creeping], GAAP vs non-GAAP [consistent/diverging]
+  → [SOLID ✅ / [EDS: FRAGILE] — N structural flex signals]
+```
+
+5.43 **Tetrachromacy — 4th Dimension Portfolio Signals**
+
+ตรวจ 2 invisible channels ต่อ holdings ที่ nick-signals.md ไม่ capture — ใช้ข้อมูลจาก KB หรือ 1 quick search ถ้า high-conviction holding:
+1. **Employee signal**: Glassdoor trend, layoff news, culture shift ที่อยู่ใน KB
+2. **Customer signal**: churn indicators, NPS, customer concentration shift ที่ระบุใน vault
+
+→ flag `[TETRACHROMACY] TICKER — invisible signal: <channel>: <finding> — aligned/diverges from thesis`
+→ flag `[TETRACHROMACY: BLIND SPOT] TICKER` ถ้าไม่มีข้อมูล non-standard channel ใดๆ
+
+```
+Tetrachromacy Portfolio Signals:
+- TICKER: [employee/customer signal] → [aligned ✅ / [TETRACHROMACY: DIVERGES]]
+- [TETRACHROMACY: BLIND SPOT] TICKER — no 4th-dimension data in KB
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

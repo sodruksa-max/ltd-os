@@ -344,6 +344,66 @@ Action: [none / [FOP: RE-EVAL SESSION] — N rules need scheduled review]
 ```
 ถ้าไม่พบ → `FOP: trading rules remain current and documented ✅`
 
+**3s. Sleep Paralysis — Trader Awareness-Action Gap**
+
+Sleep Paralysis = รู้ตัวและรู้ว่าต้องทำอะไร แต่ลงมือไม่ได้ — awareness ไม่แปลเป็น action
+
+ตรวจ pattern ใน review logs: entries ที่ note "ควรจะ..." / "ต้องจะ..." / "ครั้งหน้าต้อง..." แต่ behavior เดิมยังเกิดซ้ำใน reviews ถัดๆ มา
+
+**ตรวจ 3 types:**
+
+**1. Acknowledged non-execution:** rule ที่รู้ว่าต้องทำแต่ log บอกว่าไม่ได้ทำ ≥2 ครั้งต่อกัน
+- grep "should have" / "next time" / "ควรจะ" / "ต้องจะ" ใน review logs → ดูว่า appeared ≥2× โดยไม่มีรายงาน behavior change
+
+**2. Repeated insights without behavior change:** lesson ที่ appear ≥3 ครั้งใน window โดยไม่มีรายงานว่าเปลี่ยนอะไร
+- Same lesson key phrase ≥3 reviews = insight stuck in awareness ไม่ถึง action
+
+**3. Setup awareness gap:** รู้ว่า setup เกิด แต่ไม่ได้ enter — บ่อยโดยไม่มีเหตุผล documented
+- "missed setup" / "saw but didn't take" ใน log ≥2× ใน window โดยไม่มี documented reason
+
+→ flag `[SLEEP PARALYSIS: AWARE-NOT-ACTING] "<lesson/rule>" — appeared N times, behavior unchanged`
+→ ≥2 flags → propose: accountability mechanism (alert, checklist pre-trade, partner review) ใน Step 4
+
+```
+Sleep Paralysis Check:
+- Non-execution: N — [rules known, not applied]
+- Repeated insights: N — [lessons ≥3× without behavior change]
+- Setup gaps: N — [identified but not entered, undocumented]
+Action: [none / [SLEEP PARALYSIS] N patterns → propose accountability mechanism]
+```
+
+**3t. DID — Independent Identity Trading Audit**
+
+DID = ประเมินการเทรดจาก 3 identities แยกกัน — ไม่ให้ identity ใด contaminate อีก
+
+อ่าน N days review แล้ว evaluate ผ่าน 3 independent lenses:
+
+**Identity A — Rules-only** (ไม่รู้ผล P&L):
+> "ทุก trade ใน N days: follow TRADING_RULES.md ไหม? Y/N per trade"
+
+**Identity B — Process-only** (ไม่รู้ win/loss):
+> "Decision process ของแต่ละ trade: entry criteria ครบ? setup valid? process correct?"
+
+**Identity C — Outcome-only** (ไม่รู้ว่า follow rules หรือเปล่า):
+> "Pattern ระหว่าง win/loss กับ market condition / setup type คืออะไร?"
+
+Merge ผลลัพธ์:
+- A = "broke rule" + C = "profitable" → `[DID: PROFITABLE RULE BREAK]` — อันตราย เพราะเสริม bad behavior
+- A = "followed rule" + C = "loss" → `[DID: PROCESS GOOD]` — ผลไม่ดีแต่ process ถูก ห้ามแก้ rule
+- B = "bad process" + C = "profitable" → `[DID: LUCKY SHORTCUT]` — ต้องบันทึกเป็น WARN
+- A = B = C consistent → `[DID: ALIGNED]`
+
+```
+DID Trading Audit:
+- A (Rules): N rule-compliant | N breaks
+- B (Process): N proper-process | N shortcuts
+- C (Outcome): win rate X% | loss patterns: [Y]
+- [DID: PROFITABLE RULE BREAK] N — escalate to WARN before proposing rule change
+- [DID: PROCESS GOOD] N — do not punish by changing rule
+- [DID: LUCKY SHORTCUT] N — mark as unsustainable pattern
+- [DID: ALIGNED] N — rules, process, outcome consistent
+```
+
 ### 4. Generate proposals
 
 สร้าง proposal เฉพาะที่ **มี evidence จาก review อย่างน้อย 2 ครั้ง** — ห้าม fabricate pattern จาก data จุดเดียว

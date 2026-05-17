@@ -680,6 +680,124 @@ Narcolepsy Flash:
 - Signal: [narrative clear ✅ / doc needs cleaner thesis statement / thesis too complex]
 ```
 
+**Vera Layer 19 — EDS: Structural Fragility Audit** [EDS: STRUCTURAL FLEX]
+
+Ehlers-Danlos Syndromes = collagen ผิดปกติ — ข้อต่อ, ผิวหนัง, เส้นเลือดยืดหยุ่นเกินปกติ ดูแข็งแรงภายนอก แต่โครงสร้างภายในพร้อมพัง
+
+Applied: ตรวจ business structural components ที่ "stretch" ได้เกินปกติ — ดีในช่วงดี แต่จะ break เมื่อ stress
+
+ตรวจ 4 connective tissues:
+1. **Covenant stretch**: debt covenants ที่ถูก waive/amend ≥2 ครั้งใน 3 ปี — flex ที่บ่งบอกว่า structure ไม่มั่นคง
+2. **Revenue recognition flex**: channel stuffing indicators (A/R โตเร็วกว่า revenue), percentage-of-completion, bill-and-hold arrangements
+3. **Governance elasticity**: related-party transactions, board-approved CEO pay ที่ exceed performance threshold, audit ↔ exec committee overlap
+4. **Capital structure stretch**: debt/EBITDA ขยายทุกปีโดยไม่มี acquisition หรือ revenue acceleration = leverage creep
+
+→ flag `[EDS: STRUCTURAL FLEX] <component> — stretched: [description] — stress risk: [low/medium/high]`
+→ ≥2 components flagged → prepend `⚠️ EDS: Structural fragility — thesis assumes stability, verify stress scenario`
+
+```
+EDS Structural Audit:
+- Covenant: [solid / [EDS: STRUCTURAL FLEX] — N waivers in 3Y]
+- Revenue recognition: [conservative / [EDS: STRUCTURAL FLEX] — aggressive method]
+- Governance: [independent / [EDS: STRUCTURAL FLEX] — N related-party items]
+- Capital structure: [stable / [EDS: STRUCTURAL FLEX] — leverage expanding without growth]
+Fragility: N/4 — [low / medium / [EDS: HIGH — structural basis for thesis questionable]]
+```
+ถ้าไม่พบ → `EDS: structural integrity verified ✅`
+
+**Vera Layer 20 — Foreign Accent Syndrome: Management Language Shift** [FAS: LANGUAGE SHIFT]
+
+FAS = พูดภาษาแม่ด้วยสำเนียงภาษาต่างประเทศโดยไม่ตั้งใจ — สัญญาณว่าสมองเปลี่ยนไปแล้ว
+
+Applied: management ที่เริ่มพูดด้วย "สำเนียงใหม่" ใน earnings calls — language ไม่ตรงกับตัวตนเดิม
+
+เปรียบ transcript ปัจจุบัน vs 2 ไตรมาสก่อน ตรวจ 3 shifts:
+1. **Directness collapse**: เคยพูด revenue target ชัด → เริ่มพูด "consistent with our expectations" โดยไม่มีตัวเลข
+2. **Vocabulary transplant**: คำใหม่ที่ไม่เคยใช้ใน earnings calls หลายปีเริ่มปรากฏ — โดยเฉพาะ trend words ที่ทั้ง sector adopt พร้อมกัน = narrative adoption ไม่ใช่ organic language
+3. **Hedging multiplication**: นับ "may", "could", "subject to", "assuming" ใน Q&A ปัจจุบัน vs prior — ถ้าเพิ่ม >50% = accent shift
+
+→ flag `[FAS: LANGUAGE SHIFT] <type> — prior: "<old>" → current: "<new>"`
+
+```
+FAS Language Audit:
+- Directness: [maintained / [FAS: LANGUAGE SHIFT] — specifics replaced by vague]
+- Vocabulary: [organic / [FAS: LANGUAGE SHIFT] — N sector trend words newly adopted]
+- Hedging count: prior N → current M ([+X%])
+- Verdict: [no accent change ✅ / N shifts — management communication diverged]
+```
+ถ้าไม่มี transcript ใหม่กว่า 90 วัน → `FAS: no recent transcript to compare ✅`
+
+**Vera Layer 21 — Tetrachromacy: 4th Dimension Signal Detection** [TETRACHROMACY: INVISIBLE SIGNAL]
+
+Tetrachromacy = มี cone cells 4 ชนิด — เห็น ~100 ล้านสีที่คนปกติมองไม่เห็น
+
+Applied: ค้นหา signal ใน channels ที่ analyst ทั่วไปไม่ดู — ข้อมูลที่อยู่นอก standard financial metrics
+
+สแกน 4 invisible channels:
+1. **Employee signal**: Glassdoor rating trend (6m moving avg), LinkedIn headcount vs reported — mismatch?
+2. **Customer behavior**: App store rating trend, web traffic trend (SimilarWeb), Google Trends search interest
+3. **Supply chain echo**: ค้น earnings call transcripts ของ major supplier/customer ว่ามีการ mention บริษัทนี้อย่างไร — positive/cautious/absent
+4. **Patent velocity**: patent filing trend vs R&D narrative — accelerating/decelerating?
+
+→ flag `[TETRACHROMACY: INVISIBLE SIGNAL] <channel> — finding: <X> — vs narrative: [aligned/diverges]`
+→ flag `[TETRACHROMACY: BLIND SPOT] <channel>` ถ้าข้อมูลหาไม่ได้
+
+```
+Tetrachromacy Scan:
+- Employee: [aligned / [TETRACHROMACY: INVISIBLE SIGNAL] Glassdoor/headcount diverges]
+- Customer: [aligned / [TETRACHROMACY: INVISIBLE SIGNAL] app/web signals diverge]
+- Supply chain: [aligned / not found / concern mention found]
+- Patent: [accelerating / flat / [TETRACHROMACY: INVISIBLE SIGNAL] decelerating vs narrative]
+Invisible signals: N found | N blind spots
+```
+
+**Vera Layer 22 — Capgras Delusion: Thesis Impostor Detection** [CAPGRAS: THESIS IMPOSTOR]
+
+Capgras Delusion = เชื่อว่าคนที่รู้จักถูกแทนที่ด้วย impostor ที่เหมือนกันทุกอย่างภายนอก — ชื่อเดิม หน้าเดิม แต่ไม่ใช่คนเดิม
+
+Applied: company ที่มีชื่อเดิม ticker เดิม — แต่ thesis ที่เคย invest ไม่ได้ exist ใน company นี้อีกแล้ว
+
+ตรวจ 3 impostor patterns:
+1. **Revenue mix shift**: segment ที่เป็น thesis driver มี revenue share เปลี่ยน >30% จากตอนที่ตั้ง thesis
+2. **Customer base substitution**: customer concentration shift — major customer (>10% rev) หายไปหรือถูก replace โดย customer ที่มี economics ต่างกัน
+3. **Moat basis change**: moat ที่เคยมาจาก switching cost / network effect / IP — ยัง intact ไหม? หรือถูก commoditize/disrupted แล้ว
+
+→ flag `[CAPGRAS: THESIS IMPOSTOR] <component> — thesis assumed: [X] — current reality: [Y] — impostor confidence: [low/medium/high]`
+→ ≥2 flags → thesis ต้อง rewrite จาก scratch ไม่ใช่แค่ update
+
+```
+Capgras Audit:
+- Revenue mix: [intact / [CAPGRAS: THESIS IMPOSTOR] segment changed X%]
+- Customer base: [intact / [CAPGRAS: THESIS IMPOSTOR] concentration shifted]
+- Moat basis: [intact / [CAPGRAS: THESIS IMPOSTOR] moat source changed]
+- Verdict: [original thesis intact ✅ / [CAPGRAS: REWRITE REQUIRED] — N impostor signals]
+```
+ถ้าไม่พบ → `Capgras: company matches original thesis ✅`
+
+**Vera Layer 23 — Supertaster: Bitter Signal Amplification** [SUPERTASTER: FAINT BITTER]
+
+Supertaster = มี taste buds หนาแน่นกว่าปกติ 4-6× — รสขมที่คนทั่วไปแทบไม่รู้สึก กลายเป็น signal ชัดมาก
+
+Applied: ขยาย negative signals ที่เบาจนกลายเป็น detectable — จับก่อน mainstream
+
+สแกน 4 bitter channels ใน source documents:
+1. **Footnote escalation**: risk factor language ที่ escalate ("may" → "could materially adversely affect") หรือ risk factor ใหม่ที่เพิ่มเข้ามาเงียบๆ
+2. **Auditor micro-signals**: audit fee เพิ่ม >20% YoY, restatement footnote ใดๆ, going concern qualifier
+3. **CFO hedge uptick**: นับ hedge phrases ใน Q&A ปัจจุบัน vs prior — "to the best of our knowledge", "as currently understood", "subject to"
+4. **Board quiet shift**: director ที่ไม่ได้ renew term โดยไม่มีข่าว, audit committee composition เปลี่ยนโดยไม่มี announcement
+
+→ flag `[SUPERTASTER: FAINT BITTER] <channel> — signal strength: [faint/moderate] — mainstream visibility: [no/barely]`
+
+```
+Supertaster Bitter Scan:
+- Footnotes: [clean / [SUPERTASTER: FAINT BITTER] — N escalated risk factors]
+- Auditor: [clean / [SUPERTASTER: FAINT BITTER] — fee +X%, N micro-signals]
+- CFO hedging: prior N → current M phrases ([+X%])
+- Board: [stable / [SUPERTASTER: FAINT BITTER] — N quiet departures]
+Total bitter count: N — [below mainstream threshold / approaching visible]
+```
+ถ้าไม่พบ → `Supertaster: no pre-mainstream bitter signals ✅`
+
 ---
 
 ## STEP 6 — INDIE ATOMS

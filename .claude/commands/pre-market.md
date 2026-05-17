@@ -334,6 +334,70 @@ Narcolepsy Flash: "[1-sentence market read — raw, unfiltered]"
 Sudden volume collapse > 40% จาก 5-day avg โดยไม่มี catalyst + price flat = institutional withdrawal เงียบๆ
 → flag `[NARCOLEPSY: MARKET DROP] volume fell X% with no catalyst — watch for directional resolution`
 
+### 0.992 Dermatographia — Market Hypersensitivity Scan
+
+Dermatographia = ผิวที่ถูกสัมผัสเบาๆ แล้วเกิดรอยแดงชัดเจนเกินสมควร — stimulus เล็กน้อยแต่ reaction ใหญ่มาก
+
+Applied: ตลาดวันนี้มี sensitivity สูงผิดปกติไหม? — ข่าวเล็กน้อยอาจทำ price move ใหญ่กว่าปกติ
+
+ตรวจ 3 hypersensitivity signals:
+1. **VIX-move ratio**: VIX implies daily range X% — SPY เคลื่อนจริง Y% ใน 24h (ถ้า Y > 1.5× X = amplified)
+2. **News-to-move ratio**: headline ระดับ minor (<0.5% event) ทำให้ sector move >1.5% = dermatographic session
+3. **Breadth amplification**: SPY move เล็ก แต่ advance/decline spread ≥ 65/35 = sentiment leading price
+
+→ flag `[DERMATOGRAPHIA: HYPERSENSITIVE] expected X%, actual Y% (Z× ratio) — reduce all setup sizes 30%`
+
+กฎ: amplification ratio >2× → ลด position size ทุก setup 30% โดยอัตโนมัติวันนี้
+
+```
+Dermatographia Check:
+- VIX implied: X% | SPY 24h actual: Y% | Ratio: Z×
+- News magnitude: [minor/moderate/major] | Price reaction: [proportional / amplified]
+- Verdict: [NORMAL / [DERMATOGRAPHIA: HYPERSENSITIVE] — -30% all sizes today]
+```
+
+### 0.993 Supertaster — Pre-Market Bitter Signal Scan
+
+Supertaster = รู้สึกรสขมแรงกว่า 4-6× ของคนปกติ — จับ signal เบาก่อน mainstream เห็น
+
+สแกน 4 bitter channels ใน data ที่มีอยู่แล้วจาก script outputs:
+1. **Credit pre-signal**: HY spreads ขยาย <5bps แต่ equity ยังไม่ปรับ = early credit stress
+2. **Options quiet flow**: unusual put volume ใน index/sector โดยไม่มีข่าว = insider signal
+3. **Volume-price mismatch**: SPY/QQQ ราคา flat แต่ volume เบา >20% ของ 5-day avg = distribution เงียบ
+4. **Currency micro-shift**: DXY ±0.3%+ โดยไม่มีข่าว macro = pre-signal ก่อน commodity/EM move
+
+→ flag `[SUPERTASTER: FAINT BITTER] <channel> — strength: <magnitude> — mainstream visibility: [none/barely]`
+
+```
+Supertaster Scan:
+- Credit: [clean / [SUPERTASTER: FAINT BITTER] HY +Xbps vs equity flat]
+- Options: [clean / unusual put volume in TICKER/sector — no news catalyst]
+- Volume-price: [proportional / [SUPERTASTER: FAINT BITTER] volume -X%, price flat]
+- Currency: [clean / [SUPERTASTER: FAINT BITTER] DXY ±X% no trigger]
+Bitter count: N — [normal session / heightened caution]
+```
+
+### 0.994 Foreign Accent Syndrome — Communication Shift Scan
+
+Foreign Accent Syndrome = พูดภาษาตัวเองด้วยสำเนียงภาษาต่างประเทศโดยไม่ตั้งใจ — สัญญาณว่าสมองเปลี่ยนไปแล้ว
+
+Applied: ตรวจ Fed/management language ที่เริ่มพูดด้วย "สำเนียงใหม่" ไม่ตรงกับสิ่งที่เคยสื่อสารมาก่อน
+
+ตรวจ 3 sources จาก news-snapshot + web:
+1. **Fed accent**: FOMC statement/minutes มี keyword ที่เปลี่ยนจาก prior (เช่น "patient" → "vigilant", "monitoring" → "concerned") = policy shift signal
+2. **Earnings pre-announcement**: CFO ที่เคยพูดตัวเลข guidance ตรงๆ แต่ shift เป็น "consistent with market conditions" = specificity drop
+3. **Analyst language**: sell-side suddenly adopts new vocabulary ("AI-driven upside", "structural re-rate") ใน sector ที่เคยใช้ conservative language = narrative adoption = possible peak
+
+→ flag `[FAS: LANGUAGE SHIFT] <source> — prior: "<old>" → current: "<new>"`
+
+```
+FAS Communication Scan:
+- Fed: [consistent / [FAS: LANGUAGE SHIFT] — key terms changed]
+- Earnings pre-announcement: [specific / [FAS: LANGUAGE SHIFT] — numbers replaced by vague]
+- Analyst: [consistent vocabulary / accent shift — N new buzzwords in conservative sector]
+Verdict: [no accent changes ✅ / N shifts — watch for policy/guidance reversal]
+```
+
 ---
 
 ### 1. Fetch live news data in parallel
