@@ -93,7 +93,10 @@ This is NOT a 4th proposal — it's a reality check from one specific angle.
 
 ## Phase 4: Synthesis (synthesizer agent)
 
-Synthesizer reads brief + 5 proposals + 20 critiques + **expertise findings**. Produces `synthesis.md`:
+**AgentDropout filter (arXiv:2503.18891) — รันก่อน synthesis:**
+Synthesizer scan critiques ทั้งหมดก่อน process — ถ้า 2 critiques overlap >80% (paraphrase กัน) → mark duplicate → process เพียง 1 ไม่ทั้งคู่; บันทึก `[DUPLICATE DROPPED] proposer-A critique on X ≈ proposer-B critique on X` ใน synthesis.md header; ลด noise + synthesizer input token
+
+Synthesizer reads brief + 5 proposals + 20 critiques (after dedup) + **expertise findings**. Produces `synthesis.md`:
 - Decision matrix (now includes expertise dimensions)
 - Where proposers AGREE / DIVERGE
 - **Caveman gut signal** — did primal brain say SAFE, UNEASY, or DANGER? Note if gut contradicts sophisticates

@@ -15,6 +15,10 @@
 | 6 | MARS (arXiv:2509.20502, 2025) | Multi-agent sharing | ลด /council token 50% — reviewer ไม่ interact กัน → synthesizer รวมเอง |
 | 7 | Metacognitive Reuse (arXiv:2509.13237, 2025) | Cognitive layer reuse | behavior handbook ลด pre-market cognitive layers 46% โดยไม่เสียคุณภาพ |
 | 8 | Don't Break the Cache (arXiv:2601.06007, 2026) | Prompt caching rules | วาง dynamic content ท้าย prompt → 41-80% cost reduction ทุก session |
+| 9 | Agentic Plan Caching (arXiv:2506.14852, 2025) | Plan reuse | cache plan skeleton /pre-market → 50% cost, 27% latency reduction |
+| 10 | AgentDropout (arXiv:2503.18891, 2025) | Agent elimination | /council: ตัด duplicate critiques → ลด synthesizer input 20%+ |
+| 11 | Thinking with Reasoning Skills (arXiv:2604.21764, 2026) | Reasoning reuse | store reasoning skills vault → ลด cognitive reasoning tokens |
+| 12 | ACON (arXiv:2510.00615, 2025) | Context compression | guidelines-driven compression — 26-54% peak token reduction |
 
 ---
 
@@ -283,3 +287,105 @@
 ---
 
 *Appendix scope: 2 themes | Searches: 8/8 | Papers: 6 — 5 IMPLEMENT, 1 REFERENCE | Total survey: 8 themes, 19 papers — 11 IMPLEMENT, 8 REFERENCE*
+
+---
+
+## Appendix — 2026-05-18 (รอบ 2): Plan Caching + Agent Elimination + Efficient Reasoning + Semantic Cache
+
+*Pain points ที่ยังขาด: (1) /pre-market รัน workflow เดิมทุกวัน — plan ไม่ถูก cache, (2) /council agents ที่ไม่ contribute ยังกิน token, (3) cognitive layer reasoning verbose เกิน, (4) repeated similar queries ไม่มี semantic match | 9 searches | 7 papers ใหม่*
+
+---
+
+### Theme 9: Agentic Plan Caching
+
+#### Agentic Plan Caching: Test-Time Memory for Fast and Cost-Efficient LLM Agents — Zhang et al. (arXiv:2506.14852, Jun 2025) [NeurIPS 2025]
+- **Source:** [arXiv:2506.14852](https://arxiv.org/abs/2506.14852)
+- **Method:** Extract structured plan templates จาก agent executions ที่เสร็จแล้ว → เก็บใน test-time memory → keyword extraction match new requests กับ cached plans → lightweight model adapt template ให้ fit task context ใหม่; ต่างจาก semantic caching ทั่วไปตรงที่ cache plan structure ไม่ใช่ response
+- **Key finding:** ลด cost 50.31% + latency 27.28% บน real-world agent applications โดย performance ไม่ตก; plan template reuse ทำงานได้แม้ task input เปลี่ยนถ้า structure เหมือนกัน
+- **Dataset:** Multiple real-world agent applications
+- **Apply to project:** /pre-market รัน workflow เดิมทุกวัน (Step 0-6: load rules → fetch data → cognitive layers → scenarios → setups) — plan structure ไม่เปลี่ยน, เฉพาะ data ที่เปลี่ยน; implement plan cache ใน `vault/Knowledge/pre-market-plan-template.md`: เก็บ plan skeleton → session ใหม่ load template → fill data แทน re-plan ทั้งหมด; เช่นเดียวกับ /nick-weekly และ /healthcheck
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 10: Dynamic Agent Elimination
+
+#### AgentDropout: Dynamic Agent Elimination for Token-Efficient Multi-Agent Collaboration — Wang et al. (arXiv:2503.18891, Mar 2025) [ACL 2025]
+- **Source:** [arXiv:2503.18891](https://arxiv.org/abs/2503.18891) | [GitHub](https://github.com/wangzx1219/AgentDropout)
+- **Method:** ระบุ redundant agents และ communication links โดย optimize adjacency matrices ของ communication graph → eliminate ทั้ง agents และ links ที่ไม่ contribute ระหว่าง rounds; inspired by management theory — roles ใน efficient teams ถูก adjust แบบ dynamic
+- **Key finding:** ลด prompt tokens 21.6% + completion tokens 18.4% โดย performance ดีขึ้น +1.14 pts เทียบกับ SOTA; dynamic adjustment ดีกว่า static agent pruning เพราะ contribution ของ agent เปลี่ยนตาม round
+- **Dataset:** Multi-agent collaboration benchmarks (ACL 2025)
+- **Apply to project:** /council Phase 3 critiques: ถ้า proposer ใดให้ critique ที่ overlap กับ proposer อื่น >80% → synthesizer สามารถ drop critique นั้น ไม่ให้ synthesizer re-process; หรือ detect ถ้า 2 proposers เห็นด้วยกัน → count as 1 voice ไม่ใช่ 2; ลด synthesizer input token โดยไม่เสียมุมมอง
+- **Tag:** IMPLEMENT
+
+#### AgentDropoutV2: Optimizing Information Flow via Test-Time Rectify-or-Reject Pruning — (arXiv:2602.23258, Feb 2026)
+- **Source:** [arXiv:2602.23258](https://arxiv.org/html/2602.23258)
+- **Method:** Test-time pruning ที่ไม่ต้องการ training — ประเมิน information flow ระหว่าง agents แล้วตัดสินใจ rectify (ปรับ) หรือ reject (ตัด) แต่ละ communication ณ inference time
+- **Key finding:** ปรับปรุงจาก V1 ด้วย test-time approach ที่ไม่ต้อง fine-tune model — ใช้ได้กับ closed-source models รวมถึง Claude
+- **Dataset:** Multi-agent benchmarks
+- **Apply to project:** เพิ่มเป็น post-critique filter ใน /council: synthesizer scan critiques ก่อน synthesis — ถ้า critique ไหน paraphrase critique อื่น → reject ก่อน process; ลด noise ใน synthesis โดยไม่กระทบ diverse perspectives
+- **Tag:** REFERENCE
+
+---
+
+### Theme 11: Efficient Reasoning Token Reduction
+
+#### Thinking with Reasoning Skills: Fewer Tokens, More Accuracy — Zhao, Shi et al. (arXiv:2604.21764, Apr 2026)
+- **Source:** [arXiv:2604.21764](https://arxiv.org/abs/2604.21764)
+- **Method:** Summarize และ store reusable reasoning skills จาก prior deliberation → retrieve relevant skills at inference time เพื่อ guide future reasoning; แทนที่ "reasoning from scratch" — model recall skills ก่อน แล้ว reason โดยไม่ต้อง re-derive ทุกขั้น; ต่างจาก Metacognitive Reuse (A8) ตรงที่ focus บน skill retrieval ไม่ใช่ procedure compression
+- **Key finding:** ลด reasoning tokens อย่างมีนัยสำคัญ + accuracy ดีขึ้นบน coding และ math reasoning; lower per-request cost ใน production deployment
+- **Dataset:** Coding + math reasoning benchmarks
+- **Apply to project:** Cognitive layer analysis ใน /pre-market เป็น reasoning tasks ที่ทำซ้ำทุกวัน — store "reasoning skills" เช่น "how to interpret VIX-Rank → position size multiplier" เป็น skill entry; ก่อน analyze → load relevant skills → reason จาก skill แทน re-derive; ร่วมกับ pre-market-behaviors.md เป็น 2-layer efficiency: behaviors = procedure; skills = reasoning shortcut
+- **Tag:** IMPLEMENT
+
+#### ACON: Optimizing Context Compression for Long-Horizon LLM Agents — Kang et al. (arXiv:2510.00615, Oct 2025)
+- **Source:** [arXiv:2510.00615](https://arxiv.org/abs/2510.00615)
+- **Method:** Compression guideline optimization ใน natural language space — เมื่อ compressed context fail แต่ full context succeed → LLM วิเคราะห์สาเหตุ → update compression guideline; gradient-free, ใช้กับ closed-source models; distill compressor ลงใน smaller model ได้ (95% accuracy preserved)
+- **Key finding:** ลด peak tokens 26-54% โดย task performance ไม่ตก; เพิ่ม performance ของ small LMs: AppWorld +32%, OfficeBench +20%, Multi-objective QA +46%; ทำงานได้โดยไม่ต้อง parameter update
+- **Dataset:** AppWorld, OfficeBench, Multi-objective QA
+- **Apply to project:** เมื่อ session ยาว (>70% context) → ใช้ ACON principle: หา failure modes ของ prior compression attempts → update guideline ว่า section ไหน "unsafe to compress" (เช่น kill conditions, exact prices, TRADING_RULES) และ section ไหน compressible (เช่น narrative explanation, repeated headers); เก็บ guideline ใน `vault/Knowledge/compression-guidelines.md` → โหลดก่อน compress
+- **Tag:** IMPLEMENT
+
+#### Extra-CoT: Towards Efficient Reasoning via Extreme-Ratio Chain-of-Thought Compression — (arXiv:2602.08324, Feb 2026)
+- **Source:** [arXiv:2602.08324](https://arxiv.org/abs/2602.08324)
+- **Method:** Train dedicated semantically-preserved compressor บน mathematical CoT data ด้วย fine-grained annotations → compress reasoning trace อย่าง aggressive โดยไม่เสีย logical fidelity; CHRPO (Constrained and Hierarchical Ratio Policy Optimization)
+- **Key finding:** บน MATH-500 + Qwen3-1.7B: ลด token >73% โดย accuracy ดีขึ้น +0.6%
+- **Dataset:** MATH-500
+- **Apply to project:** ต้องการ fine-tuning — ไม่ implement ตรง ใน Claude Code; แต่ principle "semantically-preserved compression" ใช้ inform ว่าเมื่อ compress cognitive layer output ต้องเก็บ logical fidelity — ไม่ตัดจุดที่เป็น causal link ของ conclusion
+- **Tag:** REFERENCE
+
+---
+
+### Theme 12: Semantic Caching
+
+#### vCache: Verified Semantic Prompt Caching — (arXiv:2502.03771, Feb 2025)
+- **Source:** [arXiv:2502.03771](https://arxiv.org/abs/2502.03771)
+- **Method:** Semantic cache ที่ embed cached prompts + store ใน vector database; ต่างจาก naive semantic cache ตรงที่มี verified error rate guarantees ผ่าน online learning algorithm ที่ estimate optimal similarity threshold ต่อ cached prompt; แก้ปัญหา "similarity grey zone" ที่ embedding geometry แยก paraphrase จาก distinct intent ไม่ได้
+- **Key finding:** First verified semantic cache ที่มี user-defined error rate guarantees — predictable performance ไม่ใช่ probabilistic; ลด LLM inference latency และ cost สำหรับ repeated similar queries
+- **Dataset:** QA + LLM inference benchmarks
+- **Apply to project:** /pre-market fetches ข้อมูลคล้ายกันทุกวัน (เช่น "NVDA price today", "VIX level today") — semantic cache จะ return cached answer ถ้า query คล้ายพอ; ต้องการ vector database infrastructure (Redis / Chroma) — complexity: high; ดีกว่าใช้ plan cache (Theme 9) ในระยะสั้น; พิจารณา implement ถ้า query repetition สูงพอ (>50% similar queries per session)
+- **Tag:** REFERENCE
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-18 รอบ 2)
+
+12. **Pre-market plan template cache (Agentic Plan Caching)** → สร้าง `vault/Knowledge/pre-market-plan-template.md`: skeleton plan พร้อม placeholder slots สำหรับ data → load ต้น session แทน re-plan ทุกรอบ → complexity: **low** (สร้างไฟล์ใหม่ + 1 บรรทัดใน pre-market.md)
+
+13. **Council duplicate critique filter (AgentDropout principle)** → ใน Phase 4 synthesis: synthesizer scan critiques ก่อน — mark critiques ที่ overlap >80% → process เพียง 1 ไม่ทั้งคู่ → ลด synthesizer input → complexity: **low** (เพิ่ม instruction ใน council.md Phase 4)
+
+14. **Reasoning skills vault (Thinking with Reasoning Skills)** → สร้าง `vault/Knowledge/pre-market-reasoning-skills.md`: reusable reasoning patterns (เช่น VIX-Rank → size, Brent>$95 → XLE) → load พร้อม behaviors.md → complexity: **low** (สร้างไฟล์ใหม่)
+
+15. **Compression guidelines (ACON)** → สร้าง `vault/Knowledge/compression-guidelines.md`: ระบุ section ที่ compress ได้ vs ห้าม compress → load ก่อน /condense หรือ agent summary → complexity: **low** (สร้างไฟล์ใหม่)
+
+---
+
+### Gaps — อัพเดต (2026-05-18 รอบ 2)
+
+- **vCache infrastructure** — ต้องการ vector database; ใช้ plan cache (Theme 9) แทนในระยะสั้น
+- **Extra-CoT training** — ต้องการ fine-tune; ใช้ principle เป็น compression heuristic แทน
+- **AgentDropout adjacency matrix** — ต้องการ communication graph formalism; ใน LTD-OS ทำได้แค่ post-hoc duplicate detection ไม่ใช่ predictive elimination
+
+---
+
+*Appendix scope: 4 themes | Searches: 9/9 | Papers: 7 — 4 IMPLEMENT, 3 REFERENCE | Total survey: 12 themes, 26 papers — 15 IMPLEMENT, 11 REFERENCE*
