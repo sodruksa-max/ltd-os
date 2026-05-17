@@ -102,10 +102,33 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 - paper อายุ > 18 เดือน: citations < 20 → downgrade เป็น REFERENCE ถ้าไม่มีเหตุผลพิเศษ; citations ≥ 100 → `[highly-cited ✓]`
 - เพิ่ม `**Citations:** N` ใน paper entry ทุกตัว (ถ้าหาได้)
 
+**Venue quality check (บังคับสำหรับทุก paper):**
+ระบุ venue + tier ใน paper entry — tier กำหนด weight ของ claim:
+
+| Tier | Venue | ความหมาย |
+|---|---|---|
+| A | NeurIPS/ICML/ICLR oral, Nature, Science | peer-reviewed + competitive selection — claim น่าเชื่อมาก |
+| B | NeurIPS/ICML/ICLR poster, ACL/EMNLP, AAAI, top journals | peer-reviewed — claim น่าเชื่อ |
+| C | Workshop paper, non-top conferences | limited review — verify ก่อน implement |
+| D | arXiv preprint (no venue) | ไม่ผ่าน peer review — treat เป็น REFERENCE จนกว่าจะมี citation/code หนุน |
+
+- Tier D paper ที่มี code + citations ≥ 50 → upgrade เป็น Tier C สำหรับ tagging purposes
+- Tier A/B = signal แรงพอที่จะ IMPLEMENT โดยไม่ต้องการ code repo
+- Tier C/D = ต้องการ code + citations ก่อน IMPLEMENT
+
+**Adversarial check — "ใครพยายาม disprove paper นี้?" (บังคับสำหรับทุก IMPLEMENT candidate):**
+search 1 query: `"<method name>" OR "<paper title>" limitation failed replication criticism 2024 2025 2026`
+- พบ critic paper ที่ valid (peer-reviewed หรือ well-cited) → note `⚠️ [CRITIC: <title>]` + พิจารณา downgrade เป็น REFERENCE
+- พบแค่ blog/opinion → note `[opinion criticism only — not downgraded]`
+- ไม่พบ critic → `[no known critics ✓]`
+- ใช้ 1 search slot จาก budget; batch หลาย papers เข้า query เดียวได้ถ้า budget ตึง
+
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
 - Title, Authors, Year, Source (arXiv ID หรือ DOI — บังคับ ห้ามละ)
-- Citations: N (จาก Semantic Scholar — ถ้าหาไม่ได้ใส่ `[unverified]`)
-- Code: [repo URL หรือ `no official code`] (จาก Papers With Code)
+- Venue: [venue name] Tier [A/B/C/D]
+- Citations: N [signal label] (จาก Semantic Scholar)
+- Code: [repo URL] / [no official code] (จาก Papers With Code)
+- Critics: [no known critics ✓] / [⚠️ CRITIC: title]
 - Method ใน 1-2 ประโยค
 - Key finding / contribution
 - Dataset (ตลาด, period, frequency)
@@ -171,8 +194,10 @@ Template:
 
 #### [Paper Title] — Authors (Year)
 - **Source:** arXiv:XXXX.XXXXX / SSRN / [Journal]
+- **Venue:** [venue] Tier [A/B/C/D]
 - **Citations:** N [well-cited ✓ / low citations / unverified] (Semantic Scholar)
 - **Code:** [repo URL] / [no official code] (Papers With Code)
+- **Critics:** [no known critics ✓] / [⚠️ CRITIC: title]
 - **Method:** [1-2 ประโยค]
 - **Key finding:** [1-2 ประโยค]
 - **Dataset:** [ตลาด, period, frequency]
