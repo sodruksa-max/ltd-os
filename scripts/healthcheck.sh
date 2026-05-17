@@ -183,6 +183,41 @@ for cmd in brainstorm connect deep-dive wild-thesis; do
   fi
 done
 
+echo ""
+echo "-- Slash commands (workflow manager)"
+for cmd in workflow new-workflow; do
+  if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
+    p "/${cmd}"
+  else
+    f "/${cmd} command missing"
+  fi
+done
+
+# ── Workflow system ────────────────────────────────────────────────────────────
+echo ""
+echo "-- Workflow system"
+if [[ -d "$ROOT/vault/_workflows" ]]; then
+  p "vault/_workflows/ exists"
+else
+  f "vault/_workflows/ missing — workflow system not initialized"
+fi
+if [[ -d "$ROOT/vault/_workflows/.state" ]]; then
+  p "vault/_workflows/.state/ exists"
+else
+  w "vault/_workflows/.state/ missing — state persistence will fail"
+fi
+if [[ -f "$ROOT/scripts/workflow-state.sh" ]]; then
+  p "scripts/workflow-state.sh exists"
+else
+  f "scripts/workflow-state.sh missing — /workflow resume broken"
+fi
+wf_count=$(ls "$ROOT/vault/_workflows/"*.md 2>/dev/null | grep -v "\.state" | wc -l | tr -d ' ')
+if [[ "$wf_count" -gt 0 ]]; then
+  p "workflow definitions: $wf_count found"
+else
+  w "no workflow definitions in vault/_workflows/ — create with /new-workflow"
+fi
+
 # ── Vault structure ───────────────────────────────────────────────────────────
 echo ""
 echo "-- Vault"
@@ -208,6 +243,7 @@ for dir in \
   "vault/50_formulas/recipes/_research" \
   "vault/_memory" \
   "vault/_templates" \
+  "vault/_workflows" \
   "vault/90_archive"
 do
   if [[ -d "$ROOT/$dir" ]]; then

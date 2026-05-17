@@ -176,6 +176,49 @@ Each workflow:
 - รัน /post-market แล้วข้ามไป /pre-market ทันทีโดยไม่อ่าน lessons
 **Last refined**: 2026-04-28
 
+---
+
+## Workflow System (vault/_workflows/)
+
+**ตั้งแต่ 2026-05-18** — มีระบบ workflow manager แบบ composable:
+
+### สร้าง workflow ใหม่
+```
+/new-workflow
+```
+Wizard ถามชื่อ, steps, conditions, schedule → save `vault/_workflows/<name>.md`
+
+### รัน workflow
+```
+/workflow morning         — รันปกติ (resume ถ้ามี state ค้าง)
+/workflow morning --fresh — เริ่มใหม่ทั้งหมด
+/workflow list            — ดู workflows ที่มีอยู่
+```
+
+### Workflow definitions ปัจจุบัน
+
+| Name | Steps | Condition | Time |
+|---|---|---|---|
+| `morning` | pre-market → screen* → nick-weekly | screen ถ้า VIX>20 หรือ EARLY★ | 20-35 min |
+| `weekly` | weekly-market → learnings → nick-weekly → quarterly* | quarterly ถ้า ≥3 holdings Evolving | 25-45 min |
+| `research` | paper-survey → stock-content* | stock ถ้า user ยืนยัน | 30-60 min |
+
+*conditional step
+
+### State persistence
+State files: `vault/_workflows/.state/<name>-<date>.json`
+- ถ้า workflow crash กลางทาง → รัน `/workflow <name>` ใหม่ → resume อัตโนมัติ
+- State script: `scripts/workflow-state.sh`
+
+---
+
+## Auto-Log
+
+*Auto-appended ทุกครั้งที่ /workflow run เสร็จ*
+
+| Date | Workflow | Duration | Steps | Status |
+| --- | --- | --- | --- | --- |
+
 **Trading rules → see `vault/_memory/TRADING_RULES.md`**
 *(ย้ายออกเพื่อ task-scoped loading — trading tasks โหลด TRADING_RULES.md แทน WORKFLOWS.md ทั้งหมด)*
 
