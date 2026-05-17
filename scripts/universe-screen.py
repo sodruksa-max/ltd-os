@@ -34,7 +34,7 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _llm import call_llm as call_gemini  # noqa: E402  — cascade: Gemini→Haiku fallback
+from _llm import call_gemini  # noqa: E402
 
 
 def llm_tier_rationales(entries: list[dict]) -> dict[str, str]:

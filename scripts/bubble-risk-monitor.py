@@ -30,7 +30,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 CAPE_CACHE_FILE = Path(__file__).parent.parent / ".secrets" / "cape_cache.json"
 
 sys.path.insert(0, str(Path(__file__).parent))
-from _llm import call_llm as call_gemini  # noqa: E402  — cascade: Gemini→Haiku fallback
+from _llm import call_gemini  # noqa: E402
 
 
 def llm_bubble_narrative(score: float, details: list[tuple]) -> str | None:
