@@ -212,6 +212,68 @@ Savant Threshold Audit:
 
 ---
 
+### 2.10 Kleine-Levin Syndrome Layer — Workflow Hibernation Detection
+
+KLS = ช่วงหลับลึกที่ยาวนานแล้วตื่นฉับพลัน — workflows ก็มี cycle นี้
+
+**ตรวจ 3 KLS states ต่อแต่ละ workflow:**
+
+**Hibernating** (ไม่ถูก trigger นานเกินที่ design ไว้):
+- อ่าน auto-log: workflow ไหนไม่มี run ใน 30+ วัน แต่ถูก design สำหรับ weekly/bi-weekly
+- ตรวจว่าเป็นเพราะ (a) user ลืม (b) condition ไม่เคยถูก meet (c) workflow obsolete
+→ flag `[KLS: HIBERNATING] <workflow> — last run: N days ago — designed frequency: [X] — cause: [a/b/c]`
+
+**Pre-awakening** (ใกล้จะถูก trigger จากสภาวะภายนอก):
+- workflow ที่ depend on external trigger (เช่น VIX > 20, earnings season, weekly review) — trigger นั้นกำลังใกล้เกิดไหม?
+- ถ้าใช่ → `[KLS: PRE-AWAKENING] <workflow> — trigger approaching: [event/date]` → ตรวจว่า workflow พร้อมไหม
+
+**Chronic hibernation** (ไม่ถูกรันเลยตั้งแต่สร้าง):
+- workflow ที่ไม่มี run ใน auto-log เลย → อาจ discover ไม่ได้ หรือ designed แต่ไม่มี use case จริง
+→ flag `[KLS: NEVER RUN] <workflow> — consider: retire / rename / add to morning routine`
+
+```
+KLS Workflow Scan:
+- [KLS: HIBERNATING] N workflows — longest sleep: [workflow: N days]
+- [KLS: PRE-AWAKENING] N workflows — trigger: [event]
+- [KLS: NEVER RUN] N workflows — candidates for review
+```
+
+---
+
+### 2.11 Cotard's Syndrome Layer — Zombie Workflow Detection
+
+Cotard's = workflow ที่ดูเหมือนทำงาน (ยังรันได้) แต่ purpose ที่แท้จริงตายไปแล้ว
+
+**ตรวจ 4 zombie patterns:**
+
+**Purpose ghost** — workflow ยังรันได้ แต่ problem ที่มันแก้ไม่มีแล้ว:
+- workflow ถูกสร้างเพื่อ task ที่ตอนนี้ถูก replace ด้วย command ใหม่หรือ automated script
+→ flag `[COTARD: PURPOSE GHOST] <workflow> — original problem: [X] — now handled by: [Y]`
+
+**Living dead steps** — บาง steps ใน workflow ยังรันได้แต่ไม่ produce useful output อีกแล้ว:
+- step ที่ output ไปที่ไฟล์ที่ไม่มีใครอ่าน
+- step ที่ output ถูก supersede โดย script ที่รันอัตโนมัติแล้ว
+→ flag `[COTARD: DEAD STEP] <workflow> step-N — step runs but output not used`
+
+**Narrative survival** — workflow ยังอยู่ใน WORKFLOWS.md เพราะมี documentation ดี แต่ไม่มีใครรันจริง:
+- cross-check auto-log: มี documentation แต่ 0 runs ใน 60+ วัน
+→ flag `[COTARD: DOCUMENTED ZOMBIE] <workflow> — well-documented, 0 runs in 60+ days`
+
+**Identity theft** — workflow ชื่อเหมือนเดิม แต่ steps เปลี่ยนจนไม่ใช่ purpose เดิมแล้ว:
+- อ่าน git log ของ workflow file: ถ้ามี > 3 major edits แต่ชื่อไม่เปลี่ยน → อาจ identity drift
+→ flag `[COTARD: IDENTITY DRIFT] <workflow> — N major edits, purpose may have shifted`
+
+```
+Cotard's Workflow Audit:
+- [COTARD: PURPOSE GHOST] N — superseded by newer commands
+- [COTARD: DEAD STEP] N steps — output not consumed
+- [COTARD: DOCUMENTED ZOMBIE] N — documented but never run
+- [COTARD: IDENTITY DRIFT] N — purpose shifted without rename
+Zombie candidate for retirement: [list]
+```
+
+---
+
 ### 3. Generate audit report
 
 ```
@@ -252,11 +314,13 @@ Summary: PASS: N | WARN: N | FAIL: N
 Issues: N broken-ref | N stale | N patterns | N missing
 
 Cognitive Trait Passes:
-  OCD:      N confirmed / N escalated to FAIL
-  ADHD:     N clusters / N orphan cmds
-  Autism:   N drift / N regressions
-  Paranoid: N unreliable patterns flagged
-  Savant:   N unanchored thresholds
+  OCD:         N confirmed / N escalated to FAIL
+  ADHD:        N clusters / N orphan cmds
+  Autism:      N drift / N regressions
+  Paranoid:    N unreliable patterns flagged
+  Savant:      N unanchored thresholds
+  KLS:         N hibernating / N pre-awakening / N never-run
+  Cotard's:    N zombie workflows / N dead steps / N identity drift
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

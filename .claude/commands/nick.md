@@ -709,6 +709,93 @@ Score: [N/3]
 Status: [validated ✅ / [DOPAMINE: PATTERN UNVERIFIED] → monitor 1 week]
 ```
 
+5.29 **Hyperosmia — Sub-threshold Kill Condition Drift**
+
+ตรวจ metrics ที่กำลังเคลื่อนไปหา kill condition อย่างช้าๆ — ยังไม่ถึง threshold แต่ drift ชัดเจน
+
+สำหรับแต่ละ kill condition ต่อทุก holding:
+- คำนวณ "drift rate" = (current metric − prior month metric) ÷ (threshold − prior month metric) × 100%
+- ถ้า drift rate > 20%/เดือน → kill condition กำลัง approach เร็ว
+- ถ้า drift rate > 10%/เดือน แต่ < 20% → sub-threshold drift, ยังไม่ flag ปกติ แต่ต้องรู้
+
+→ flag `[HYPEROSMIA: DRIFT] TICKER — <condition>: drifting at X%/month, projected breach in ~N months`
+
+```
+Hyperosmia Kill Drift:
+- [HYPEROSMIA: DRIFT] TICKER — <condition>: X%/month → breach ~[timeframe]
+- [CLEAN] TICKER — no drift detected
+```
+ถ้าไม่มี prior data → `[HYPEROSMIA: BASELINE NEEDED]` — log current metric เป็น baseline week นี้
+
+5.30 **Kleine-Levin Syndrome — Stock Hibernation/Awakening Pattern**
+
+ตรวจ holdings ที่อยู่ใน "sleep cycle" — ราคา flat, volume ลด, RSI ที่ 45-55 ≥ 4 สัปดาห์ = KLS hibernation
+
+**Hibernation check (ต่อทุก holding):**
+- ราคา range ใน 4 สัปดาห์ล่าสุด < 5% = compressed
+- Volume < 60% ของ 20-week avg = dried
+- RSI 40-60 ≥ 4 สัปดาห์ = directionless
+
+ถ้าทั้ง 3 → `[KLS: HIBERNATING] TICKER — week N of sleep, compressed [X%] range`
+
+**Awakening signal (KLS stock กำลังจะ breakout):**
+- หลัง ≥4 สัปดาห์ hibernation: volume spike > 150% avg ในวันเดียว
+- หรือ RSI เริ่มขยับออกจาก neutral zone (< 40 หรือ > 60)
+- หรือ catalyst ที่ specific สำหรับ stock นั้น (earnings, partnership, regulatory)
+
+→ flag `[KLS: AWAKENING] TICKER — signal: [volume/RSI/catalyst] — watch for directional break`
+
+```
+KLS Holdings Scan:
+- [KLS: HIBERNATING] TICKER — N weeks, range X%, volume Y% of avg
+- [KLS: AWAKENING] TICKER — signal: [type]
+- [KLS: ACTIVE] TICKER — trending normally
+```
+
+5.31 **Echolocation — Indirect Data Triangulation When Kill Conditions Go Dark**
+
+เมื่อ kill condition data ไม่ available หรือ stale > 4 สัปดาห์ → ใช้ ecosystem echoes แทน direct metric
+
+**Echo hierarchy ต่อ kill condition type:**
+- Kill condition = revenue growth → echo: competitor revenue growth ในงวดเดียวกัน; distribution channel commentary
+- Kill condition = margin → echo: supplier pricing trends; input cost indices; competitor gross margin
+- Kill condition = capex commitment → echo: hyperscaler earnings calls; construction permit data; equipment supplier backlog
+- Kill condition = contract/government → echo: industry press release; competitor win/loss announcements; procurement portal
+
+→ flag `[ECHOLOCATION: KILL PROXY] TICKER — <kill condition> stale/unavailable → triangulated from: [sources] → direction: [positive/negative/ambiguous]`
+
+```
+Echolocation Kill Check:
+- [ECHOLOCATION: KILL PROXY] TICKER — [condition] → echoes: [sources] → signal: [direction]
+- [ECHOLOCATION: AMBIGUOUS] TICKER — echoes conflict, cannot triangulate
+- [DIRECT] TICKER — all kill conditions verifiable directly
+```
+
+5.32 **Cotard's Syndrome — Thesis Driver Alive Check**
+
+ตรวจว่า thesis driver ที่แท้จริงยังมีชีวิตอยู่ไหม — ไม่ใช่แค่ว่าบริษัทยังมีรายได้
+
+สำหรับแต่ละ holding → identify thesis driver หลัก 1 ข้อ (ไม่ใช่ thesis ทั้งหมด — เป็น core driver เดียวที่ถ้าตายแล้ว thesis พัง):
+
+**The one question:**
+> "ถ้า [core driver] หายไปพรุ่งนี้ — thesis ยัง stand ไหม?"
+
+**Cotard's red flags (driver ตายแต่ยังดูเหมือนมีชีวิต):**
+- Revenue ยังขึ้น แต่ core driver segment flat/down + segments อื่นขึ้นชดเชย
+- Management narrative เปลี่ยนจาก core driver ไปพูดถึง adjacent opportunity ใหม่ทุกไตรมาส
+- Core metric ที่ thesis พึ่งพา (เช่น hyperscaler capex, RPO, win rate) plateau ≥ 2 ไตรมาส
+- Competitor เริ่มชนะ deals ใน core market แต่ TICKER ยังรายงาน revenue growth (backlog eating)
+
+→ flag `[COTARD: ZOMBIE DRIVER] TICKER — driver: [X] — appears alive because: [Y] — actual status: [dead/dying/unclear]`
+→ ถ้า zombie driver = ขาย ไม่ว่า kill condition อื่นจะ intact แค่ไหน — นี่คือ root kill
+
+```
+Cotard's Driver Check:
+- TICKER: core driver = [X] — status: [ALIVE ✅ / DYING ⚠️ / [COTARD: ZOMBIE DRIVER]]
+- Evidence: [1-2 data points]
+Portfolio: [N alive / N dying / N zombie]
+```
+
 6. **Recommendation — ทุก position + sizing ชัดเจน:**
    - Hold / Add / Trim / Sell + เหตุผล
    - ถ้า Add/Buy → ระบุ shares, ราคาโดยประมาณ, weight % ของ NAV

@@ -537,6 +537,72 @@ Required replacements: [buzzword → metric ที่วัดได้แทน
 ถ้า ≥4 → `[SATIATION: BUZZWORD]` — mandatory: แทนที่ด้วย specific metrics ก่อน approve note
 ถ้า < 4 → `Satiation: language specific ✅`
 
+**Vera Layer 13 — Hyperosmia: Faint Language Degradation**
+
+สแกนภาษาใน filing/transcript แบบ hypersensitive — จับ shift เล็กๆ ที่ Hyperlexia อาจพลาดเพราะเน้น explicit flags
+
+**Faint signals ที่ต้องดม:**
+- คำเดี่ยวที่เปลี่ยน: "strong" → "solid" → "stable" across 3 quarters (ค่อยๆ soften)
+- Qualifier ใหม่ที่เพิ่งปรากฏ 1 ครั้ง: "subject to", "contingent upon", "assuming continued" — ถ้า 1 ครั้งใน prior filing กลายเป็น 2 ครั้งในครั้งนี้ = escalation
+- Section ที่ย้ายจาก Risk Factors ระดับ 2 → ระดับ 1 (priority เพิ่มขึ้น แต่ถ้อยคำเหมือนเดิม)
+- ประโยคที่หายไปจาก boilerplate — missing positive statement ที่เคยมีทุกปี
+
+→ flag `[HYPEROSMIA: FAINT DEGRADATION] "<phrase change>" — quarters: Q-2→Q-1→Q0: [tracking]`
+→ ถ้าพบ drift ใน 2+ filing sections → `[HYPEROSMIA: PATTERN]` — systematic softening
+
+```
+Hyperosmia Language Scan:
+- Faint degradation signals: N
+- [HYPEROSMIA: FAINT DEGRADATION / PATTERN] <description>
+- Assessment: [isolated / systematic drift]
+```
+ถ้าไม่พบ → `Hyperosmia: language stable ✅`
+
+**Vera Layer 14 — Echolocation: Indirect Data Triangulation**
+
+เมื่อ primary data หายหรือ verify ไม่ได้ → navigate ด้วย echo signals จาก ecosystem แทน
+
+**Echo source hierarchy (ใช้เมื่อ direct data ไม่ได้):**
+1. **Customer echoes:** ถ้า TICKER เป็น supplier → อ่าน customer earnings สำหรับ demand signal
+2. **Supplier echoes:** ถ้า TICKER เป็น end-product → อ่าน supplier guidance สำหรับ cost/supply signal
+3. **Competitor echoes:** competitor guidance เป็น industry proxy เมื่อ TICKER ไม่มี recent filing
+4. **Patent/job echoes:** patent filings + job postings เป็น proxy สำหรับ R&D direction ที่ยังไม่ disclosed
+5. **Channel echoes:** distributor earnings, reseller commentary, industry association data
+
+→ flag `[ECHOLOCATION: INDIRECT] <data point> — triangulated from: [echo source] — confidence: [H/M/L]`
+→ ถ้า 3 echo sources ชี้ทิศทางเดียวกัน → confidence = M (ใช้ได้แต่ mark ชัดว่าไม่ direct)
+→ ถ้า echo conflict กัน → `[ECHOLOCATION: AMBIGUOUS]` — ห้ามใช้ใน kill conditions
+
+```
+Echolocation Triangulation:
+- Primary data gaps: [N metrics unavailable/unverified]
+- Echo signals used: [list source + direction]
+- Confidence: [H/M/L per triangulated metric]
+- [ECHOLOCATION: AMBIGUOUS] N — conflicting ecosystem signals
+```
+ถ้า primary data ครบ → `Echolocation: all primary data verified, no triangulation needed ✅`
+
+**Vera Layer 15 — Cotard's Syndrome: Zombie Thesis Driver Check**
+
+Cotard's = บริษัทยังมีชีวิต (มีรายได้, มี EPS) แต่ thesis driver ที่แท้จริงตายไปแล้ว — ระบบยังถือไว้เพราะเห็น "ชีพจร" แต่ไม่รู้ว่าชีพจรนั้นไม่ใช่สัญญาณชีวิตจริงแล้ว
+
+**ตรวจ 4 Cotard's patterns:**
+- **Moat ghost:** คู่แข่งมี product ที่ทำได้เหมือนกัน แต่บริษัทยังรายงาน gross margin สูงผิดปกติ (delay ก่อนที่ margin จะ compress)
+- **TAM zombie:** TAM ยังใหญ่ในเอกสาร แต่ addressable portion หดลงเพราะ substitution/regulation ที่ยังไม่ price in
+- **Customer concentration death:** top customer เริ่มสร้าง in-house หรือ shift supplier แต่ revenue ยังไม่ drop เพราะ backlog
+- **Growth driver extinction:** segment ที่เป็น core driver ของ thesis เติบโต < 3% แต่ management highlight segment รองที่โตเร็วแทน (bait-and-switch narrative)
+
+→ flag `[COTARD: ZOMBIE DRIVER] <driver name> — still appearing alive because: [reason] — actual status: [dead/dying]`
+→ ถ้าพบ Cotard's pattern → thesis ต้องถูก re-evaluated จาก scratch ก่อน save Reese doc
+
+```
+Cotard's Thesis Driver Check:
+- Drivers checked: [list thesis drivers from Reese doc]
+- [COTARD: ZOMBIE DRIVER] N — driver appears alive but is not
+- Assessment: [thesis intact / [COTARD: ZOMBIE] — requires thesis rewrite]
+```
+ถ้าไม่พบ → `Cotard's: all thesis drivers verified alive ✅`
+
 ---
 
 ## STEP 6 — INDIE ATOMS
