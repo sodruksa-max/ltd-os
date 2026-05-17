@@ -19,10 +19,10 @@ Active investment theses. Nick's universe walk + Reese's research frame draw fro
 
 ### T2 — Semiconductor Moats
 **Statement:** NVDA GPU monopoly in AI training + ASML EUV monopoly = durable pricing power through cycle.
-**Tickers:** NVDA, ASML, ARM, AMD, CRDO, AEIS, UCTT, WDC, ONTO
+**Tickers:** NVDA, ASML, ARM, AMD, CRDO, AEIS, UCTT, WDC, ONTO, LRCX
 **Kill condition:** Viable NVDA alternatives (Gaudi, MI400, custom ASIC) capture >15% hyperscaler training spend.
 **Status:** Active
-**Last reviewed:** 2026-05-11
+**Last reviewed:** 2026-05-17
 
 ### T3 — Space & Defense AI
 **Statement:** Space economy entering commercial ramp — launch, satellite connectivity, defense contracts. AI-native defense software emerging as separate moat.
