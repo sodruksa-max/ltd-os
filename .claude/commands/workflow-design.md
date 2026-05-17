@@ -10,10 +10,10 @@ description: Deep-analysis workflow creator for new projects. Analyzes domain fi
 ## Usage
 
 ```
-/workflow-design <project-or-domain>
+/workflow-design <project-or-domain>           — default: 3 layers (OCD + ADHD + GAD)
+/workflow-design <project-or-domain> --deep    — full 7 layers (ใช้เมื่อ workflow ซับซ้อนหรือ high-stakes)
 /workflow-design trading-morning
-/workflow-design "research pipeline for macro topics"
-/workflow-design fertilizer-formula
+/workflow-design "research pipeline for macro topics" --deep
 ```
 
 ต่างจาก `/new-workflow`:
@@ -137,9 +137,14 @@ step-1 (ข้อมูล A) → step-2 (ใช้ A) → step-4 (ใช้ A+B
 
 ---
 
-### 7. Cognitive Trait Review Pass (รันก่อน draft — 7 layers)
+### 7. Cognitive Trait Review Pass
 
-#### 7.1 Tourette — Reflex Scan (ก่อนทุกอย่าง — 30 วินาที)
+**Default (ไม่มี --deep):** รัน 3 layers — OCD + ADHD + GAD เท่านั้น — ข้าม 7.1, 7.4, 7.5, 7.7
+**`--deep` flag:** รันทุก 7 layers — ใช้เมื่อ workflow ≥6 steps, high-stakes, หรือรันทุกวัน
+
+---
+
+#### 7.1 Tourette — Reflex Scan `[--deep only]`
 
 อ่าน design ทั้งหมดแบบ **scan เร็วๆ** ก่อน deep analysis:
 - step ไหนที่ "jump out" ว่าผิดปกติหรือ feels off?
@@ -209,7 +214,7 @@ ADHD Gap Scan:
 
 ---
 
-#### 7.4 Dyslexia — Holistic Shape View
+#### 7.4 Dyslexia — Holistic Shape View `[--deep only]`
 
 มองทั้ง workflow เป็น shape พร้อมกัน — ไม่ใช่ทีละ step:
 
@@ -237,7 +242,7 @@ Dyslexia Shape View:
 
 ---
 
-#### 7.5 Psychopathy — Step Elimination Test
+#### 7.5 Psychopathy — Step Elimination Test `[--deep only]`
 
 สำหรับทุก step — **ถามโดยไม่มี attachment**:
 
@@ -280,7 +285,7 @@ Unmitigated paths → added to design: [step / condition]
 
 ---
 
-#### 7.7 Depressive Realism — Strip Coverage Optimism
+#### 7.7 Depressive Realism — Strip Coverage Optimism `[--deep only]`
 
 ตรวจ optimism bias ใน JTBD coverage claim:
 
@@ -305,15 +310,16 @@ DR Coverage Audit:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cognitive Trait Review — <workflow name>
+Cognitive Trait Review — <workflow name> [default / --deep]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Tourette reflex:   [N flags / CLEAN]
-OCD symmetry:      [N issues / PASS]
-ADHD gaps:         [N gaps found / N novelty items]
-Dyslexia shape:    [linear / branching / issues found]
-Psychopathy:       [N steps eliminated / N kept]
-GAD pre-mortem:    [N paths — N mitigated]
-DR coverage:       [optimistic / realistic / conservative]
+OCD symmetry:      [N issues / PASS]              ← always
+ADHD gaps:         [N gaps found / N novelty]     ← always
+GAD pre-mortem:    [N paths — N mitigated]        ← always
+---
+Tourette reflex:   [N flags / CLEAN / skipped]   ← --deep only
+Dyslexia shape:    [linear / issues / skipped]    ← --deep only
+Psychopathy:       [N eliminated / skipped]       ← --deep only
+DR coverage:       [adjusted / skipped]            ← --deep only
 
 Changes made to design from trait review: N
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

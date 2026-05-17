@@ -287,6 +287,18 @@ Writer/executor must check before writing. Reviewer enforces at commit.
 - ถ้าระหว่างทำเห็นว่า "น่าจะปรับตรงนี้ด้วย" → หยุด แจ้ง user ก่อน ไม่ทำเอง
 - "Just one more improvement" ต้องถามก่อนเสมอ
 
+## COMPLEXITY GUARD — ห้ามเพิ่ม command ใหม่โดยไม่ถามก่อน
+
+ก่อนสร้าง slash command ใหม่, script ใหม่, หรือ agent ใหม่ทุกครั้ง — ต้องผ่าน 3 คำถามนี้ก่อน:
+
+1. **มีของเดิมที่ทำได้ไหม?** — ตรวจ `.claude/commands/*.md` และ `scripts/` ว่ามี command หรือ script ที่ cover use case นี้แล้วหรือเปล่า
+2. **ขยาย existing ได้ไหม?** — ถ้าใกล้เคียง → เพิ่ม flag/option เข้าของเดิมแทนสร้างใหม่
+3. **Use case นี้เกิดบ่อยพอไหม?** — ถ้าทำ 1-2 ครั้งแล้วจบ → ทำ inline โดยไม่ต้องมี command
+
+ถ้าทั้ง 3 คำถามผ่านแล้วยังต้องการ command ใหม่ → แจ้ง user ก่อนว่า "มีของเดิมคือ X แต่ยังไม่พอเพราะ Y — เสนอสร้าง /Z เพิ่ม"
+
+**กฎ:** healthcheck.sh ที่มีมากกว่า 50 commands คือ signal ว่าระบบ bloated — เมื่อนับถึง 50+ ต้องหยุดและ audit ก่อนเพิ่มใหม่
+
 ## When things feel wrong
 
 - Task retried 3+ times with no progress → STOP, escalate to user

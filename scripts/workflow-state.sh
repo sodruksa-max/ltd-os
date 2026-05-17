@@ -29,6 +29,8 @@ case "$cmd" in
 
   init)
     mkdir -p "$STATE_DIR"
+    # Auto-cleanup state files older than 7 days on every init
+    find "$STATE_DIR" -name "*.json" -mtime +7 -delete 2>/dev/null
     cat > "$state_file" <<EOF
 {
   "workflow": "$name",
@@ -40,6 +42,15 @@ case "$cmd" in
 }
 EOF
     echo "State initialized: $state_file"
+    ;;
+
+  cleanup)
+    # Manual cleanup: remove state files older than N days (default 7)
+    days="${3:-7}"
+    mkdir -p "$STATE_DIR"
+    count=$(find "$STATE_DIR" -name "*.json" -mtime +"$days" | wc -l | tr -d ' ')
+    find "$STATE_DIR" -name "*.json" -mtime +"$days" -delete 2>/dev/null
+    echo "Cleaned $count state files older than $days days from $STATE_DIR"
     ;;
 
   mark)
