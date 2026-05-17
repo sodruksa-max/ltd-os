@@ -79,6 +79,34 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 | Implementation | `<topic> algorithm backtesting performance` |
 | Recent advances | `<topic> machine learning deep learning <year>` |
 
+**Paper Search Cognitive Stack — รันระหว่าง query formulation + result evaluation:**
+
+**ออกแบบ query ให้ครอบ channels ที่มักพลาด (นับใน budget รวม):**
+- **[Tetrachromacy]** บังคับเพิ่ม invisible channels นอก mainstream:
+  - `<topic> site:github.com implementation` — code repos ที่คนทำแล้ว
+  - `<topic> site:openreview.net` — papers under review ยังไม่อยู่ใน arXiv
+  - `<topic> site:reddit.com/r/MachineLearning OR r/algotrading` — practitioner critique
+- **[Aura]** เพิ่ม query หา pre-mainstream work: `<topic> preprint workshop 2025 2026` — citation น้อยแต่ author quality สูง
+- **[Schizophrenia]** ถ้า topic เป็น finance/trading → บังคับ 1 cross-domain query: `<topic> [ecology / physics / epidemiology] analogy` — หา structural equivalent จาก domain อื่น
+- **[FOP]** ถ้า search ไปแค่ arXiv + Google Scholar ทุก query → บังคับ vary ≥1 query ไปยัง PapersWithCode หรือ Semantic Scholar โดยตรง
+
+**ประเมิน results ก่อนอ่านเต็ม:**
+- **[Paranoid]** ตรวจ funding source จาก author affiliations — corporate-funded? fund ที่ profit จาก strategy ที่ paper recommend?
+- **[Autism]** ถ้า top results ล้วน cite 3 papers เดิม → `[ECHO: literature dominated by <seminal paper>]` + ตั้งคำถาม: assumption ไหนที่ไม่มีใครตั้งคำถาม?
+- **[Tourette]** reflex flag abstract ที่ claim แรงผิดปกติ: "beats all baselines by 40%", "universally applicable" → `[REFLEX: suspicious claim]` ก่อนอ่านต่อ
+- **[Sleep Paralysis]** ถ้า ≥3 queries ได้ papers เดิมซ้ำ → corpus หมดแล้ว → stop + mark `SYSTEMATIC GAP: <dimension>` แทน search ต่อ
+
+```
+Search Cognitive Stack summary (ใส่ใน Gaps section):
+- [TETRACHROMACY] channels: [list] | [AURA] pre-mainstream: N
+- [SCHIZOPHRENIA] cross-domain query: [topic]
+- [FOP] databases varied: [list]
+- [PARANOID] funding flags: N | [AUTISM] echo: Y/N
+- [TOURETTE] suspicious claims: N | [SLEEP PARALYSIS] corpus exhausted: Y/N
+```
+
+---
+
 **แหล่งที่เน้น (priority order):**
 1. arXiv.org (q-fin.PM, q-fin.ST, cs.LG, stat.ML)
 2. SSRN (finance/econ empirical)
@@ -122,6 +150,46 @@ search 1 query: `"<method name>" OR "<paper title>" limitation failed replicatio
 - พบแค่ blog/opinion → note `[opinion criticism only — not downgraded]`
 - ไม่พบ critic → `[no known critics ✓]`
 - ใช้ 1 search slot จาก budget; batch หลาย papers เข้า query เดียวได้ถ้า budget ตึง
+
+**Paper Reading Cognitive Stack — รันขณะอ่านทุก IMPLEMENT candidate (ข้ามสำหรับ SKIP):**
+
+**[Hyperlexia]** อ่านส่วนที่คนข้าม:
+- Limitations section ทุกข้อ ไม่ใช่แค่ abstract + conclusion
+- Appendix / supplementary materials — methodology detail ที่ซ่อนอยู่
+- OpenReview peer reviewer comments ถ้ามี → flag `[HYPERLEXIA: REVIEWER CONCERN] <issue>`
+
+**[Supertaster]** จับ faint signals:
+- Limitations วางน้ำหนักน้อยเกินจริงสำหรับ issue ที่ดูใหญ่
+- Baseline เลือกมาให้ตัวเองชนะง่าย — outperformed method ไม่ใช่ SOTA จริง
+- Absent citation ของ contrary work ที่ควรมี
+→ flag `[SUPERTASTER: FAINT SIGNAL] <observation>`
+
+**[EDS]** ตรวจ structural weak points ของ methodology:
+- Dataset representative ไหม? (single market? single regime? period สั้นเกิน?)
+- Assumptions hold นอก lab ไหม? (transaction costs? market impact? liquidity?)
+→ flag `[EDS: STRUCTURAL CONCERN] <assumption>`
+
+**[FAS]** ตรวจ language shift ระหว่าง results → conclusion:
+- Results: "suggests / indicates / in our setup" → Conclusion: "proves / demonstrates / universally"
+→ flag `[FAS: LANGUAGE ESCALATION]` — downgrade claim strength ก่อน implement
+
+**[Capgras]** ถ้า paper claim ว่า replicate prior work:
+- ตรวจว่า dataset/evaluation protocol เดิมจริงไหม หรือ impostor (ต่างเงียบๆ)
+→ flag `[CAPGRAS: REPLICATION IMPOSTOR]`
+
+**[Aphantasia + Color Blindness]** ก่อน note ลง survey — บังคับแปลง:
+- ❌ "state-of-the-art improvement" → ✅ exact metric + value + dataset + period
+- ❌ "significant results" → ✅ p-value / Sharpe / RMSE / ตัวเลขจาก results table
+
+**[Savant]** ทุก metric ที่ note ลง survey ต้องมี: value + metric name + dataset + period
+- ❌ "improved Sharpe ratio" → ✅ "Sharpe 1.42 vs baseline 0.87 | S&P 500 | 2010-2020"
+
+เพิ่ม reading stack summary ใน paper entry:
+```
+Reading Stack: [HYPERLEXIA: N] [SUPERTASTER: N] [EDS: N] [FAS: CLEAN/ESCALATION] [CAPGRAS: CLEAN/IMPOSTOR]
+```
+
+---
 
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
 - Title, Authors, Year, Source (arXiv ID หรือ DOI — บังคับ ห้ามละ)
