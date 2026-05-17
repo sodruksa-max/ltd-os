@@ -4,6 +4,12 @@ News snapshot via Alpaca News API — last 12h, market-relevant, categorized.
 
 Usage:
     code/python/.venv/Scripts/python scripts/news-snapshot.py
+    code/python/.venv/Scripts/python scripts/news-snapshot.py --nick-news
+
+  --nick-news   Fetch per-holding company news for Nick portfolio.
+                Reads nick_state.json for tickers + kill condition keywords.
+                Outputs JSON to stdout: {TICKER: {clean, flags, headlines}}.
+                Also writes vault/20_investment/nick/news-digest.md.
 
 Output (markdown, embed directly in pre-market brief):
   - Geopolitical  (XLE/USO/GLD/TLT tagged + keyword detection)
@@ -14,6 +20,7 @@ Output (markdown, embed directly in pre-market brief):
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 """
 
+import json
 import os
 import sys
 import requests
@@ -26,9 +33,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 # Config
 # ---------------------------------------------------------------------------
 
-NEWS_ENDPOINT  = "https://data.alpaca.markets/v1beta1/news"
-LOOKBACK_HOURS = 12
-MAX_ARTICLES   = 30
+NEWS_ENDPOINT      = "https://data.alpaca.markets/v1beta1/news"
+LOOKBACK_HOURS     = 12
+NICK_LOOKBACK_HOURS = 48   # 2 days to cover weekends / missed days
+MAX_ARTICLES       = 30
+NICK_STATE_PATH    = Path("vault/20_investment/nick/nick_state.json")
+NICK_DIGEST_PATH   = Path("vault/20_investment/nick/news-digest.md")
 
 # Symbols that surface geopolitical / macro-sensitive news
 GEO_SYMBOLS    = ["XLE", "USO", "GLD", "TLT", "UUP", "ITA", "EEM", "XAR"]
@@ -206,6 +216,127 @@ def print_quick_read(geo: list, fed: list, earnings: list, total: int):
     )
 
 # ---------------------------------------------------------------------------
+# Nick-news mode
+# ---------------------------------------------------------------------------
+
+def fetch_news_for_tickers(api_key: str, secret_key: str, tickers: list[str]) -> list:
+    now   = datetime.now(timezone.utc)
+    start = now - timedelta(hours=NICK_LOOKBACK_HOURS)
+    params = {
+        "symbols":         ",".join(tickers),
+        "start":           start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "end":             now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "limit":           50,
+        "sort":            "desc",
+        "include_content": "false",
+    }
+    headers = {
+        "APCA-API-KEY-ID":     api_key,
+        "APCA-API-SECRET-KEY": secret_key,
+    }
+    resp = requests.get(NEWS_ENDPOINT, params=params, headers=headers, timeout=15)
+    resp.raise_for_status()
+    return resp.json().get("news", [])
+
+
+def load_nick_state() -> dict:
+    if not NICK_STATE_PATH.exists():
+        return {}
+    return json.loads(NICK_STATE_PATH.read_text(encoding="utf-8"))
+
+
+def nick_news_mode(api_key: str, secret_key: str) -> None:
+    state = load_nick_state()
+    positions = state.get("positions", {})
+    if not positions:
+        print(json.dumps({}))
+        return
+
+    tickers = list(positions.keys())
+
+    # Verify Alpaca symbol limit (current max is 100 per call)
+    if len(tickers) > 100:
+        tickers = tickers[:100]
+
+    try:
+        raw = fetch_news_for_tickers(api_key, secret_key, tickers)
+    except Exception as e:
+        sys.stderr.write(f"[nick-news] Alpaca fetch failed: {e}\n")
+        result = {t: {"clean": True, "flags": [], "headlines": [], "error": str(e)} for t in tickers}
+        print(json.dumps(result))
+        return
+
+    # Group articles by ticker
+    by_ticker: dict[str, list[str]] = {t: [] for t in tickers}
+    for article in dedup(raw):
+        syms = article.get("symbols") or []
+        headline = article.get("headline", "")
+        if not syms:
+            # Untagged article — skip (cannot attribute to specific holding)
+            continue
+        for sym in syms:
+            if sym in by_ticker:
+                by_ticker[sym].append(headline)
+
+    # Evaluate kill condition keywords per ticker
+    digest: dict[str, dict] = {}
+    for ticker in tickers:
+        headlines = by_ticker[ticker]
+        if not headlines:
+            sys.stderr.write(f"[nick-news] {ticker}: no news found (Alpaca returned empty)\n")
+
+        kill_conds = positions[ticker].get("kill_conditions", [])
+        flags: list[str] = []
+        for cond in kill_conds:
+            if cond.get("metric") != "news_keyword":
+                continue
+            keywords = cond.get("threshold", [])
+            joined   = " ".join(h.lower() for h in headlines)
+            if any(kw.lower() in joined for kw in keywords):
+                flags.append(f"{cond['id']}: {cond['label']}")
+
+        digest[ticker] = {
+            "clean":     len(flags) == 0,
+            "flags":     flags,
+            "headlines": headlines[:5],  # cap at 5 for context budget
+        }
+
+    # Write markdown digest
+    _write_nick_digest(digest, state)
+
+    # JSON to stdout for daily_scan.py
+    print(json.dumps(digest))
+
+
+def _write_nick_digest(digest: dict, state: dict) -> None:
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    lines = [
+        f"# Nick News Digest",
+        f"*{now_str} | Alpaca News API | Last {NICK_LOOKBACK_HOURS}h*",
+        "",
+    ]
+    for ticker, data in digest.items():
+        status = "[CLEAN]" if data["clean"] else "[FLAGS]"
+        lines.append(f"## {ticker} {status}")
+        if data.get("flags"):
+            for f in data["flags"]:
+                lines.append(f"- **KILL ALERT:** {f}")
+        if data.get("headlines"):
+            for h in data["headlines"]:
+                lines.append(f"- {h}")
+        else:
+            lines.append(f"- no news found for {ticker} (Alpaca empty)")
+        lines.append("")
+
+    nav = state.get("nav", {}).get("current", "?")
+    lines.append(f"*NAV: ${nav} | Generated: {now_str}*")
+
+    NICK_DIGEST_PATH.parent.mkdir(parents=True, exist_ok=True)
+    NICK_DIGEST_PATH.write_text("\n".join(lines), encoding="utf-8")
+    sys.stderr.write(f"[nick-news] digest written to {NICK_DIGEST_PATH}\n")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -213,6 +344,14 @@ def main():
     load_env()
     api_key    = os.environ.get("ALPACA_API_KEY")
     secret_key = os.environ.get("ALPACA_SECRET_KEY")
+
+    if "--nick-news" in sys.argv:
+        if not api_key or not secret_key:
+            sys.stderr.write("[nick-news] ALPACA_API_KEY / ALPACA_SECRET_KEY not set\n")
+            print(json.dumps({}))
+            return
+        nick_news_mode(api_key, secret_key)
+        return
 
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     print("## News Snapshot")
