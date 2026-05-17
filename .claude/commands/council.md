@@ -47,9 +47,11 @@ Cost: ~$1.50-3.50 per /council. Time: 10-16 min.
 
 ## Phase 1: Brief (1 turn)
 
-Read `vault/_memory/PREFERENCES.md`, `DECISIONS.md`, `OUTCOMES.md`, user-provided context.
+Read `vault/_memory/PREFERENCES.md`, `DECISIONS.md`, user-provided context.
 
-Write `brief.md` (context, goal, constraints, stakes, open questions).
+**OUTCOMES.md example selection (arXiv:2506.08607 CASE principle):** อย่าโหลด OUTCOMES.md ทั้งหมด — ดึงเฉพาะ 3 entries ที่ relevant ที่สุดต่อ topic นี้ (score by keyword similarity: domain + decision type + stakes level) แล้วใส่ใน brief เป็น "Prior decisions context"; ถ้าไม่มี entry ที่ match → ระบุ "no relevant prior decisions"
+
+Write `brief.md` (context, goal, constraints, stakes, open questions, prior decisions context).
 
 Show user: "Brief done. Auto-picked expertise lens: <X>. Starting parallel proposals..."
 

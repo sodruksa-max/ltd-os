@@ -76,6 +76,25 @@ purpose: ระบุ section ที่ compress ได้ vs ห้าม compr
 
 ---
 
+## Long Document Processing — Chunk vs Full Load (arXiv:2506.16411 + arXiv:2507.02259)
+
+เมื่อ document ยาว (> 30 pages PDF หรือ > 5000 words) ให้ตรวจก่อนว่า chunk หรือโหลดเต็ม:
+
+| Condition | Strategy | เหตุผล |
+|---|---|---|
+| Signal locally concentrated (earnings per quarter, research per section) | **Chunk** — offset+limit + rolling summary | ข้อมูลสำคัญอยู่ในกลุ่มๆ ไม่ต้องโหลดทั้งก้อน |
+| Cross-section dependencies สูง (kill condition ต้องอ่าน context ทั้งเล่ม) | **Full load** (ใช้ Memory Pointer แทน) | ตัดบางส่วนออกเสี่ยงพลาด dependency |
+| หลาย docs ที่เกี่ยวกัน | **Sequential chunk ต่อ doc** + summarize each → combine | แทนที่จะ concat ทั้งหมด |
+
+**Rolling summary format สำหรับ chunk-sequential:**
+```
+[Chunk 1/N processed] Key facts: [1-3 bullets] | Open questions: [ถ้ามี]
+[Chunk 2/N processed] Key facts: [1-3 bullets] | Running context: [update prior summary]
+```
+หยุด chunk ทันทีที่ได้คำตอบที่ต้องการ — ไม่ต้องอ่านครบทุก chunk
+
+---
+
 ## Vault File Compression (เมื่อ /condense)
 
 | File | Compressible | Keep verbatim |

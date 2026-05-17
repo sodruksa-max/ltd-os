@@ -172,10 +172,15 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - Exception: user ขอ summary โดยตรง หรือ file เปลี่ยนระหว่าง session
 
 ### 7. Partial file reads สำหรับ file ขนาดใหญ่
-(From: arXiv:2511.22729 — memory pointer แทน full content)
+(From: arXiv:2511.22729 — memory pointer แทน full content; arXiv:2507.02259 — chunk-sequential for long docs)
 - File > 1000 words → ใช้ Read tool ด้วย offset+limit เพื่ออ่านเฉพาะ section ที่ต้องการ
 - ห้ามโหลดทั้งไฟล์เพื่อหาข้อมูล 1-2 ส่วน
 - ถ้าไม่รู้ว่า section อยู่ที่ไหน → ใช้ Grep หา line number ก่อน แล้วค่อย Read ด้วย offset
+- **PDF > 30 pages** → อ่านเป็น chunks (offset+limit ทีละ ~50 pages) + สะสม rolling summary สั้นๆ ไว้ใน context แทนโหลดทั้งไฟล์; อย่าโหลด monolithic
+
+**When to chunk vs not (arXiv:2506.16411):**
+- ✅ Chunk: earnings transcript (signal local per quarter), long research PDF (signal per section), log files
+- ❌ อย่า chunk: /council debate (cross-agent reasoning dependencies สูง), kill condition verification (context ต้องครบ)
 
 ### 8. Task-scoped memory loading
 (From: arXiv:2604.23069 — load เฉพาะ context ที่ task นั้นต้องการ)

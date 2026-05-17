@@ -96,6 +96,12 @@ Next earnings date + consensus EPS
 
 Cell = ✓ (has evidence) / ❓ (empty) — empty cells = gaps ที่ flag ใน [E] Data conflicts และใน Reese doc Data gaps section; หยุด search เมื่อ matrix เต็มหรือ budget หมด ไม่ใช่ fixed N queries
 
+**Trajectory Prune (arXiv:2509.23586 AgentDiet) — บังคับก่อนส่งต่อ Step 3:**
+ณ จุดนี้ raw search queries, URL snippets, และ intermediate tool outputs ถือว่า "expired" — synthesized แล้วใน [A]-[E]
+- ส่งต่อ Step 3-6 **เฉพาะ structured [A]-[E] sections เท่านั้น**
+- ห้าม carry raw search results, ห้าม re-read source URLs, ห้าม re-quote snippets
+- Step 3, 4, 5, 6 ทำงานจาก [A]-[E] + vault KB เท่านั้น → −40-60% input tokens ต่อ downstream step
+
 ---
 
 ## STEP 3 — STOCK RESEARCH NOTE
