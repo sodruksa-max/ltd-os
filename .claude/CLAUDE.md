@@ -287,15 +287,20 @@ Writer/executor must check before writing. Reviewer enforces at commit.
 - ถ้าระหว่างทำเห็นว่า "น่าจะปรับตรงนี้ด้วย" → หยุด แจ้ง user ก่อน ไม่ทำเอง
 - "Just one more improvement" ต้องถามก่อนเสมอ
 
-## COMPLEXITY GUARD — ห้ามเพิ่ม command ใหม่โดยไม่ถามก่อน
+## COMPLEXITY GUARD — ตรวจ existing ก่อนสร้างใหม่ทุกครั้ง (อัตโนมัติ ไม่ถามก่อน)
 
-ก่อนสร้าง slash command ใหม่, script ใหม่, หรือ agent ใหม่ทุกครั้ง — ต้องผ่าน 3 คำถามนี้ก่อน:
+ก่อนสร้าง slash command ใหม่, script ใหม่, หรือ agent ใหม่ — Claude ต้องตรวจเองก่อนเสมอ:
 
-1. **มีของเดิมที่ทำได้ไหม?** — ตรวจ `.claude/commands/*.md` และ `scripts/` ว่ามี command หรือ script ที่ cover use case นี้แล้วหรือเปล่า
-2. **ขยาย existing ได้ไหม?** — ถ้าใกล้เคียง → เพิ่ม flag/option เข้าของเดิมแทนสร้างใหม่
-3. **Use case นี้เกิดบ่อยพอไหม?** — ถ้าทำ 1-2 ครั้งแล้วจบ → ทำ inline โดยไม่ต้องมี command
+```bash
+ls .claude/commands/*.md | sed 's|.*/||;s|\.md||'
+ls scripts/*.py scripts/*.sh 2>/dev/null | sed 's|scripts/||'
+```
 
-ถ้าทั้ง 3 คำถามผ่านแล้วยังต้องการ command ใหม่ → แจ้ง user ก่อนว่า "มีของเดิมคือ X แต่ยังไม่พอเพราะ Y — เสนอสร้าง /Z เพิ่ม"
+**Decision logic (ทำเองไม่ถาม):**
+- พบ command/script ที่ cover use case ได้เลย → ใช้ของเดิม ไม่สร้างใหม่
+- พบ command ที่ใกล้เคียง → extend ด้วย flag/option แทน ไม่สร้าง command ใหม่
+- Use case เกิด 1-2 ครั้งแล้วจบ → ทำ inline ไม่สร้าง command
+- ไม่มีอะไร cover ได้เลย + ใช้บ่อย → สร้างใหม่ได้เลย พร้อมแจ้งว่า "ไม่มีของเดิมที่ทำได้ — สร้าง /X ใหม่"
 
 **กฎ:** healthcheck.sh ที่มีมากกว่า 50 commands คือ signal ว่าระบบ bloated — เมื่อนับถึง 50+ ต้องหยุดและ audit ก่อนเพิ่มใหม่
 
