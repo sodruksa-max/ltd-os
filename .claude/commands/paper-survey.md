@@ -1,5 +1,5 @@
 ---
-description: หา academic papers มาพัฒนา project — search arXiv/SSRN/Scholar/PapersWithCode/OpenReview, summarize, จัดกลุ่มตาม theme, แนะนำลำดับ implement. Save to vault/10_research/papers/.
+description: หา academic papers มาพัฒนา project — search arXiv/SSRN/Scholar/PapersWithCode/OpenReview/HuggingFace + citation check + Connected Papers expansion. Save to vault/10_research/papers/.
 ---
 
 # /paper-survey
@@ -86,16 +86,26 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 4. Journal of Finance, Journal of Portfolio Management, Quantitative Finance
 5. **Papers With Code** (paperswithcode.com) — ตรวจว่า paper มี official code repo ไหม; ถ้ามี = IMPLEMENT โอกาสสูง, ถ้าไม่มี = complexity สูงกว่า; query: `<topic> site:paperswithcode.com`
 6. **OpenReview** (openreview.net) — NeurIPS/ICLR/ICML papers ที่ยัง under review ก่อน arXiv; จับ papers ใหม่ที่ยังไม่ดัง; query: `<topic> site:openreview.net`
-7. **GitHub** — หา implementation repo, backtesting code, alternative data pipeline ที่คนทำแล้ว (`<topic> site:github.com trading strategy implementation`)
-8. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
+7. **Hugging Face Papers** (huggingface.co/papers) — **เฉพาะ topic ที่เกี่ยวกับ LLM/agent/token/transformer** (auto-detect); trending papers + community upvotes เป็น quality signal ก่อน citations สะสม; query: `<topic> site:huggingface.co/papers`
+8. **GitHub** — หา implementation repo, backtesting code, alternative data pipeline ที่คนทำแล้ว (`<topic> site:github.com trading strategy implementation`)
+9. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
 
 **Papers With Code check (บังคับสำหรับทุก IMPLEMENT candidate):**
 ก่อน tag paper เป็น IMPLEMENT → search `<paper title> paperswithcode` หรือ `<arXiv ID> site:paperswithcode.com`:
 - พบ code repo → เพิ่ม `**Code:** [repo URL]` ใน paper entry + confirm IMPLEMENT
 - ไม่พบ code → note `[no official code]` — ยัง IMPLEMENT ได้แต่ complexity สูงกว่า
 
+**Citation count check via Semantic Scholar (บังคับสำหรับทุก IMPLEMENT candidate):**
+ดึง citation count จาก Semantic Scholar: `<paper title> citations semanticscholar.org` หรือ `api.semanticscholar.org/graph/v1/paper/arXiv:<ID>?fields=citationCount`
+- paper อายุ < 6 เดือน → citation count ไม่สำคัญ (ยังไม่มีเวลาสะสม) — ใช้ upvotes/likes จาก HF Papers หรือ community signal แทน
+- paper อายุ 6-18 เดือน: citations < 10 → note `[low citations — unvalidated]`; citations ≥ 50 → `[well-cited ✓]`
+- paper อายุ > 18 เดือน: citations < 20 → downgrade เป็น REFERENCE ถ้าไม่มีเหตุผลพิเศษ; citations ≥ 100 → `[highly-cited ✓]`
+- เพิ่ม `**Citations:** N` ใน paper entry ทุกตัว (ถ้าหาได้)
+
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
 - Title, Authors, Year, Source (arXiv ID หรือ DOI — บังคับ ห้ามละ)
+- Citations: N (จาก Semantic Scholar — ถ้าหาไม่ได้ใส่ `[unverified]`)
+- Code: [repo URL หรือ `no official code`] (จาก Papers With Code)
 - Method ใน 1-2 ประโยค
 - Key finding / contribution
 - Dataset (ตลาด, period, frequency)
@@ -107,6 +117,12 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 - Year = current_year - 3 → ⚠️ AGING — ระบุ "check for follow-up work"
 - Year ≤ current_year - 4 → ⚠️ OLDER PAPER — ระบุ "may be superseded; search `<method> <year-1> <year>` ก่อน implement"
 - ถ้าหา arXiv ID หรือ DOI ไม่ได้ → mark `[source-unverified]` และ tag เป็น REFERENCE ไม่ใช่ IMPLEMENT
+
+**Connected Papers expansion (optional — รันเมื่อมี seed papers แล้ว):**
+ถ้า user ให้ seed paper มา หรือ survey พบ 2+ papers แล้ว → ใช้ Connected Papers (connectedpapers.com) เพื่อหา adjacent work:
+- query: `<arXiv ID> connectedpapers` หรือ fetch `https://www.connectedpapers.com/main/<arXiv-ID>/graph`
+- จับ papers ที่ cite/cited-by seed แต่ยังไม่อยู่ใน survey — เพิ่มถ้า relevant
+- ใช้ 1 search slot จาก budget; ข้ามถ้า budget ตึง (narrow scope)
 
 **ถ้าต้องการวิเคราะห์ PDF ลึก (> 30 หน้า):**
 > แนะนำ NotebookLM — paste summary กลับมาแล้วรัน `/import-notebooklm`
@@ -155,6 +171,8 @@ Template:
 
 #### [Paper Title] — Authors (Year)
 - **Source:** arXiv:XXXX.XXXXX / SSRN / [Journal]
+- **Citations:** N [well-cited ✓ / low citations / unverified] (Semantic Scholar)
+- **Code:** [repo URL] / [no official code] (Papers With Code)
 - **Method:** [1-2 ประโยค]
 - **Key finding:** [1-2 ประโยค]
 - **Dataset:** [ตลาด, period, frequency]
