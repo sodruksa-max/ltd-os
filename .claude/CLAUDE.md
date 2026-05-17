@@ -182,6 +182,9 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - ✅ Chunk: earnings transcript (signal local per quarter), long research PDF (signal per section), log files
 - ❌ อย่า chunk: /council debate (cross-agent reasoning dependencies สูง), kill condition verification (context ต้องครบ)
 
+**Tool result caching — same-session skip rule (arXiv:2601.15335 ToolCaching):**
+ถ้า web search query หรือ script (macro-snapshot, news-snapshot) ถูกรันใน session นี้แล้ว → ใช้ผลเดิม อย่า re-fetch; applies to: /pre-market (VIX/futures slow-changing), /stock-content (SEC filing ที่ fetch แล้ว), /nick-weekly (price query ที่ดึงแล้ว)
+
 **Vault-wide synthesis → file-system navigator pattern (arXiv:2603.20432):**
 เมื่อ task ต้องการ cross-vault synthesis (หลายไฟล์) — ใช้ Grep/Glob tool calls isolate relevant spans ก่อนเสมอ; อย่า bulk-load หลายไฟล์พร้อมกัน
 - ✅ grep ก่อน → Read เฉพาะ matching lines/sections

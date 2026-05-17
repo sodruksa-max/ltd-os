@@ -46,6 +46,12 @@ ls vault/20_investment/ | grep -i <TICKER>
 
 ถ้ามี focus angle → จำกัด searches ให้อยู่ใน focus นั้น
 
+**Hierarchical retrieval rule (arXiv:2602.03442 A-RAG) — escalate เฉพาะเมื่อ lower level ไม่พอ:**
+1. **Vault grep ก่อนเสมอ** — `grep -ri "<TICKER>" vault/` → ถ้าพบ note ที่ครอบ dimension นั้นแล้ว → ใช้เลย ไม่ต้อง search
+2. **Keyword web search** — เฉพาะ dimension ที่ vault ไม่มี → search 1 query ต่อ gap
+3. **Full-page fetch** — เฉพาะเมื่อ keyword search ให้ snippet ไม่พอ → fetch 1 URL ที่ most relevant
+- ห้าม jump ไป web search โดยไม่ตรวจ vault ก่อน → ลด redundant searches
+
 **Query generation rule (arXiv:2510.10009 ExpandSearch):** ก่อนรัน search แต่ละ turn — generate 4-5 semantically distinct sub-queries ก่อน (เช่น `NVDA data center Q1 2025` / `Jensen Huang FY2026 guidance` / `NVDA gross margin trend` / `NVDA China export impact`) แทนที่จะค้นด้วย 1 query — sub-queries ต้องต่างกัน semantic (ไม่ใช่แค่ rephrase) เพื่อ surface diverse evidence
 
 | หัวข้อ | Query ตัวอย่าง |

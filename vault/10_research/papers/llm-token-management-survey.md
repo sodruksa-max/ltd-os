@@ -27,6 +27,8 @@
 | 18 | Meta-tools/AWO (arXiv:2601.22037, 2026) | Tool meta-bundling | collapse recurring tool sequences → −11.9% LLM calls ใน /stock-content pipeline |
 | 19 | Prefix Homogeneity (arXiv:2605.06046, 2026) | Cache-aware batching | static prefix byte-identical across /council agents → maximize prefix cache hit rate |
 | 20 | Coding Agents (arXiv:2603.20432, 2026) | File-system navigator | vault-wide synthesis via grep/glob ไม่ต้อง load หลายไฟล์ → +17.3% เหนือ SOTA |
+| 21 | A-RAG (arXiv:2602.03442, 2026) | Hierarchical retrieval | vault → keyword → full-page escalation; retrieve เฉพาะเมื่อจำเป็น |
+| 22 | ToolCaching (arXiv:2601.15335, 2026) | Tool result cache | same-query tool calls skip re-execution → +11% hit rate, −34% latency |
 
 ---
 
@@ -696,3 +698,106 @@
 ---
 
 *Appendix รอบ 5 scope: 6 new themes | Searches: 6 | Papers: 6 — 6 IMPLEMENT | Total survey: 24 themes, 42 papers — 25 IMPLEMENT, 17 REFERENCE*
+
+---
+
+## Appendix — 2026-05-18: Gap Fill รอบ 6 (Hierarchical Retrieval / Tool Caching / Cascading Summarization / Budget Allocation / Context Distillation)
+
+*Context: 5 gap areas — 2 IMPLEMENT, 3 REFERENCE, 3 SKIP (model-level / infrastructure). Model-level context distillation (C3, LoRA compressor) confirmed not actionable for API-only deployments.*
+
+---
+
+### Theme 25: Hierarchical Agentic Retrieval
+
+#### A-RAG: Scaling Agentic Retrieval-Augmented Generation via Hierarchical Retrieval Interfaces — Du, Xu, Zhu et al. (arXiv:2602.03442, Feb 2026)
+- **Source:** [arXiv:2602.03442](https://arxiv.org/abs/2602.03442)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — Feb 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Agent มี 3 retrieval tools ที่ granularity ต่างกัน — keyword search, semantic search, chunk read — และ decide เองว่าจะเรียก tool ไหน (หรือไม่เรียกเลย) ที่แต่ละ step; escalate จาก coarse → fine เฉพาะเมื่อ lower level ไม่พอ
+- **Key finding:** เหนือกว่า RAG baselines ด้วย "comparable or lower retrieved tokens" บน multiple open-domain QA benchmarks; ลด unnecessary retrieval โดยไม่เสีย accuracy
+- **Apply to project:** Researcher ตอนนี้ retrieve จาก vault + web แบบ unconditional — A-RAG principle: vault grep ก่อน → ถ้าไม่พอ keyword web search → ถ้ายังไม่พอ full-page fetch; apply ใน `/stock-content` Step 2 และ `/stock-research` researcher step; เพิ่มเป็น decision rule ในไฟล์ command
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 26: Tool Result Caching
+
+#### ToolCaching: Towards Efficient Caching for LLM Tool-calling — Zhai, Shen, Luo, Yang (arXiv:2601.15335, 2026)
+- **Source:** [arXiv:2601.15335](https://arxiv.org/abs/2601.15335)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** VAAC algorithm — bandit-based cache admission + value-driven multi-factor eviction; evaluates each tool call ว่า cacheable ไหมโดยใช้ semantic features (fresh-sensitivity) + system features (frequency, recency); cached results serve สำหรับ semantically equivalent future calls โดยไม่ re-execute tool
+- **Key finding:** 11% higher cache hit ratio, 34% lower latency vs standard LRU/LFU policies
+- **Apply to project:** `/pre-market` รัน macro-snapshot + news fetches ทุกเช้า — ข้อมูล slow-moving (VIX, futures) ไม่เปลี่ยนภายใน session; VAAC principle: ถ้า same web search query รันใน session เดียวกัน → skip re-fetch, ใช้ผล prior call; apply ใน `/stock-content` ด้วย — SEC filing ที่ fetch แล้วใน session ไม่ต้อง fetch ซ้ำ; implement เป็น behavioral rule ใน CLAUDE.md
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 27: Source-Anchored Hierarchical Merging
+
+#### Context-Aware Hierarchical Merging for Long Document Summarization — (arXiv:2502.00977, Feb 2025)
+- **Source:** [arXiv:2502.00977](https://arxiv.org/abs/2502.00977)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** แบ่ง long doc เป็น sections → summarize แต่ละ section → merge hierarchically; key innovation: enrich each merge step ด้วย source-document context anchoring เพื่อลด hallucination amplification ที่เกิดจาก naive recursive merging
+- **Key finding:** Addresses known failure mode ของ map-reduce summarization — hallucinations compound ที่แต่ละ merge level; source anchoring ที่ merge points ลด compounding error ได้ substantial
+- **Apply to project:** Reese synthesis จาก long stock note — ถ้า research มาจาก many sources (>5K tokens), ใช้ section-level summary → source-anchored merge แทน single-pass load; apply ใน `/paper-survey` multi-doc synthesis ด้วย — แต่ละ paper summarize แล้ว merge พร้อม source anchor
+- **Tag:** REFERENCE
+
+---
+
+### Theme 28: Budget-Aware Multi-Agent Routing
+
+#### CoRL: Controlling Performance and Budget of a Centralized Multi-agent LLM System with Reinforcement Learning — Jin, Collins, Yu et al. (arXiv:2511.02755, Nov 2025)
+- **Source:** [arXiv:2511.02755](https://arxiv.org/abs/2511.02755)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Controller LLM ที่ train ด้วย RL เพื่อ route subtasks ไปยัง specialist models ต่างๆ based บน remaining budget; single centralized controller เรียนรู้ when to use cheap vs expensive model ภายใต้ cost cap
+- **Key finding:** Surpasses best individual expert LLM ที่ high-budget; competitive ที่ low-budget — adaptive ตลอด budget range บน 4 benchmarks
+- **Apply to project:** Requires multi-model routing (Haiku + Sonnet minimum) — LTD-OS single-model ปัจจุบัน; actionable lesson ตอนนี้: planner ใน /council assign shorter thinking budgets ให้ lower-stakes agents แทนที่จะให้ทุก agent budget เท่ากัน; revisit เมื่อ Anthropic API expose model-tier switching
+- **Tag:** REFERENCE
+
+#### Agentic AI Systems Should Be Designed as Marginal Token Allocators — (arXiv:2605.01214, May 2026)
+- **Source:** [arXiv:2605.01214](https://arxiv.org/html/2605.01214v1)
+- **Venue:** arXiv position paper Tier D
+- **Citations:** [unverified]
+- **Code:** [not applicable — theoretical]
+- **Critics:** [no known critics ✓]
+- **Method:** Theoretical framework unifying routing, agent policy, serving, และ post-training เป็น vertical slices ของ token allocation problem; formal Lagrange multiplier formulation สำหรับ joint feasibility constraint
+- **Key finding:** Proposes unified equation capturing all 4 optimization layers simultaneously; conceptual framework, no empirical numbers
+- **Apply to project:** Useful mental model สำหรับ thinking about LTD-OS holistically — แต่ไม่มี concrete implementation hook โดยไม่ re-engineer serving layer
+- **Tag:** REFERENCE
+
+---
+
+### Confirmed NOT ACTIONABLE (model-level, API-incompatible)
+
+**Context Cascade Compression C3 (arXiv:2511.15244):** Two-LLM cascade ที่ต้องการ fine-tuned small compressor model; 20x compression → 98% accuracy แต่ incompatible กับ Anthropic API-only setup
+
+**LLM as Token Compressor/Decompressor (arXiv:2603.25340):** LoRA fine-tuning required สำหรับ compressor path; up to 18x reduction แต่ API-inaccessible; revisit if Anthropic releases native context compression API
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-18 รอบ 6)
+
+26. **A-RAG hierarchical retrieval decision rule (arXiv:2602.03442)** → เพิ่มใน stock-content.md Step 2 + stock-research.md: vault grep → keyword web search → full-page fetch; escalate เฉพาะเมื่อ lower level ไม่พอ → complexity: **low** (behavioral rule ใน command files)
+
+27. **ToolCaching same-session skip rule (arXiv:2601.15335)** → เพิ่มใน CLAUDE.md: "ถ้า web search query เดิมถูกรันใน session นี้แล้ว → ใช้ผลเดิม อย่า re-fetch" → complexity: **low** (CLAUDE.md policy)
+
+### Gaps — อัพเดต (2026-05-18 รอบ 6)
+
+- **Model-level compression (C3, LoRA compressor)** — confirmed not actionable; API-only constraint; revisit if Anthropic releases native compression API
+- **CoRL multi-model routing** — deferred; requires Haiku+Sonnet tier switching in same pipeline
+- **Token Economics dual-view (arXiv:2605.09104)** — survey-level only; no actionable algorithm
+
+---
+
+*Appendix รอบ 6 scope: 4 new themes | Searches: 5 | Papers: 5 active — 2 IMPLEMENT, 3 REFERENCE | Total survey: 28 themes, 47 papers — 27 IMPLEMENT, 20 REFERENCE*
