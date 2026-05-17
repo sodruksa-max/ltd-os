@@ -726,6 +726,47 @@ Status: [validated ✅ / [DOPAMINE: PATTERN UNVERIFIED] → monitor 1 week]
    ถ้ายังมี search budget เหลือและมีคำถามที่บล็อกการตัดสินใจ → ค้นหาทันที
    บันทึกสิ่งที่ค้นพบเป็น insight atom สั้นๆ ใน `vault/Knowledge/insight-atoms/` ก่อนจบ session
 
+8.5 **Research Pipeline Scan — Systematic Opportunity Discovery:**
+
+เป้าหมาย: หา tickers ที่มี signal ดีแต่ยังไม่มี research note ใน vault → สร้าง research queue ที่ชัดเจนทุกสัปดาห์
+
+**ขั้นตอน (ใช้ข้อมูลที่โหลดแล้วเท่านั้น — ไม่ต้อง search เพิ่ม):**
+
+a. จาก nick-signals.md ที่อ่านแล้ว — สกัด tickers ที่มี signal tier ต่อไปนี้ตามลำดับ priority:
+   - **Priority 1:** ★ (NEUTRAL RSI + NEAR MA20 + STRONG RS) — full-size entry signal
+   - **Priority 2:** NEUTRAL RSI + STRONG RS (แต่ไม่ใช่ NEAR MA20)
+   - ข้าม OVERBOUGHT/EXTENDED (wait ก่อน), OVERSOLD ? (investigate ก่อน), ? (ไม่มีข้อมูล)
+
+b. ตรวจว่า ticker แต่ละตัวมี research note ใน vault หรือยัง:
+   ```
+   Glob: vault/20_investment/<TICKER>-*.md
+   ```
+   **สำคัญ:** ตรวจแค่ว่าไฟล์ EXIST ไหม — ห้ามอ่าน content (blocklist คุ้มครอง content ไม่ใช่ filename)
+   - มีไฟล์ → skip (research มีแล้ว)
+   - ไม่มีไฟล์ → เป็น candidate สำหรับ research queue
+
+c. Cross-reference กับ thesis-convergence.md:
+   - Ticker ที่ thesis theme ของมันเป็น STRONG (🔴) → เพิ่ม priority
+   - Ticker ที่ theme เป็น MODERATE (🟡) → ลด priority ลง 1 ขั้น
+
+d. เลือก **Top 3** จาก ranked list → report เป็น Research Queue:
+
+```
+Research Pipeline Queue (สัปดาห์นี้):
+| Priority | Ticker | Signal | Theme Convergence | Action |
+|---|---|---|---|---|
+| 1 | TICKER | ★ NEUTRAL/NEAR/STRONG | STRONG | /stock-content TICKER |
+| 2 | TICKER | NEUTRAL/MID/STRONG | MODERATE | /stock-research TICKER |
+| 3 | TICKER | NEUTRAL/NEAR/STRONG | STRONG | /stock-content TICKER |
+
+Tickers with signals but research exists: NVDA, AVGO, ASML, PLTR, IONQ (skip)
+Tickers skipped (OVERBOUGHT/OVERSOLD/?): [list]
+```
+
+**กฎ:** ถ้า queue เดิมจากสัปดาห์ที่แล้วยังไม่ได้รัน → แสดง note "[QUEUE PERSISTED X weeks — ยังไม่ได้ research]"
+
+---
+
 9. **KB Gaps (เฉพาะ deep research ที่ต้องการ > 5 searches):**
    Flag เฉพาะสิ่งที่ต้องการ full research pipeline เท่านั้น:
    - ไม่มี Reese doc และ conviction สูง → เสนอ `/stock-content <TICKER>`
