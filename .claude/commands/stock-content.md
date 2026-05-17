@@ -46,6 +46,8 @@ ls vault/20_investment/ | grep -i <TICKER>
 
 ถ้ามี focus angle → จำกัด searches ให้อยู่ใน focus นั้น
 
+**Query generation rule (arXiv:2510.10009 ExpandSearch):** ก่อนรัน search แต่ละ turn — generate 4-5 semantically distinct sub-queries ก่อน (เช่น `NVDA data center Q1 2025` / `Jensen Huang FY2026 guidance` / `NVDA gross margin trend` / `NVDA China export impact`) แทนที่จะค้นด้วย 1 query — sub-queries ต้องต่างกัน semantic (ไม่ใช่แค่ rephrase) เพื่อ surface diverse evidence
+
 | หัวข้อ | Query ตัวอย่าง |
 |---|---|
 | ธุรกิจ + segment | `<TICKER> business model revenue segments 2025` |
@@ -53,6 +55,8 @@ ls vault/20_investment/ | grep -i <TICKER>
 | Bear case | `<TICKER> bear case short thesis risks 2025` |
 | Peer valuation | `<TICKER> valuation P/E EV/EBITDA peers <SECTOR>` |
 | Reddit / Seeking Alpha | `<TICKER> site:seekingalpha.com OR site:reddit.com analysis` |
+
+**Adaptive rewriter rule (arXiv:2502.15684 FinSearch):** หลังแต่ละ search call → ตรวจว่า dimension ไหนใน [A]-[E] ยังขาดข้อมูล → reformulate sub-query ถัดไปโดย target gap นั้นโดยตรง (ไม่ใช่ fixed query plan) — หยุดเมื่อ dimensions ครบหรือ budget หมด
 
 **Output format — คืนเป็น 5 sections นี้เท่านั้น (ห้าม list vault files — vault context โหลดแล้ว ไม่ใช่ findings):**
 
@@ -78,6 +82,19 @@ Next earnings date + consensus EPS
 ถ้า 2 sources ให้ค่าต่างกัน → list ที่นี่ ไม่ฝังใน sections อื่น
 
 ใส่ ❓ ทุกที่ที่หาไม่ได้ — ห้าม fabricate
+
+**Coverage matrix check (arXiv:2508.05668 Deep Search Agents Survey):** หลัง search เสร็จทั้งหมด — fill matrix ก่อนส่งต่อ Step 3:
+
+| Dimension | Web news | SEC/Earnings | Vault atoms | Macro KB |
+|---|---|---|---|---|
+| Revenue growth | | | | |
+| Margin | | | | |
+| Competitive moat | | | | |
+| Macro sensitivity | | | | |
+| Management | | | | |
+| Valuation | | | | |
+
+Cell = ✓ (has evidence) / ❓ (empty) — empty cells = gaps ที่ flag ใน [E] Data conflicts และใน Reese doc Data gaps section; หยุด search เมื่อ matrix เต็มหรือ budget หมด ไม่ใช่ fixed N queries
 
 ---
 

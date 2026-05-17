@@ -284,7 +284,7 @@ done
 # ── Templates ─────────────────────────────────────────────────────────────────
 echo ""
 echo "-- Templates"
-for tpl in real-trade-template fertilizer-formula recipe-formula; do
+for tpl in real-trade-template fertilizer-formula recipe-formula content-draft daily-note failure notebooklm-import paper-summary paper-trade-template stock-research trade-journal; do
   if ls "$ROOT/vault/_templates/${tpl}"* 2>/dev/null | grep -q .; then
     p "template: $tpl"
   else

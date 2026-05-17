@@ -3,6 +3,14 @@
 *(auto-updated by /healthcheck — keeps last 5 runs)*
 *(used by OCD persistent WARN escalation layer)*
 
+## 2026-05-17 (รอบ 3)
+- PASS: 125 | WARN: 0 | FAIL: 0 — ALL SYSTEMS GO
+- [ACCEPTED] scripts/trade-log.json — runtime-generated, accepted prior run, no change
+- [KNOWN] 17 unregistered scripts — unchanged, all known utility/wrappers
+- [KNOWN] 8 templates not in symmetry audit — active templates, no orphans
+- [TODO-HIGH] ExpandSearch + FinSearch + Coverage matrix — IR paper survey improvements not yet in stock-content.md
+- [TODO-MED] Metadata-contextual vault embedding — new feature from IR survey
+
 ## 2026-05-17 (รอบ 2)
 - PASS: 97 | WARN: 0 | FAIL: 0 — ALL SYSTEMS GO
 - [PERSISTED — 1 run, ACCEPTED] scripts/trade-log.json — runtime-generated file referenced in nick.md blocklist, low impact, no fix needed
