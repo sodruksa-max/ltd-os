@@ -66,13 +66,19 @@ Each writes `proposal-<role>.md` independently. Don't share between agents.
 
 After all 5 done → 1-line summary of each.
 
-## Phase 3: Cross-critique (1 turn)
+## Phase 3: Cross-critique (MARS pattern — arXiv:2509.20502)
 
-Generate 20 critiques (each proposer critiques the other 4):
-- Format: steelman + weakness + question
-- Save all 20 in single `critiques.md`
-- Caveman critiques: keep language direct and physical — no abstract framing
-- Hypomania critiques: fast, multiple observations per proposal — at least 2 angles per critique
+**MARS rule: reviewers work INDEPENDENTLY — ห้าม pass critique ระหว่าง agents**
+
+Generate 20 critiques (each proposer critiques the other 4) โดยใช้ MARS pattern:
+- แต่ละ proposer อ่านเฉพาะ **proposals อื่น** — ห้ามอ่าน critiques ของ agent อื่นที่กำลัง generate
+- Critiques ทั้งหมด save ตรงไป `critiques.md` โดยไม่ share ระหว่าง proposers
+- Synthesizer (Phase 4) เป็น meta-reviewer ที่รวม critiques ทั้งหมด — ไม่ใช่ proposers
+- Format per critique: steelman + weakness + question
+- Caveman critiques: direct + physical — no abstract framing
+- Hypomania critiques: fast, multiple angles — at least 2 angles per proposal
+
+**ทำไม:** MARS ลด token ~50% vs MAD โดยตัด reviewer-to-reviewer interaction ออก (context ไม่ blow up ระหว่าง critique rounds)
 
 ## Phase 3.5: Expertise lens (NEW — 1 turn)
 

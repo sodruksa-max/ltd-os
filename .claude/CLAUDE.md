@@ -185,6 +185,14 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - **Nick tasks** (/nick-init, /nick-weekly, /nick-quarterly): โหลด vault/Knowledge/ เท่านั้น (THESIS_TRACKER + INDEX_insights) — ห้ามโหลด PREFERENCES หรือ OUTCOMES
 - **Full load** (PROJECTS + DECISIONS + PREFERENCES): เฉพาะ session start ครั้งแรก, /council, หรือ task ที่ span หลาย domain
 
+### 9. Static-first prompt ordering — ห้าม break prefix cache
+(From: arXiv:2601.06007 — Don't Break the Cache — ลด cost 41-80% per session)
+- **Static content ต้นเสมอ:** CLAUDE.md, TRADING_RULES.md, KB files, behavior handbook, templates, agent instructions
+- **Dynamic content ท้ายเสมอ:** script outputs (macro-snapshot, news), web search results, tool call results, live data
+- ถ้า dynamic content อยู่ก่อน static → prefix cache break ทุก API call → cost เพิ่มทันที
+- ใช้กับทุก workflow: /pre-market (handbook ก่อน, script output หลัง), /council (brief ก่อน, proposals หลัง), /nick-weekly (soul.md ก่อน, price data หลัง), /stock-content (vault atoms ก่อน, web search หลัง)
+- ห้ามแก้ CLAUDE.md บ่อยโดยไม่จำเป็น — ทุกครั้งที่เปลี่ยน = cache miss session ถัดไป
+
 ## Memory system
 
 6 layers protecting against "Claude ลืม":

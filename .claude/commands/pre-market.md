@@ -48,6 +48,21 @@ cat vault/_memory/TRADING_RULES.md 2>/dev/null | head -80
 
 ---
 
+### 0.1. Load Behavior Handbook (arXiv:2509.13237 — Metacognitive Reuse)
+
+```bash
+cat vault/Knowledge/pre-market-behaviors.md
+```
+
+โหลด handbook เป็น context ก่อนรัน cognitive layers ทุกครั้ง — ใช้ชื่อ behavior (A1·MISOPHONIA-MARKET, A2·TOURETTE-REFLEX ฯลฯ) เป็น reference ใน output แทนการ expand full instruction ซ้ำ
+
+**กฎ output (ลด token ~40%):**
+- Layer ที่ไม่ triggered → output เพียง 1 บรรทัด: `A1·MISOPHONIA: clear ✅`
+- Layer ที่ triggered → reference behavior name + รายละเอียดเฉพาะส่วนที่ triggered เท่านั้น
+- ห้าม copy ข้อความ instruction ใน handbook ลงใน brief — ใช้ชื่อ behavior แทน
+
+---
+
 ### 0. Get correct weekday (ALWAYS first)
 
 Run this bash command before writing anything — never guess the day of week:
