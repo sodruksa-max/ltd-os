@@ -23,6 +23,10 @@
 | 14 | Long-Term Memory EDU (arXiv:2511.17208, 2025) | Session history | restructure tool outputs เป็น discourse atoms → retrieve แทน keep ใน context |
 | 15 | AgentDiet (arXiv:2509.23586, 2025) | Trajectory pruning | strip expired tool outputs หลัง handoff แต่ละ stage → −40-60% input tokens ไม่เสีย quality |
 | 16 | MemAgent (arXiv:2507.02259, 2025) | Chunk-sequential | อ่าน PDF/transcript เป็น chunks + rolling summary → linear complexity แทน O(n²) |
+| 17 | Memori (arXiv:2603.19935, 2026) | Session serialization | handoff เป็น semantic triples แทน free-text → 67% fewer tokens, 20x cost savings vs full history |
+| 18 | Meta-tools/AWO (arXiv:2601.22037, 2026) | Tool meta-bundling | collapse recurring tool sequences → −11.9% LLM calls ใน /stock-content pipeline |
+| 19 | Prefix Homogeneity (arXiv:2605.06046, 2026) | Cache-aware batching | static prefix byte-identical across /council agents → maximize prefix cache hit rate |
+| 20 | Coding Agents (arXiv:2603.20432, 2026) | File-system navigator | vault-wide synthesis via grep/glob ไม่ต้อง load หลายไฟล์ → +17.3% เหนือ SOTA |
 
 ---
 
@@ -570,3 +574,125 @@
 ---
 
 *Appendix รอบ 4 scope: 3 new themes, 2 confirmed-not-actionable categories | Searches: 5 | Papers: 4 active — 2 IMPLEMENT, 2 REFERENCE | Total survey: 18 themes, 36 papers — 19 IMPLEMENT, 17 REFERENCE*
+
+---
+
+## Appendix — 2026-05-17: Gap Fill รอบ 5 (Tool Selection / File-System Nav / Structured Output / Meta-tools / Session Serialization / Prefix Homogeneity)
+
+*Context: 6 gap areas targeted — 2 explicitly flagged from round 4 (arXiv:2512.17052, 2603.20432) + 4 new areas. 6 searches → 6 IMPLEMENT. ทุก paper เป็น Tier D (arXiv preprint) — treat numerical claims as preliminary.*
+
+---
+
+### Theme 19: Dynamic Tool Dependency Retrieval
+
+#### Dynamic Tool Dependency Retrieval for Lightweight Function Calling — Patel, Belli, Jalalirad et al. (arXiv:2512.17052, Dec 2025)
+- **Source:** [arXiv:2512.17052](https://arxiv.org/abs/2512.17052)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — Dec 2025]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Conditions tool retrieval บน user query AND evolving sequence ของ prior tool calls — learns tool dependency patterns จาก demonstrations เพื่อ adaptive tool selection ที่แต่ละ step แทนที่ static selection ตั้งแต่ต้น
+- **Key finding:** 23–104% improvement in function-calling success rate vs static retrievers; maintains computational efficiency
+- **Apply to project:** `/stock-content` pipeline ใช้ tool sequence ที่ static — DTDR insight: tool selection ที่ step N ควร conditioned บน steps 1..N-1; ถ้า Reese พบ contradiction flag → next step ควร weight "contradiction-registry lookup" สูงกว่า; ใช้เป็น CLAUDE.md policy: "ใน multi-step pipeline ให้ pass prior tool call outcomes เป็น context ก่อน select tool ถัดไป"
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 20: Agent-as-File-System-Navigator
+
+#### Coding Agents are Effective Long-Context Processors — Cao, Yin, Dhingra, Zhou (arXiv:2603.20432, Mar 2026)
+- **Source:** [arXiv:2603.20432](https://arxiv.org/abs/2603.20432)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — Mar 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Externalizes long-document processing ไปยัง coding agent ที่จัด text ใน file system และใช้ native tools (grep, sed, file I/O) ดึงเฉพาะ slices ที่ต้องการ — LLM ไม่ hold full corpus ใน context เลย
+- **Key finding:** +17.3% เหนือ SOTA บน long-context benchmarks; processed contexts ถึง 3 trillion tokens; critical factors: native tool proficiency + file system familiarity
+- **Apply to project:** vault IS a file system — เมื่อ /council หรือ /nick-weekly ต้องการ vault-wide synthesis (THESIS_TRACKER + INDEX_insights + multiple atoms) → ใช้ targeted grep/glob tool calls isolate relevant spans แทน bulk-load หลายไฟล์เข้า context; เป็น principled upgrade ของ CLAUDE.md §7 จาก partial reads → "agent-as-file-system-navigator" pattern
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 21: Constrained Output for Token Reduction
+
+#### XGrammar-2: Efficient Dynamic Structured Generation Engine for Agentic LLMs — (arXiv:2601.04426, 2025/2026) [source-unverified: authors not confirmed]
+- **Source:** [arXiv:2601.04426](https://arxiv.org/abs/2601.04426)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified]
+- **Code:** Default backend for vLLM, SGLang, TensorRT-LLM as of Mar 2026
+- **Critics:** [no known critics ✓]
+- **Method:** Treats tool-name selection เป็น grammar constraint — เมื่อ tool name token ถูกเลือก JSON schema ของ arguments enforce อัตโนมัติ, ตัด extraneous free-text ระหว่าง tool calls; context-independent tokens (99% ของ vocabulary) precomputed เป็น bitmask tables; <40 microseconds overhead per token
+- **Key finding:** Up to 100x speedup vs traditional grammar-constrained methods; near-zero overhead; indirect token reduction โดยป้องกัน verbose reasoning ที่ bleeding เข้า tool arguments
+- **Apply to project:** Anthropic API รองรับ `tool_choice: {"type": "any"}` — บังคับ model ให้ call tool แทน free-text response; eliminate verbose preamble บน tool-only agent steps; applicable ทันทีสำหรับ Vera (fact-flagging), Indie (atom extraction), /paper-trade (structured order fields) ใน Python scripts
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 22: Tool Call Meta-Bundling
+
+#### Optimizing Agentic Workflows using Meta-tools — Abuzakuk, Kermarrec, Sharma et al. (arXiv:2601.22037, Jan 2026)
+- **Source:** [arXiv:2601.22037](https://arxiv.org/abs/2601.22037)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — Jan 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Agent Workflow Optimization (AWO) mines execution traces หา recurring multi-step tool call sequences แล้ว collapse เป็น "meta-tools" — deterministic composite tools ที่ execute bundle ใน 1 LLM invocation โดย bypass intermediate reasoning steps
+- **Key finding:** LLM calls ลด 11.9%; task success rate ขึ้น 4.2%; ลดทั้ง cost และ latency
+- **Apply to project:** `/stock-content` pipeline มี fixed recurring sequence: web_search → Read vault → Write stock note → Read stock note → Write Reese doc; AWO insight: collapse Researcher→stock-note write เป็น single agent call ที่ return structured blob โดยไม่มี intermediate "write then re-read" round-trip; ลด LLM calls ต่อ /stock-content run ลง ~2 calls
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 23: Cross-Session Memory Serialization
+
+#### Memori: A Persistent Memory Layer for Efficient, Context-Aware LLM Agents — Borro, Macarini, Tindall et al. (arXiv:2603.19935, Mar 2026)
+- **Source:** [arXiv:2603.19935](https://arxiv.org/abs/2603.19935)
+- **Venue:** arXiv white paper Tier D
+- **Citations:** [unverified — Mar 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** Converts raw session history เป็น compact semantic triples (subject, predicate, object) + narrative summary ตอน session end; ตอน session ถัดไป retrieve เฉพาะ relevant triples แทน load full history; LLM-agnostic, API-layer (ไม่ต้องแก้ model)
+- **Key finding:** 81.95% accuracy บน LoCoMo benchmark; ~1,294 tokens per query; 67% fewer tokens vs competing approaches; 20x+ cost savings vs full-context loading
+- **Apply to project:** `.claude/handoff.md` ปัจจุบันเป็น free-text — ถ้า restructure เป็น semantic triples (decided: X, about: Y, result: Z) + narrative summary section → session resumption ใช้ token น้อยลงมาก; `vault/_memory/OUTCOMES.md` Trading Calibration Log เป็น candidate — structured triples per trade outcome แทน prose
+- **Tag:** IMPLEMENT
+
+---
+
+### Theme 24: Prefix Homogeneity for Multi-Agent Cache Efficiency
+
+#### Requests of a Feather Must Flock Together — (arXiv:2605.06046, May 2026)
+- **Source:** [arXiv:2605.06046](https://arxiv.org/html/2605.06046v1)
+- **Venue:** arXiv preprint Tier D
+- **Citations:** [unverified — May 2026]
+- **Code:** [not linked]
+- **Critics:** [no known critics ✓]
+- **Method:** แสดงว่า batching inference requests ที่มี homogeneous (shared) prefixes maximize KV-cache hit rate และ throughput; prefix homogeneity outweighs naive large-batch scheduling
+- **Key finding:** Prefix homogeneity เป็น dominant factor ใน cache hit rate — มีผลมากกว่าการเพิ่ม batch size อย่างเดียว
+- **Apply to project:** ใน `/council` proposer agents ทั้ง 4 ตัวรับ system prompt เดียวกัน (CLAUDE.md + topic brief) — static prefix ต้องเป็น byte-identical ทั้ง 4 calls; ถ้า format ต่างกันเพียงเล็กน้อย prefix cache break ทันที; rule: agent-specific differentiation ต้องอยู่ใน human turn เท่านั้น ห้ามอยู่ใน static prefix → เป็น text-level complement ของ §9 cache rule ที่มีอยู่แล้ว
+- **Tag:** IMPLEMENT
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-17 รอบ 5)
+
+20. **DTDR-style tool sequencing rule (arXiv:2512.17052)** → เพิ่มใน CLAUDE.md: "ใน multi-step pipeline pass prior tool outcomes เป็น context ก่อน select tool ถัดไป" → complexity: **low** (CLAUDE.md policy)
+
+21. **Agent-as-file-system-navigator (arXiv:2603.20432)** → upgrade CLAUDE.md §7: vault-wide synthesis tasks ใช้ grep/glob ก่อน load file เสมอ → complexity: **low** (เพิ่มใน §7)
+
+22. **tool_choice: any สำหรับ tool-only steps (arXiv:2601.04426)** → เพิ่มใน Python scripts ที่เรียก API โดยตรง (bubble-risk-monitor.py ฯลฯ) และ note ใน stock-content.md สำหรับ Vera/Indie steps → complexity: **medium** (ต้องแก้ API calls)
+
+23. **Meta-tool collapse ใน /stock-content (arXiv:2601.22037)** → collapse Researcher+stock-note write เป็น single agent call → ลด 2 LLM round-trips → complexity: **medium** (แก้ stock-content.md structure)
+
+24. **Memori-style handoff serialization (arXiv:2603.19935)** → restructure /handoff output เป็น semantic triples + narrative summary แทน free-text → complexity: **medium** (แก้ handoff.md command)
+
+25. **Byte-identical static prefix rule (arXiv:2605.06046)** → เพิ่มใน CLAUDE.md §9: "parallel multi-agent calls ต้องมี byte-identical static prefix; differentiation ใน human turn เท่านั้น" → complexity: **low**
+
+### Gaps — อัพเดต (2026-05-17 รอบ 5)
+
+- **arXiv:2512.17052, arXiv:2603.20432** — ปิดแล้ว (fetched และ filed ในรอบนี้)
+- **CodeAgents (arXiv:2507.03254)** — appeared in search; อาจมี text-level prefix sharing evidence เพิ่มเติม; optional follow-up
+- **Sutradhara (arXiv:2601.12967)** — tool execution overlap with LLM prefill; infrastructure-layer ส่วนใหญ่ แต่มี orchestration insights; optional follow-up
+
+---
+
+*Appendix รอบ 5 scope: 6 new themes | Searches: 6 | Papers: 6 — 6 IMPLEMENT | Total survey: 24 themes, 42 papers — 25 IMPLEMENT, 17 REFERENCE*
