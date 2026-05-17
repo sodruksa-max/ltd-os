@@ -72,6 +72,40 @@ ls scripts/*.py scripts/*.sh 2>/dev/null | sed 's|scripts/||'
 
 ---
 
+### 2.5 Design Cognitive Stack — รันก่อนออกแบบ steps
+
+**[Dermatographia]** Calibrate complexity ก่อนเริ่ม:
+- Workflow นี้รันบ่อยแค่ไหน? daily → complex OK; < 3×/month → ลด step เป้าหมายลง 30%
+- ถ้าเป็น one-time task → พิจารณา inline execution แทน workflow definition ถาวร
+
+**[Schizophrenia]** หา structural pattern จาก domain อื่น — force 2 cross-domain analogies:
+- Manufacturing assembly line → data pipeline (parallel steps → convergence)
+- Military triage → priority routing (critical path vs optional enrichment)
+- Medicine: diagnose → treat → monitor → feedback
+- Ecology: signal → response → feedback loop
+→ เลือก analog ที่ใกล้เคียงที่สุด → ใช้เป็น template structure สำหรับ steps
+
+**[Tetrachromacy]** เพิ่ม invisible step types ที่มักลืม — ตรวจ 4 channels:
+- **Logging:** บันทึก output + timestamp ทุกครั้ง → `on-fail: continue`
+- **Rollback:** ถ้า critical step fail มีทางย้อนกลับไหม? → add ถ้า workflow แก้ข้อมูล permanent
+- **Audit trail:** มี step ที่ต้อง track ว่า "ทำไปแล้ว" เพื่อ idempotency ไหม?
+- **Monitoring:** ต้องตรวจสัญญาณล่วงหน้าก่อน execute หรือเปล่า?
+
+**[Narcolepsy]** ออกแบบ early exit gates ชัดเจน:
+- ระบุ conditions ที่ถ้าเป็นจริง → หยุดทันทีโดยไม่ผ่านทุก step
+- ตัวอย่าง: `if VIX > 30 → stop`, `if no data found → stop`
+- step ที่มี `on-fail: stop` ทุกตัวคือ implicit early exit — threshold ต้องชัดเจน
+
+```
+Design Cognitive Stack applied:
+- [DERMO] frequency: [daily/weekly/monthly] → target steps: N
+- [SCHIZOPHRENIA] analog: [domain] — template: [structure type]
+- [TETRACHROMACY] invisible steps added: [logging/rollback/audit/monitoring]
+- [NARCOLEPSY] early exit gates: N identified
+```
+
+---
+
 ### 3. Command-to-Job mapping
 
 ต่อแต่ละ job จาก Step 2A → ค้นหา command หรือ script ที่ cover job นั้น:
@@ -133,14 +167,23 @@ step-1 (ข้อมูล A) → step-2 (ใช้ A) → step-4 (ใช้ A+B
 - [ ] **Edge cases** — ถ้าตลาดปิด / ข้อมูลไม่มี / user cancel กลางทาง — workflow handle ได้ไหม?
 - [ ] **Idempotency** — รันซ้ำ workflow นี้ 2 ครั้งในวันเดียวกัน จะเกิดอะไร? ควบคุมได้ไหม?
 
+**Condition Clarity Rules (Aphantasia + Savant + Alexithymia — บังคับก่อน draft):**
+
+ต่อทุก `condition:` และทุก step name + `why:`:
+- **[Aphantasia]** ห้าม criteria ที่ subjective: "ถ้าดูดี", "ถ้าผ่าน" → ต้องเป็น measurable
+- **[Savant]** ทุก threshold ต้อง exact: "ถ้า VIX สูง" ❌ → "ถ้า VIX > 25" ✅; "ถ้านานเกิน" ❌ → "ถ้า > 48h" ✅
+- **[Alexithymia]** ทุก step name ต้องบอกว่าทำอะไร: "process data" ❌ → "run macro-snapshot.py → extract VIX + futures" ✅
+
+Flag: `[CONDITION CLARITY: VAGUE] step-N: "<text>" → needs: <exact metric or action>`
+
 ถ้า checklist ข้อไหนไม่ผ่าน → เพิ่ม step หรือ condition ก่อน draft
 
 ---
 
 ### 7. Cognitive Trait Review Pass
 
-**Default (ไม่มี --deep):** รัน 3 layers — OCD + ADHD + GAD เท่านั้น — ข้าม 7.1, 7.4, 7.5, 7.7
-**`--deep` flag:** รันทุก 7 layers — ใช้เมื่อ workflow ≥6 steps, high-stakes, หรือรันทุกวัน
+**Default (ไม่มี --deep):** รัน 6 layers — OCD + ADHD + GAD + Sleep Paralysis + Alien Hand + EDS — ข้าม 7.1, 7.4, 7.5, 7.7
+**`--deep` flag:** รันทุก 10 layers — ใช้เมื่อ workflow ≥6 steps, high-stakes, หรือรันทุกวัน
 
 ---
 
@@ -306,6 +349,58 @@ DR Coverage Audit:
 
 ---
 
+#### 7.8 Sleep Paralysis — Loop + Dead Step Detection
+
+**Loop detection:**
+- step A → condition → back to step B → output to step A → infinite loop
+- step ที่มี `on-fail: retry` โดยไม่มี `max_retries` → loop ไม่มีทางออก
+→ flag `[SLEEP PARALYSIS: LOOP] step-N → step-M → step-N — add max_retries or break condition`
+
+**Dead step detection:**
+- step ที่ trigger เฉพาะ condition ที่ไม่มีทางเป็นจริงใน context นี้
+- step ที่อยู่หลัง `on-fail: stop` ใน unconditional path (unreachable)
+- `on-success: step-X` แต่ step-X ไม่มีอยู่ใน definition
+→ flag `[SLEEP PARALYSIS: DEAD STEP] step-N — unreachable / undefined target`
+
+```
+Sleep Paralysis: [N loops / N dead steps / CLEAN]
+```
+
+---
+
+#### 7.9 Alien Hand — Unintended Side Effects
+
+ต่อทุก step ที่มี `cmd:` ที่ write/modify/commit/delete/push:
+- step นี้แก้ไขไฟล์นอก scope ที่ workflow ประกาศไหม?
+- step นี้ trigger notification / commit / push โดยไม่ตั้งใจไหม?
+- step นี้ modify shared state ที่ workflow อื่นก็อ่านอยู่ไหม? (เช่น vault/_memory/ files)
+- ถ้า workflow รัน 2 instances พร้อมกัน → race condition ไหม?
+
+→ flag `[ALIEN HAND] step-N: <cmd> modifies <unintended target> — add scope guard`
+
+```
+Alien Hand: [N unintended side effects / CLEAN]
+```
+
+---
+
+#### 7.10 EDS — Interface Integrity Check
+
+ต่อทุก step pair (N → N+1) ที่มี data dependency:
+- Output format ของ step N ตรงกับ input ที่ step N+1 expect ไหม?
+  - script output → Claude parsing: Claude รู้ว่าจะอ่าน field ไหน?
+  - file path → next step: path explicit หรือ assumed?
+  - condition value → branch: value มาจากไหน exactly?
+- ถ้า step N fail แบบ partial output → step N+1 handle gracefully ไหม?
+
+→ flag `[EDS: INTERFACE FRAGILE] step-N → step-N+1: <what's ambiguous>`
+
+```
+EDS Interface: [N fragile interfaces / CLEAN]
+```
+
+---
+
 #### 7. Trait Summary (before Step 8)
 
 ```
@@ -315,6 +410,9 @@ Cognitive Trait Review — <workflow name> [default / --deep]
 OCD symmetry:      [N issues / PASS]              ← always
 ADHD gaps:         [N gaps found / N novelty]     ← always
 GAD pre-mortem:    [N paths — N mitigated]        ← always
+Sleep Paralysis:   [N loops / N dead steps]       ← always
+Alien Hand:        [N side effects flagged]       ← always
+EDS Interface:     [N fragile pairs]              ← always
 ---
 Tourette reflex:   [N flags / CLEAN / skipped]   ← --deep only
 Dyslexia shape:    [linear / issues / skipped]    ← --deep only
