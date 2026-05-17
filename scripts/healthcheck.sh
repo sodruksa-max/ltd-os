@@ -185,7 +185,7 @@ done
 
 echo ""
 echo "-- Slash commands (workflow manager)"
-for cmd in workflow new-workflow; do
+for cmd in workflow new-workflow workflow-audit workflow-design; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
     p "/${cmd}"
   else

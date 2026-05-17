@@ -121,6 +121,13 @@ user prompt → coder → /review (code mode: security + QA) → safe-commit
 - `/nick-weekly` → Nick reviews holdings, checks kill conditions, recommends hold/add/trim/sell
 - `/nick-quarterly` → Nick full thesis audit post-earnings season
 
+### Workflow manager
+- `/workflow <name>` → execute named workflow: step sequencing + conditional branching + resume from crash
+- `/workflow list` → show all available workflows in `vault/_workflows/`
+- `/new-workflow` → quick wizard: ask name/steps/conditions → save workflow definition
+- `/workflow-design <domain>` → deep analysis: maps domain → jobs → commands → failure modes → comprehensive workflow (use for new projects)
+- `/workflow-audit [name]` → maintain existing workflows: find broken refs, stale steps, skipped patterns, new commands to add; user approves changes
+
 ### System & memory
 - `/onboard` → one-time interview to fill PREFERENCES.md (run after install)
 - `/handoff` → save session state to .claude/handoff.md before context fills
