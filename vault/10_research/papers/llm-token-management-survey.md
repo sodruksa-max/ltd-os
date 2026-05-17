@@ -12,6 +12,9 @@
 | 3 | Memory Pointers (arXiv:2511.22729, 2025) | Context overflow | แทน raw file content ด้วย pointer — agent อ่าน vault ขนาดไหนก็ไม่ overflow |
 | 4 | A-MEM (arXiv:2502.12110, 2025) | Agent memory | Zettelkasten dynamic linking — ตรงกับ vault concept ที่มีอยู่แล้ว |
 | 5 | SheetCompressor (arXiv:2407.09025, 2024) | Tabular compression | Structural anchor principle — ใช้กับ universe-screen.py label grouping ได้ทันที |
+| 6 | MARS (arXiv:2509.20502, 2025) | Multi-agent sharing | ลด /council token 50% — reviewer ไม่ interact กัน → synthesizer รวมเอง |
+| 7 | Metacognitive Reuse (arXiv:2509.13237, 2025) | Cognitive layer reuse | behavior handbook ลด pre-market cognitive layers 46% โดยไม่เสียคุณภาพ |
+| 8 | Don't Break the Cache (arXiv:2601.06007, 2026) | Prompt caching rules | วาง dynamic content ท้าย prompt → 41-80% cost reduction ทุก session |
 
 ---
 
@@ -190,3 +193,93 @@
 ---
 
 *Appendix scope: 2 themes | Searches: 5/5 | Papers: 3 — 2 IMPLEMENT, 1 REFERENCE | Total survey: 6 themes, 13 papers — 6 IMPLEMENT, 7 REFERENCE*
+
+---
+
+## Appendix — 2026-05-18: Multi-Agent Context Sharing + Cognitive Layer Reuse
+
+*Context: pain points ใหม่ที่ survey เดิมยังไม่ครอบคลุม — (1) /council: 4-6 agents แต่ละตัวอ่าน brief+proposals ซ้ำกันทั้งหมด, (2) /pre-market: cognitive layers 15+ รอบ วิเคราะห์ data ชุดเดิมซ้ำ | 8 searches | 6 papers ใหม่*
+
+---
+
+### Theme 7: Multi-Agent Context Sharing
+
+ปัญหาใน /council: optimist / pragmatist / skeptic / caveman แต่ละตัวได้รับ brief เดียวกัน → แต่ต้องโหลด context ซ้ำทั้งหมดทุก agent call
+
+#### KVCOMM: Online Cross-context KV-cache Communication for Efficient LLM-based Multi-agent Systems — Ye, Gao et al. (arXiv:2510.12872, Oct 2025) [NeurIPS'25]
+- **Source:** [arXiv:2510.12872](https://arxiv.org/abs/2510.12872) | [GitHub](https://github.com/HankYe/KVCOMM)
+- **Method:** Framework training-free ที่ให้ agents reuse KV-cache ของ overlapping content ข้าม contexts — แก้ปัญหา positional misalignment โดย estimate และ adjust cache offsets โดยใช้ anchor pool จาก cached examples; ทำงาน online ระหว่าง inference
+- **Key finding:** ~6.7× prefill speedup บน Llama-3.1-8B บน H100; >70% reuse rate ข้าม diverse multi-agent workloads (RAG, math reasoning, collaborative coding) โดยไม่มี quality degradation
+- **Dataset:** Multi-agent workloads บน NVIDIA H100 GPU
+- **Apply to project:** ใน /council: brief.md ถูกส่งให้ 4 agents — ด้วย KVCOMM principle สามารถ cache KV ของ brief ครั้งแรกแล้ว reuse ให้ agents ถัดไปแทนที่จะ prefill ใหม่ทั้งหมด; ใน Claude Code context: เรียง static content (brief + CLAUDE.md) ไว้ต้น prompt ก่อน agent-specific instruction เพื่อ maximize cache hit ของ Anthropic prefix caching
+- **Tag:** IMPLEMENT
+
+#### MARS: Toward More Efficient Multi-Agent Collaboration for LLM Reasoning — Wang et al. (arXiv:2509.20502, Sep 2025)
+- **Source:** [arXiv:2509.20502](https://arxiv.org/abs/2509.20502) | [GitHub](https://github.com/xwang97/MARS)
+- **Method:** Role-based collaboration: author agent สร้าง solution → reviewer agents ให้ feedback อิสระ (ไม่คุยกันเอง) → meta-reviewer รวม feedback และ guide revision; หลีกเลี่ยง reviewer-to-reviewer interaction ที่ costly ใน Multi-Agent Debate (MAD)
+- **Key finding:** ลด token 50% และ inference time 50% เทียบกับ MAD โดย accuracy เท่ากัน; บน GPQA + GPT-4o-mini: MAD ใช้ 17,083 tokens/query, MARS ใช้ 7,903 tokens/query
+- **Dataset:** GPQA, general reasoning benchmarks
+- **Apply to project:** /council ปัจจุบันใช้ MAD-style (4 proposers คุยกันผ่าน critiques.md) → restructure เป็น MARS pattern: proposal agents สร้าง proposals อิสระ (ทำอยู่แล้ว) → critique phase ลด reviewer-to-reviewer interaction → synthesizer เป็น meta-reviewer รวมทุกอย่าง; ลด council token ~50% โดยไม่เสียคุณภาพ synthesis
+- **Tag:** IMPLEMENT
+
+#### Token Economics for LLM Agents: A Dual-View Study from Computing and Economics — Chen et al. (arXiv:2605.09104, May 2026)
+- **Source:** [arXiv:2605.09104](https://arxiv.org/html/2605.09104v1)
+- **Method:** Unified framework วิเคราะห์ token consumption ของ multi-agent systems จาก 2 มุม: (1) computing — memory management, retrieval, pruning; (2) economics — carrying cost (context ที่ถือไว้) vs stockout cost (ข้อมูลที่ขาด); วิเคราะห์ trade-off optimal
+- **Key finding:** ระบุ 3 bottleneck หลักของ agentic token cost: exponential context growth, redundant cross-agent communication, และ security overhead; เสนอ unified cost model สำหรับ design decisions
+- **Dataset:** Theoretical framework + case studies
+- **Apply to project:** ใช้ dual-view framework ประเมิน vault loading: carrying cost = token ที่ใช้โหลด memory files; stockout cost = ข้อมูลที่ขาดทำให้ agent ตัดสินใจผิด; ตรง task-scoped loading policy ใน CLAUDE.md §8 ที่มีอยู่แล้ว — ยืนยัน approach ถูกต้อง
+- **Tag:** REFERENCE
+
+---
+
+### Theme 8: Cognitive Layer / Recurring Reasoning Reuse
+
+ปัญหาใน /pre-market: 15+ cognitive layers (Tourette, Synesthesia, HSP, PTSD, AURA ฯลฯ) แต่ละ layer วิเคราะห์ data ชุดเดิมซ้ำ — reasoning pattern เหมือนกันทุกวัน แต่ไม่มีการ reuse
+
+#### Metacognitive Reuse: Turning Recurring LLM Reasoning Into Concise Behaviors — Didolkar, Ballas, Arora, Goyal; Meta AI (arXiv:2509.13237, Sep 2025)
+- **Source:** [arXiv:2509.13237](https://arxiv.org/abs/2509.13237)
+- **Method:** Model วิเคราะห์ reasoning traces ที่ผ่านมา → ระบุ recurring steps → สร้าง "behaviors" (ชื่อ + instruction สั้น) เก็บใน "behavior handbook"; ตอน inference ส่ง relevant behaviors ใน-context แทนให้ model re-derive ทุกครั้ง; ไม่ต้อง fine-tune — ทำงาน in-context
+- **Key finding:** ลด reasoning tokens 46% โดย accuracy ไม่ลดลงหรือดีขึ้น; procedural knowledge (how to think) ไม่ใช่ declarative facts — ต่างจาก RAG ทั่วไป
+- **Dataset:** Multi-step reasoning benchmarks; Meta AI research
+- **Apply to project:** /pre-market cognitive layers เป็น procedural behaviors ชัดเจน — แต่ละ layer เป็น named behavior ที่ทำซ้ำทุกวัน; implement behavior handbook ใน `vault/Knowledge/pre-market-behaviors.md`: แต่ละ entry = behavior name + compressed instruction (ไม่ใช่ full layer description); ก่อน run cognitive layers → load handbook แล้วอ้างอิง name แทน expand instruction ทั้งหมด — ลด cognitive layer section ~40%
+- **Tag:** IMPLEMENT
+
+#### GenCache: Generative Caching for Structurally Similar Prompts and Responses — Chakraborty, Nath, Zhang et al. (arXiv:2511.17565, Nov 2025)
+- **Source:** [arXiv:2511.17565](https://arxiv.org/abs/2511.17565) | Microsoft Research
+- **Method:** Generative cache ที่ identify reusable response patterns ข้าม structurally similar prompts → synthesize variation-aware outputs สำหรับ request ใหม่; ใช้ pattern matching บน prompt structure (ไม่ใช่ exact match) + generative fill สำหรับส่วนที่ต่างกัน
+- **Key finding:** 83% cache hit rate บน datasets ที่มี prompt repetition; minimal incorrect hits บน datasets ที่ไม่มีการซ้ำ; เหมาะกับ recurring structured workflows
+- **Dataset:** QA + agentic task benchmarks
+- **Apply to project:** /pre-market template เปลี่ยนเฉพาะ data values ไม่ใช่ structure — GenCache principle: แยก static structure (cognitive layer headers, section format, analysis patterns) ออกจาก dynamic values (VIX, Brent, futures %); pre-generate layer output template ครั้งแรก → subsequent runs fill values แทน re-reason structure ทั้งหมด; ลด token per cognitive layer ~30-40%
+- **Tag:** IMPLEMENT
+
+#### Don't Break the Cache: An Evaluation of Prompt Caching for Long-Horizon Agentic Tasks — Lumer, Nizar, Jangiti, Frank et al. (arXiv:2601.06007, Jan 2026)
+- **Source:** [arXiv:2601.06007](https://arxiv.org/abs/2601.06007)
+- **Method:** Evaluate prompt caching ของ 3 providers (OpenAI, Anthropic, Google) ด้วย 3 strategies: (1) full context caching, (2) system prompt only, (3) exclude dynamic tool results; ทดสอบบน DeepResearch Bench — multi-turn agentic tasks ที่มี web search tool calls จริง
+- **Key finding:** ลด API cost 41-80% + TTFT ดีขึ้น 13-31%; กฎสำคัญ: วาง dynamic content (tool results) ไว้ **ท้าย** prompt เสมอ — ถ้าวางต้นจะ break cache ทุก call; naive full-context caching อาจ เพิ่ม latency แบบขัดใจ
+- **Dataset:** DeepResearch Bench (real-world agentic tasks, 3 LLM providers)
+- **Apply to project:** rule ที่ implement ได้ทันทีใน Claude Code: (1) ใน /pre-market — ใส่ TRADING_RULES.md + static cognitive layer templates ไว้ต้น prompt, dynamic script outputs (macro-snapshot, news) ไว้ท้าย; (2) ใน /council — brief.md static ต้น, proposals (dynamic) ท้าย; (3) CLAUDE.md ยิ่ง stable ยิ่งดี — อย่าแก้บ่อย (cache miss ทุกครั้ง); ประมาณ 50-70% cost reduction สำหรับ long sessions
+- **Tag:** IMPLEMENT
+
+---
+
+### Implementation Roadmap — เพิ่มเติม (2026-05-18)
+
+8. **Pre-market behavior handbook (Metacognitive Reuse)** → สร้าง `vault/Knowledge/pre-market-behaviors.md` — 15+ cognitive layers แต่ละตัวเป็น behavior name + 2-3 ประโยค แทนที่ full instruction ขยาย; load handbook ต้น session → reference ชื่อ → ลด cognitive section ~40% → complexity: **low** (สร้างไฟล์ใหม่ + แก้ pre-market brief instruction)
+
+9. **/council restructure เป็น MARS pattern** → ลด critique phase: proposals อิสระ (ทำอยู่แล้ว ✅) → critiques ไม่ให้ agent A อ่าน output agent B ก่อน → synthesizer รวมทุกอย่าง; ลด /council token ~50% → complexity: **medium** (แก้ council.md phase 3)
+
+10. **Static-first prompt ordering (Don't Break the Cache)** → enforce rule ใน CLAUDE.md: "วาง static context (rules, templates, KB) ต้น prompt เสมอ; dynamic outputs (script results, news) ท้าย" → ใช้ได้กับ /pre-market, /council, /nick-weekly → complexity: **low** (เพิ่ม 1 rule ใน CLAUDE.md)
+
+11. **Cognitive layer template splitting (GenCache principle)** → แยก layer output เป็น structure template + value slots; วัน session แรก generate template → วันถัดไป fill values แทน → complexity: **medium** (ต้องออกแบบ template format)
+
+---
+
+### Gaps — อัพเดต (2026-05-18)
+
+- **KVCOMM native implementation** — ต้องการ access ไปยัง KV cache layer ซึ่งไม่ available ใน Claude Code API; แต่ principle (static content first + Anthropic prefix caching) ใช้ได้โดยไม่ต้อง implement KVCOMM เอง
+- **Behavior handbook auto-generation** — Metacognitive Reuse ต้องการ model reflect on prior traces อัตโนมัติ; ใน LTD-OS ต้องทำ semi-manual ครั้งแรก (สร้าง handbook ด้วยมือ) แล้วค่อย automate ทีหลัง
+- **Cross-session cache persistence** — Anthropic prompt cache TTL 5 min; ระหว่าง sessions cache miss ทุกครั้ง; ยังไม่มี paper สำหรับ persistent cache across separate API sessions
+
+---
+
+*Appendix scope: 2 themes | Searches: 8/8 | Papers: 6 — 5 IMPLEMENT, 1 REFERENCE | Total survey: 8 themes, 19 papers — 11 IMPLEMENT, 8 REFERENCE*
