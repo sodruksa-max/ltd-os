@@ -1,5 +1,5 @@
 ---
-description: หา academic papers มาพัฒนา project — search arXiv/SSRN/Scholar, summarize, จัดกลุ่มตาม theme, แนะนำลำดับ implement. Save to vault/10_research/papers/.
+description: หา academic papers มาพัฒนา project — search arXiv/SSRN/Scholar/PapersWithCode/OpenReview, summarize, จัดกลุ่มตาม theme, แนะนำลำดับ implement. Save to vault/10_research/papers/.
 ---
 
 # /paper-survey
@@ -84,8 +84,15 @@ grep -ri "<TOPIC_KEYWORDS>" vault/10_research/papers/ --include="*.md" -l
 2. SSRN (finance/econ empirical)
 3. Google Scholar / Semantic Scholar
 4. Journal of Finance, Journal of Portfolio Management, Quantitative Finance
-5. **GitHub** — หา implementation repo, backtesting code, alternative data pipeline ที่คนทำแล้ว (`<topic> site:github.com trading strategy implementation`)
-6. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
+5. **Papers With Code** (paperswithcode.com) — ตรวจว่า paper มี official code repo ไหม; ถ้ามี = IMPLEMENT โอกาสสูง, ถ้าไม่มี = complexity สูงกว่า; query: `<topic> site:paperswithcode.com`
+6. **OpenReview** (openreview.net) — NeurIPS/ICLR/ICML papers ที่ยัง under review ก่อน arXiv; จับ papers ใหม่ที่ยังไม่ดัง; query: `<topic> site:openreview.net`
+7. **GitHub** — หา implementation repo, backtesting code, alternative data pipeline ที่คนทำแล้ว (`<topic> site:github.com trading strategy implementation`)
+8. **Reddit** — r/algotrading, r/MachineLearning, r/quant: ดู practitioner discussion, paper recommendations จาก community, ข้อจำกัด real-world ที่ paper ไม่พูดถึง (`<topic> site:reddit.com/r/algotrading`)
+
+**Papers With Code check (บังคับสำหรับทุก IMPLEMENT candidate):**
+ก่อน tag paper เป็น IMPLEMENT → search `<paper title> paperswithcode` หรือ `<arXiv ID> site:paperswithcode.com`:
+- พบ code repo → เพิ่ม `**Code:** [repo URL]` ใน paper entry + confirm IMPLEMENT
+- ไม่พบ code → note `[no official code]` — ยัง IMPLEMENT ได้แต่ complexity สูงกว่า
 
 **สำหรับแต่ละ paper ที่พบ ดึงข้อมูล:**
 - Title, Authors, Year, Source (arXiv ID หรือ DOI — บังคับ ห้ามละ)
