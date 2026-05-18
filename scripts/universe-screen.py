@@ -27,10 +27,11 @@ Usage:
     code/python/.venv/Scripts/python scripts/universe-screen.py --tickers NVDA AMD MU
 """
 
+import os
 import sys
 import io
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -65,6 +66,92 @@ def llm_tier_rationales(entries: list[dict]) -> dict[str, str]:
     return result
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+
+# ---------------------------------------------------------------------------
+# News sentiment (arXiv:2510.26228) — Alpaca news + Gemini LLM scoring
+# ---------------------------------------------------------------------------
+
+_NEWS_ENDPOINT = "https://data.alpaca.markets/v1beta1/news"
+
+
+def _load_alpaca_keys() -> tuple[str, str]:
+    env_file = Path(__file__).parent.parent / ".secrets" / ".env"
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            os.environ.setdefault(k.strip(), v.strip())
+    return os.environ.get("ALPACA_API_KEY", ""), os.environ.get("ALPACA_SECRET_KEY", "")
+
+
+def fetch_news_headlines(tickers: list[str], hours: int = 24) -> dict[str, list[str]]:
+    """Fetch Alpaca news for tickers (last N hours). Returns {ticker: [headlines]}."""
+    api_key, secret_key = _load_alpaca_keys()
+    if not api_key or not secret_key:
+        return {}
+
+    now   = datetime.now(timezone.utc)
+    start = now - timedelta(hours=hours)
+    headers = {
+        "APCA-API-KEY-ID":     api_key,
+        "APCA-API-SECRET-KEY": secret_key,
+    }
+    by_ticker: dict[str, list[str]] = {t: [] for t in tickers}
+    for i in range(0, len(tickers), 30):
+        batch = tickers[i:i + 30]
+        params = {
+            "symbols":         ",".join(batch),
+            "start":           start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end":             now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "limit":           50,
+            "sort":            "desc",
+            "include_content": "false",
+        }
+        try:
+            resp = requests.get(_NEWS_ENDPOINT, params=params, headers=headers, timeout=15)
+            resp.raise_for_status()
+            for article in resp.json().get("news", []):
+                headline = article.get("headline", "")
+                for sym in (article.get("symbols") or []):
+                    if sym in by_ticker and headline not in by_ticker[sym]:
+                        by_ticker[sym].append(headline)
+        except Exception as e:
+            sys.stderr.write(f"[news-sentiment] fetch error: {e}\n")
+    return by_ticker
+
+
+def llm_news_sentiment(ticker_headlines: dict[str, list[str]]) -> dict[str, str]:
+    """Batch Gemini call — returns {ticker: 'B'|'N'|'R'}. Empty dict on failure."""
+    if not ticker_headlines:
+        return {}
+    lines = []
+    for ticker, headlines in ticker_headlines.items():
+        lines.append(f"\n{ticker}:")
+        for h in headlines[:5]:
+            lines.append(f"  - {h}")
+        if not headlines:
+            lines.append("  (no headlines)")
+    system = (
+        "For each ticker below, rate the 24h news sentiment. "
+        "B = bullish (beat, contract win, partnership, upgrade, record revenue). "
+        "N = neutral (no clear directional impact, or no news). "
+        "R = bearish (miss, guidance cut, investigation, recall, downgrade). "
+        "Return exactly: TICKER: B or N or R — one per line, nothing else."
+    )
+    text = call_gemini(system, "\n".join(lines), max_tokens=200)
+    if not text:
+        return {}
+    result = {}
+    for line in text.splitlines():
+        if ":" in line:
+            ticker, _, score = line.partition(":")
+            s = score.strip().upper()
+            if s in ("B", "N", "R"):
+                result[ticker.strip()] = s
+    return result
+
 
 UNIVERSE = [
     # Semicon
@@ -500,6 +587,25 @@ def main():
         print("### Why (AI rationale)")
         for ticker, sentence in rationales.items():
             print(f"  {ticker}: {sentence}")
+        print()
+
+    # News sentiment — EARLY + ALERT tickers only (arXiv:2510.26228)
+    actionable_tickers = [t for t, _, _ in by_tier["EARLY"] + by_tier["ALERT"]]
+    if actionable_tickers:
+        news = fetch_news_headlines(actionable_tickers)
+        tickers_with_news = {t: h for t, h in news.items() if h}
+        sentiments = llm_news_sentiment(tickers_with_news)
+        _sent_label = {"B": "Bullish", "N": "Neutral", "R": "Bearish"}
+        print("### News Sentiment — 24h (arXiv:2510.26228)")
+        for ticker in actionable_tickers:
+            if not news:  # API unavailable
+                print(f"  {ticker}: [-] N/A (news API unavailable)")
+                continue
+            score = sentiments.get(ticker, "N")
+            heads = news.get(ticker, [])
+            label = _sent_label.get(score, "N/A")
+            top   = f' | "{heads[0][:80]}"' if heads else " | (no recent news)"
+            print(f"  {ticker}: [{score}] {label} | {len(heads)} headlines{top}")
         print()
 
     print("-> รัน /pre-market สำหรับ S/R levels + full brief ของตัว [EARLY★] และ [ALERT]")
