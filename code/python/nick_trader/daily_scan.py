@@ -21,6 +21,7 @@ Flow:
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import os
@@ -243,6 +244,7 @@ def run_kill_exits(
     news_digest: dict,
     vix: float,
     audit: dict,
+    dry_run: bool = False,
 ) -> dict:
     """Evaluate kill conditions; execute exits; apply state mutations."""
     triggered_map = kc_mod.check_all_kills(state, market_data, news_digest)
@@ -275,11 +277,15 @@ def run_kill_exits(
                 price     = float(alpaca_pos.current_price)
                 partial   = cond.get("partial")
                 sell_qty  = max(1, int(total_qty * partial)) if partial else total_qty
+                action_label = f"PARTIAL-EXIT ({int(partial * 100)}%)" if partial else "EXIT"
+
+                if dry_run:
+                    print(f"  [DRY-RUN {action_label}] {ticker}: would sell {sell_qty} shares @ ${price:.2f} -- {label} ({pct:+.1%})")
+                    continue
 
                 client.submit_order(MarketOrderRequest(
                     symbol=ticker, qty=sell_qty, side=OrderSide.SELL, time_in_force=TimeInForce.DAY
                 ))
-                action_label = f"PARTIAL-EXIT ({int(partial * 100)}%)" if partial else "EXIT"
                 print(f"  [{action_label}] {ticker}: {sell_qty} shares @ ${price:.2f} -- {label} ({pct:+.1%})")
 
                 append_trade_log(dict(
@@ -292,15 +298,13 @@ def run_kill_exits(
                 pos = state["positions"].get(ticker, {})
 
                 if not partial:
-                    # Full exit — remove position
                     state["positions"].pop(ticker, None)
                 else:
-                    # Partial exit — update shares + ratchet state
                     pos["shares"] = max(0, pos.get("shares", 0) - sell_qty)
                     if "new_profit_level" in cond:
                         pos["profit_level"] = cond["new_profit_level"]
                     if cond.get("free_ride"):
-                        pos["dynamic_stop_pct"] = None  # L3: no more auto stop
+                        pos["dynamic_stop_pct"] = None
                     elif "new_stop_pct" in cond:
                         pos["dynamic_stop_pct"] = cond["new_stop_pct"]
                     state["positions"][ticker] = pos
@@ -376,6 +380,7 @@ def run_universe_scan(
     strong_theses: set[str],
     nav: float,
     audit: dict,
+    dry_run: bool = False,
 ) -> dict:
     """Scan universe for entry candidates; auto-buy top scorers."""
     tier = regime.get("tier")
@@ -443,7 +448,22 @@ def run_universe_scan(
             scored.append((s, ticker, is_t1))
 
     scored.sort(reverse=True)
-    print(f"  Universe scan: {len(scored)} passed all gates, top={scored[0][1] if scored else 'none'}")
+
+    # Score leaderboard — top 10 candidates (including those not bought due to slot limits)
+    top_n = min(10, len(scored))
+    if top_n > 0:
+        print(f"  Leaderboard ({top_n} of {len(scored)} scored | {len(candidates) - len(scored)} blocked by gates):")
+        for rank, (s, t, t1) in enumerate(scored[:top_n], 1):
+            cat_tag = " [catalyst]" if universe_news.get(t, {}).get("has_catalyst") else ""
+            tier_tag = "T1" if t1 else "T2"
+            print(f"    {rank:2}. {t:<6} [{tier_tag}] score={s:3}{cat_tag}")
+    else:
+        print("  Universe scan: 0 candidates passed all gates")
+
+    audit["universe_scan"]["top10"] = [
+        {"rank": i + 1, "ticker": t, "score": s, "tier": "T1" if t1 else "T2"}
+        for i, (s, t, t1) in enumerate(scored[:10])
+    ]
 
     # Execute buys for top candidates
     executed = 0
@@ -470,10 +490,6 @@ def run_universe_scan(
         shares = max(1, int(order_value / price))
 
         try:
-            client.submit_order(MarketOrderRequest(
-                symbol=ticker, qty=shares, side=OrderSide.BUY, time_in_force=TimeInForce.DAY
-            ))
-
             # ATR-based initial stop (arXiv:2511.08571):
             # stop = max(-15%, -(2 × ATR14 / entry_price)) — tighter for low-vol stocks
             atr14 = get_atr14(ticker)
@@ -481,6 +497,18 @@ def run_universe_scan(
                 initial_stop = round(max(kc_mod.DEFAULT_STOP_PCT, -(2.0 * atr14 / price)), 4)
             else:
                 initial_stop = kc_mod.DEFAULT_STOP_PCT
+
+            atr_note = f"ATR14={atr14:.2f}" if atr14 else "ATR14=n/a"
+
+            if dry_run:
+                print(f"  [DRY-RUN BUY] {ticker}: would buy {shares} shares @ ~${price:.2f} "
+                      f"(score={score}, size={size_pct:.0%}, stop={initial_stop:+.1%}, {atr_note})")
+                executed += 1
+                continue
+
+            client.submit_order(MarketOrderRequest(
+                symbol=ticker, qty=shares, side=OrderSide.BUY, time_in_force=TimeInForce.DAY
+            ))
 
             state["positions"][ticker] = {
                 "entry_date":        str(date.today()),
@@ -493,7 +521,6 @@ def run_universe_scan(
             }
             audit["universe_scan"]["orders_executed"].append(ticker)
 
-            atr_note = f"ATR14={atr14:.2f}" if atr14 else "ATR14=n/a"
             print(f"  [BUY] {ticker}: {shares} shares @ ~${price:.2f} "
                   f"(score={score}, size={size_pct:.0%}, stop={initial_stop:+.1%}, {atr_note})")
 
@@ -521,6 +548,7 @@ def run_weekly_sell_trim(
     client: TradingClient,
     vix: float,
     audit: dict,
+    dry_run: bool = False,
 ) -> dict:
     """Execute SELL/TRIM orders from latest weekly-rec.md."""
     files = sorted(WEEKLY_DIR.glob("*_weekly-rec.md"), reverse=True)
@@ -563,6 +591,12 @@ def run_weekly_sell_trim(
         sell_qty = max(1, qty // 2) if action == "TRIM" else qty
 
         try:
+            if dry_run:
+                print(f"  [DRY-RUN {action}] {ticker}: would sell {sell_qty}/{qty} shares @ ${price:.2f} -- {reason}")
+                audit["sell_trim"]["executed"].append(ticker)
+                executed_any = True
+                continue
+
             client.submit_order(MarketOrderRequest(
                 symbol=ticker, qty=sell_qty, side=OrderSide.SELL, time_in_force=TimeInForce.DAY
             ))
@@ -599,15 +633,23 @@ def write_daily_audit(audit: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Nick v3 daily scanner")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Preview orders without submitting; state not saved")
+    args = parser.parse_args()
+    dry_run = args.dry_run
+
     load_env()
     state = load_state()
 
     audit: dict = {
         "date":    str(date.today()),
         "version": "nick-v3",
+        "dry_run": dry_run,
     }
 
-    print(f"\n=== Nick v3 Daily Scan {date.today()} ===")
+    mode_tag = " [DRY-RUN]" if dry_run else ""
+    print(f"\n=== Nick v3 Daily Scan {date.today()}{mode_tag} ===")
 
     # 1. Market context
     print("\n[1] Market context...")
@@ -648,7 +690,7 @@ def main() -> None:
             if price:
                 market_data[ticker] = {"current_price": price}
 
-    state = run_kill_exits(state, client, market_data, holdings_news, vix, audit)
+    state = run_kill_exits(state, client, market_data, holdings_news, vix, audit, dry_run=dry_run)
 
     # 4. Universe news (entry discovery)
     print("\n[4] Universe news...")
@@ -660,25 +702,29 @@ def main() -> None:
     nick_signals   = el_mod.parse_nick_signals()
     strong_theses  = get_strong_convergence_theses()
     print(f"  Strong convergence theses: {sorted(strong_theses) or 'none detected'}")
-    state = run_universe_scan(state, client, regime, universe_news, nick_signals, strong_theses, nav, audit)
+    state = run_universe_scan(state, client, regime, universe_news, nick_signals, strong_theses, nav, audit, dry_run=dry_run)
 
     # 6. SELL/TRIM from weekly-rec
     print("\n[6] SELL/TRIM from weekly-rec...")
-    state = run_weekly_sell_trim(state, client, vix, audit)
+    state = run_weekly_sell_trim(state, client, vix, audit, dry_run=dry_run)
 
     # 7. Save state + NAV + audit
     state.pop("_regime_tier", None)  # transient — don't persist
-    save_state(state)
 
     nav_after = round(float(client.get_account().portfolio_value), 2)
-    append_nav_log(nav_after, f"daily-scan | tier={tier} | VIX={vix} | v3")
     audit["nav_after"] = nav_after
-
-    print("\n[7] Writing audit log...")
-    write_daily_audit(audit)
-
     positions_count = len(state.get("positions", {}))
-    print(f"\nDone. NAV=${nav_after:,.2f} | Tier={tier} | Positions={positions_count}/{MAX_POSITIONS}\n")
+
+    if dry_run:
+        print(f"\n[7] DRY-RUN complete — state not saved, trade log not updated")
+        write_daily_audit(audit)  # audit still written (prefixed dry-run)
+        print(f"\nDRY-RUN summary: NAV=${nav_after:,.2f} | Tier={tier} | Positions={positions_count}/{MAX_POSITIONS}\n")
+    else:
+        save_state(state)
+        append_nav_log(nav_after, f"daily-scan | tier={tier} | VIX={vix} | v3")
+        print("\n[7] Writing audit log...")
+        write_daily_audit(audit)
+        print(f"\nDone. NAV=${nav_after:,.2f} | Tier={tier} | Positions={positions_count}/{MAX_POSITIONS}\n")
 
 
 def load_env() -> None:

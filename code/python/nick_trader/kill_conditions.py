@@ -25,6 +25,7 @@ Return schema for each triggered condition:
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -108,6 +109,19 @@ def check_all_kills(
                         cond["new_stop_pct"] = new_stop
                     triggered.append(cond)
                     break  # only one profit level triggers per day
+
+        # --- L3 free-ride time-stop: alert if held >365 days after free-ride activated ---
+        if profit_level >= 3 and dynamic_stop is None:
+            entry_date_str = pos_state.get("entry_date")
+            if entry_date_str:
+                days_held = (date.today() - date.fromisoformat(entry_date_str)).days
+                if days_held > 365:
+                    triggered.append({
+                        "id":        "L3-timestop",
+                        "label":     f"L3 free-ride time-stop: {days_held} days held — review for exit or add time limit",
+                        "action":    "ALERT",
+                        "price_pct": round(pct, 4) if pct is not None else None,
+                    })
 
         # --- News keyword alert conditions ---
         headlines = news_digest.get(ticker, {}).get("headlines", [])
