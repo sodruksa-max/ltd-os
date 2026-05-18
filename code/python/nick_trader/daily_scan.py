@@ -167,6 +167,19 @@ def get_regime() -> dict:
 
 
 def get_price(ticker: str) -> float | None:
+    """Latest price via Alpaca latest-trade; falls back to yfinance."""
+    api_key    = os.environ.get("ALPACA_API_KEY")
+    secret_key = os.environ.get("ALPACA_SECRET_KEY")
+    if api_key and secret_key:
+        try:
+            from alpaca.data import StockHistoricalDataClient
+            from alpaca.data.requests import StockLatestTradeRequest
+            client = StockHistoricalDataClient(api_key, secret_key)
+            resp   = client.get_stock_latest_trade(StockLatestTradeRequest(symbol_or_symbols=[ticker]))
+            if ticker in resp:
+                return float(resp[ticker].price)
+        except Exception:
+            pass
     try:
         return float(yf.Ticker(ticker).fast_info["lastPrice"])
     except Exception:
@@ -174,7 +187,35 @@ def get_price(ticker: str) -> float | None:
 
 
 def get_atr14(ticker: str) -> float | None:
-    """Return ATR14 in price units (14-day Average True Range), or None on failure."""
+    """ATR14 in price units via Alpaca 45-day bars; falls back to yfinance."""
+    from datetime import datetime as _dt
+    api_key    = os.environ.get("ALPACA_API_KEY")
+    secret_key = os.environ.get("ALPACA_SECRET_KEY")
+    if api_key and secret_key:
+        try:
+            from alpaca.data import StockHistoricalDataClient
+            from alpaca.data.requests import StockBarsRequest
+            from alpaca.data.timeframe import TimeFrame
+            client = StockHistoricalDataClient(api_key, secret_key)
+            start  = _dt.combine(date.today() - timedelta(days=45), _dt.min.time())
+            bars   = client.get_stock_bars(
+                StockBarsRequest(symbol_or_symbols=[ticker], timeframe=TimeFrame.Day, start=start)
+            ).data.get(ticker, [])
+            if len(bars) < 15:
+                return None
+            highs  = [b.high  if hasattr(b, "high")  else b["high"]  for b in bars]
+            lows   = [b.low   if hasattr(b, "low")   else b["low"]   for b in bars]
+            closes = [b.close if hasattr(b, "close") else b["close"] for b in bars]
+            tr_vals = [
+                max(highs[i] - lows[i], abs(highs[i] - closes[i-1]), abs(lows[i] - closes[i-1]))
+                for i in range(1, len(bars))
+            ]
+            if len(tr_vals) < 14:
+                return None
+            return float(sum(tr_vals[-14:]) / 14)
+        except Exception:
+            pass
+    # fallback to yfinance
     try:
         hist = yf.Ticker(ticker).history(period="30d")
         if len(hist) < 15:

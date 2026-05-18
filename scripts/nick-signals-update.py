@@ -12,8 +12,9 @@ Signal tiers:
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -22,6 +23,18 @@ import yfinance as yf
 REPO = Path(__file__).resolve().parent.parent
 NICK_SIGNALS_PATH = REPO / "vault/Knowledge/nick-signals.md"
 UNIVERSE_PATH     = REPO / "code/python/nick_trader/universe.py"
+
+
+def _load_env() -> None:
+    env_file = REPO / ".secrets" / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        os.environ.setdefault(k.strip(), v.strip())
 
 
 def _load_universe():
@@ -87,26 +100,71 @@ def _signal_summary(rsi_t: str, ma20_t: str, rs_t: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Alpaca data fetch (primary) — avoids yfinance rate limiting on 60+ tickers
+# ---------------------------------------------------------------------------
+
+def _fetch_bars_alpaca(all_tickers: list[str]) -> dict[str, pd.DataFrame | None] | None:
+    """Fetch 130 calendar days of daily bars via Alpaca in one batch request.
+    Returns {ticker: DataFrame(Close)} or None if Alpaca keys not set / request fails."""
+    api_key    = os.environ.get("ALPACA_API_KEY")
+    secret_key = os.environ.get("ALPACA_SECRET_KEY")
+    if not api_key or not secret_key:
+        return None
+
+    from alpaca.data import StockHistoricalDataClient
+    from alpaca.data.requests import StockBarsRequest
+    from alpaca.data.timeframe import TimeFrame
+
+    client = StockHistoricalDataClient(api_key, secret_key)
+    start  = datetime.combine(date.today() - timedelta(days=130), datetime.min.time())
+    try:
+        bars_data = client.get_stock_bars(
+            StockBarsRequest(symbol_or_symbols=all_tickers, timeframe=TimeFrame.Day, start=start)
+        ).data
+    except Exception as exc:
+        print(f"  [warn] Alpaca fetch failed: {exc}")
+        return None
+
+    hist: dict[str, pd.DataFrame | None] = {}
+    for t in all_tickers:
+        bars = bars_data.get(t)
+        if not bars:
+            hist[t] = None
+            continue
+        records = []
+        for b in bars:
+            if isinstance(b, dict):
+                records.append({"Close": b["close"], "timestamp": b["timestamp"]})
+            else:
+                records.append({"Close": b.close, "timestamp": b.timestamp})
+        df = pd.DataFrame(records).set_index("timestamp")
+        df.index = pd.to_datetime(df.index, utc=True)
+        hist[t] = df
+    return hist
+
+
+# ---------------------------------------------------------------------------
 # Main computation
 # ---------------------------------------------------------------------------
 
 def compute_signals(tier1: list[str], tier2: list[str]) -> dict[str, dict]:
     all_tickers = list(dict.fromkeys(tier1 + tier2 + ["SPY"]))
-    print(f"  Downloading 90d data for {len(all_tickers)} tickers...")
+    print(f"  Fetching 90d data for {len(all_tickers)} tickers via Alpaca...")
 
-    raw = yf.download(all_tickers, period="90d", progress=False, auto_adjust=True)
-
-    # Unpack MultiIndex into {ticker: DataFrame}
-    hist: dict[str, pd.DataFrame | None] = {}
-    if isinstance(raw.columns, pd.MultiIndex):
-        for t in all_tickers:
-            try:
-                df = raw.xs(t, axis=1, level=1).dropna(how="all")
-                hist[t] = df if len(df) > 0 else None
-            except KeyError:
-                hist[t] = None
-    else:
-        hist[all_tickers[0]] = raw
+    hist = _fetch_bars_alpaca(all_tickers)
+    if hist is None:
+        print("  Alpaca unavailable — falling back to yfinance...")
+        raw = yf.download(all_tickers, period="90d", progress=False, auto_adjust=True)
+        hist = {}
+        if isinstance(raw.columns, pd.MultiIndex):
+            for t in all_tickers:
+                try:
+                    df = raw.xs(t, axis=1, level=1).dropna(how="all")
+                    hist[t] = df if len(df) > 0 else None
+                except KeyError:
+                    hist[t] = None
+        else:
+            hist[all_tickers[0]] = raw
 
     # SPY 60-day return for RS baseline
     spy_df = hist.get("SPY")
@@ -190,6 +248,7 @@ def write_signals(tier1: list[str], tier2: list[str], signals: dict[str, dict]) 
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    _load_env()
     univ    = _load_universe()
     tier1   = univ.TIER1
     tier2   = univ.TIER2
