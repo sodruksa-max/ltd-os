@@ -17,6 +17,6 @@
     "inception": 2320.00,
     "spy_inception_price": null,
     "as_of": "2026-05-18",
-    "note": "Paper account reset for v3. ACTION REQUIRED: manually reset Alpaca paper account to $2320 before next scan."
+    "note": "Alpaca paper account confirmed at $2320 on 2026-05-18. Ready for v3 scans."
   }
 }
