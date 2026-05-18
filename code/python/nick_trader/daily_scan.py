@@ -234,6 +234,26 @@ def fetch_universe_news() -> dict:
     return _run_news_script("--universe-news")
 
 # ---------------------------------------------------------------------------
+# L3 peak tracker
+# ---------------------------------------------------------------------------
+
+def update_l3_peaks(state: dict, market_data: dict) -> dict:
+    """Update peak_price for free-ride positions (profit_level>=3, stop=None).
+    Called before kill check so drawdown is measured against today's high-water mark.
+    """
+    for ticker, pos in state.get("positions", {}).items():
+        if pos.get("profit_level", 0) < 3 or pos.get("dynamic_stop_pct") is not None:
+            continue
+        current = market_data.get(ticker, {}).get("current_price")
+        if not current:
+            continue
+        old_peak = pos.get("peak_price", pos.get("entry_price", current))
+        if current > old_peak:
+            pos["peak_price"] = round(current, 2)
+    return state
+
+
+# ---------------------------------------------------------------------------
 # Kill check + exits
 # ---------------------------------------------------------------------------
 
@@ -690,6 +710,7 @@ def main() -> None:
             if price:
                 market_data[ticker] = {"current_price": price}
 
+    state = update_l3_peaks(state, market_data)
     state = run_kill_exits(state, client, market_data, holdings_news, vix, audit, dry_run=dry_run)
 
     # 4. Universe news (entry discovery)
@@ -717,9 +738,11 @@ def main() -> None:
 
     if dry_run:
         print(f"\n[7] DRY-RUN complete — state not saved, trade log not updated")
-        write_daily_audit(audit)  # audit still written (prefixed dry-run)
+        write_daily_audit(audit)
         print(f"\nDRY-RUN summary: NAV=${nav_after:,.2f} | Tier={tier} | Positions={positions_count}/{MAX_POSITIONS}\n")
     else:
+        state["nav"]["current"] = nav_after
+        state["nav"]["as_of"]   = str(date.today())
         save_state(state)
         append_nav_log(nav_after, f"daily-scan | tier={tier} | VIX={vix} | v3")
         print("\n[7] Writing audit log...")

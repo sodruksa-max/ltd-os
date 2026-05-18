@@ -110,6 +110,20 @@ def check_all_kills(
                     triggered.append(cond)
                     break  # only one profit level triggers per day
 
+        # --- L3 free-ride drawdown alert: >30% from peak price ---
+        if profit_level >= 3 and dynamic_stop is None and pct is not None:
+            peak_price   = pos_state.get("peak_price")
+            current_price = market_data.get(ticker, {}).get("current_price")
+            if peak_price and current_price and peak_price > 0:
+                drawdown = (current_price - peak_price) / peak_price
+                if drawdown < -0.30:
+                    triggered.append({
+                        "id":        "L3-drawdown",
+                        "label":     f"L3 drawdown: {drawdown:+.1%} from peak ${peak_price:.2f} — review free-ride exit",
+                        "action":    "ALERT",
+                        "price_pct": round(pct, 4),
+                    })
+
         # --- L3 free-ride time-stop: alert if held >365 days after free-ride activated ---
         if profit_level >= 3 and dynamic_stop is None:
             entry_date_str = pos_state.get("entry_date")
