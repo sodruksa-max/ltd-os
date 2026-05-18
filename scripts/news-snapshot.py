@@ -50,6 +50,14 @@ UNIVERSE_LOOKBACK_HOURS = 72  # 72h covers Mon morning (captures Fri/Sat/Sun new
 REPO          = Path(__file__).resolve().parent.parent
 UNIVERSE_PATH = REPO / "code/python/nick_trader/universe.py"
 
+# [HYPERLEXIA] Management spin/PR language — catalyst with these = weaker signal
+SPIN_KEYWORDS = {
+    "reaffirm", "in line with", "as previously announced",
+    "maintains guidance", "maintains outlook", "no material impact",
+    "pleased to announce", "proud to announce", "consistent with prior",
+    "as expected", "does not expect material",
+}
+
 CATALYST_POSITIVE = {
     "contract", "awarded", "wins", "partnership", "launch", "fda approved",
     "raised guidance", "beat expectations", "revenue beat", "eps beat",
@@ -175,6 +183,17 @@ def dedup(articles: list) -> list:
             seen.add(h)
             result.append(a)
     return result
+
+
+def _spin_detected(headlines: list[str]) -> bool:
+    """[HYPERLEXIA] True if headlines contain management spin/PR qualifier language."""
+    joined = " ".join(h.lower() for h in headlines)
+    return any(kw in joined for kw in SPIN_KEYWORDS)
+
+
+def _source_diversity(sources: list[str]) -> int:
+    """[PARANOID] Count unique news sources — 1 = single-source PR echo."""
+    return len(set(s for s in sources if s))
 
 # ---------------------------------------------------------------------------
 # Print sections
@@ -404,18 +423,22 @@ def universe_news_mode(api_key: str, secret_key: str) -> None:
         except Exception as e:
             sys.stderr.write(f"[universe-news] batch fetch error: {e}\n")
 
-    # Group headlines by ticker
-    by_ticker: dict[str, list[str]] = {t: [] for t in all_tickers}
+    # Group headlines + sources by ticker
+    by_ticker:  dict[str, list[str]] = {t: [] for t in all_tickers}
+    by_sources: dict[str, list[str]] = {t: [] for t in all_tickers}
     for article in dedup(raw):
         headline = article.get("headline", "")
+        source   = article.get("source", "")
         for sym in (article.get("symbols") or []):
             if sym in by_ticker:
                 by_ticker[sym].append(headline)
+                by_sources[sym].append(source)
 
-    # Score each ticker: clean_for_entry, has_catalyst
+    # Score each ticker: clean_for_entry, has_catalyst + cognitive trait fields
     result: dict[str, dict] = {}
     for ticker in all_tickers:
         headlines = by_ticker[ticker]
+        sources   = by_sources[ticker]
         joined    = " ".join(h.lower() for h in headlines)
 
         has_concern  = any(kw in joined for kw in CONCERN_NEGATIVE)
@@ -425,6 +448,13 @@ def universe_news_mode(api_key: str, secret_key: str) -> None:
             "clean_for_entry": not has_concern,
             "has_catalyst":    has_catalyst,
             "headlines":       headlines[:10],
+            # [TOURETTE] unusual headline volume — something is happening
+            "headline_count":  len(headlines),
+            "high_activity":   len(headlines) >= 4,
+            # [HYPERLEXIA] management spin/PR qualifier language
+            "spin_detected":   _spin_detected(headlines),
+            # [PARANOID] unique source count — 1 = PR echo, not independent news
+            "source_count":    _source_diversity(sources),
         }
 
     print(json.dumps(result))

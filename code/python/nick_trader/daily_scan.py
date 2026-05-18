@@ -450,7 +450,15 @@ def _score_candidate(
     if not news.get("clean_for_entry", True):
         return None  # negative news gates entry
     if news.get("has_catalyst", False):
-        score += 15
+        # [HYPERLEXIA] spin language detected → catalyst is management PR, not real news
+        # [PARANOID]   single-source → PR echo, not independent corroboration
+        spin         = news.get("spin_detected", False)
+        single_src   = news.get("source_count", 2) <= 1
+        score += 5 if (spin or single_src) else 15
+
+    # [TOURETTE] unusual headline volume when clean → something is happening
+    if news.get("high_activity", False) and news.get("clean_for_entry", True):
+        score += 3
 
     # Layer 2.5 — Earnings-eve gate (binary event risk within 2 calendar days)
     if _earnings_within_days(ticker):
