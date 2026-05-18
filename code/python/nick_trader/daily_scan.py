@@ -30,6 +30,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import pandas as pd
 import yfinance as yf
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
@@ -127,7 +128,21 @@ def get_deployed_capital(state: dict) -> float:
 
 def get_regime() -> dict:
     data: dict = {}
-    for name, sym in {"VIX": "^VIX", "TNX": "^TNX", "SOXX": "SOXX", "QQQM": "QQQM"}.items():
+    # VIX: fetch 1y for percentile_252d (used in VIX-Rank continuous scaling)
+    try:
+        vix_hist  = yf.Ticker("^VIX").history(period="1y")["Close"]
+        vix_price = float(vix_hist.iloc[-1])
+        vix_ma50  = float(vix_hist.rolling(50).mean().iloc[-1])
+        vix_pct   = float((vix_hist <= vix_price).sum() / len(vix_hist))
+        data["VIX"] = {
+            "value":          round(vix_price, 2),
+            "above_50ma":     bool(vix_price > vix_ma50),
+            "percentile_252d": round(vix_pct, 3),
+        }
+    except Exception:
+        data["VIX"] = {"value": None, "above_50ma": None, "percentile_252d": 0.5}
+
+    for name, sym in {"TNX": "^TNX", "SOXX": "SOXX", "QQQM": "QQQM"}.items():
         try:
             hist  = yf.Ticker(sym).history(period="60d")["Close"]
             price = hist.iloc[-1]
@@ -137,7 +152,7 @@ def get_regime() -> dict:
             data[name] = {"value": None, "above_50ma": None}
 
     vix = data.get("VIX", {}).get("value") or 20
-    # v3 thresholds: <25 EARLY, 25-30 EXTENDED, >=30 DANGER
+    # v3 thresholds: <25 EARLY, 25-30 EXTENDED (scaled), >=30 DANGER (hard block)
     data["tier"] = "EARLY" if vix < 25 else ("EXTENDED" if vix < 30 else "DANGER")
     return data
 
@@ -145,6 +160,22 @@ def get_regime() -> dict:
 def get_price(ticker: str) -> float | None:
     try:
         return float(yf.Ticker(ticker).fast_info["lastPrice"])
+    except Exception:
+        return None
+
+
+def get_atr14(ticker: str) -> float | None:
+    """Return ATR14 in price units (14-day Average True Range), or None on failure."""
+    try:
+        hist = yf.Ticker(ticker).history(period="30d")
+        if len(hist) < 15:
+            return None
+        tr = pd.concat([
+            hist["High"] - hist["Low"],
+            (hist["High"] - hist["Close"].shift(1)).abs(),
+            (hist["Low"]  - hist["Close"].shift(1)).abs(),
+        ], axis=1).max(axis=1)
+        return float(tr.rolling(14).mean().iloc[-1])
     except Exception:
         return None
 
@@ -351,8 +382,8 @@ def run_universe_scan(
     vix  = regime.get("VIX", {}).get("value", "?")
     audit["universe_scan"] = {"tier": tier, "candidates_scored": [], "orders_executed": []}
 
-    if tier in ("EXTENDED", "DANGER"):
-        print(f"  Universe scan: SKIP (tier={tier}, VIX={vix})")
+    if tier == "DANGER":
+        print(f"  Universe scan: SKIP (tier=DANGER, VIX={vix})")
         return state
 
     current_count = len(state.get("positions", {}))
@@ -361,6 +392,13 @@ def run_universe_scan(
         return state
 
     slots_open = MAX_POSITIONS - current_count
+
+    # VIX-Rank continuous size scaling (arXiv:2508.16598)
+    # percentile=0.0 → scale=1.0 (full size); percentile=1.0 → scale=0.50 (half size, floor)
+    vix_pct   = regime.get("VIX", {}).get("percentile_252d", 0.5)
+    vix_scale = max(0.50, 1.0 - 0.5 * vix_pct)
+    audit["universe_scan"]["vix_scale"] = round(vix_scale, 3)
+    print(f"  VIX-Rank: percentile={vix_pct:.0%} → size_scale={vix_scale:.2f}")
 
     # Contribution gate: how much capital can we deploy?
     avail_cap   = get_available_capital(state)
@@ -418,8 +456,9 @@ def run_universe_scan(
             print(f"  SKIP {ticker}: cannot fetch price")
             continue
 
-        # Size: 33% of available_capital per position (T1), 25% (T2)
-        size_pct     = 0.33 if is_t1 else 0.25
+        # Size: base 33% (T1) / 25% (T2) × VIX-Rank scale
+        base_size    = 0.33 if is_t1 else 0.25
+        size_pct     = round(base_size * vix_scale, 3)
         target_value = avail_cap * size_pct
         per_slot_cap = free_cap / max(1, slots_open - executed)
         order_value  = min(target_value, per_slot_cap * 0.95)
@@ -434,23 +473,34 @@ def run_universe_scan(
             client.submit_order(MarketOrderRequest(
                 symbol=ticker, qty=shares, side=OrderSide.BUY, time_in_force=TimeInForce.DAY
             ))
-            print(f"  [BUY] {ticker}: {shares} shares @ ~${price:.2f} (score={score}, size={size_pct:.0%} avail_cap)")
+
+            # ATR-based initial stop (arXiv:2511.08571):
+            # stop = max(-15%, -(2 × ATR14 / entry_price)) — tighter for low-vol stocks
+            atr14 = get_atr14(ticker)
+            if atr14 and price > 0:
+                initial_stop = round(max(kc_mod.DEFAULT_STOP_PCT, -(2.0 * atr14 / price)), 4)
+            else:
+                initial_stop = kc_mod.DEFAULT_STOP_PCT
 
             state["positions"][ticker] = {
                 "entry_date":        str(date.today()),
                 "entry_price":       round(price, 2),
                 "shares":            shares,
                 "weight":            round(size_pct, 3),
-                "dynamic_stop_pct":  kc_mod.DEFAULT_STOP_PCT,
+                "dynamic_stop_pct":  initial_stop,
                 "profit_level":      0,
-                "kill_conditions":   [],  # news alerts added by /nick-weekly
+                "kill_conditions":   [],
             }
             audit["universe_scan"]["orders_executed"].append(ticker)
+
+            atr_note = f"ATR14={atr14:.2f}" if atr14 else "ATR14=n/a"
+            print(f"  [BUY] {ticker}: {shares} shares @ ~${price:.2f} "
+                  f"(score={score}, size={size_pct:.0%}, stop={initial_stop:+.1%}, {atr_note})")
 
             append_trade_log(dict(
                 date=date.today(), ticker=ticker, action="BUY",
                 shares=shares, price=price, conviction="high" if is_t1 else "med",
-                vix=vix, reason=f"universe-scan score={score}",
+                vix=vix, reason=f"universe-scan score={score} stop={initial_stop:+.1%}",
             ))
             executed += 1
 

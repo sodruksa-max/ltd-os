@@ -1,12 +1,13 @@
 """
-Entry logic evaluator for Nick v2 daily scanner.
+Entry logic evaluator for Nick v3.
 
 Decision tree for each candidate ticker:
-  Gate 1 — VIX tier        : DANGER = no buys, EXTENDED = high conviction only
+  Gate 1 — VIX tier        : DANGER (>=30) = no buys; EXTENDED (25-29) = allowed with
+                              reduced size via VIX-Rank continuous scaling (caller applies)
   Gate 2 — Capacity        : cash available, not already held, signal not OVERBOUGHT+EXTENDED
   Gate 3 — Signal          : RSI not OVERBOUGHT or MA20 not EXTENDED
   Gate 4 — News clean      : no kill flags from news digest
-  -> PASS -> compute shares from conviction size
+  -> PASS -> compute shares from conviction size (before VIX-Rank scale applied by caller)
 
 Returns EvaluationResult dataclass with should_buy, skip_reason, shares, size_pct.
 """
@@ -99,9 +100,9 @@ def evaluate_entry(
     tier = regime.get("tier", "EARLY")
     vix  = regime.get("VIX", {}).get("value", "?")
 
-    # Gate 1 — VIX tier (v3: >=25 no entries at all, >=30 danger)
-    if tier in ("DANGER", "EXTENDED"):
-        return EvaluationResult(ticker, False, f"tier={tier} (VIX={vix}): no new entries above 25", gates_log=log)
+    # Gate 1 — VIX tier (v3: >=30 DANGER = hard block; EXTENDED 25-29 = allowed, caller scales size)
+    if tier == "DANGER":
+        return EvaluationResult(ticker, False, f"tier=DANGER (VIX={vix}): no new entries at VIX>=30", gates_log=log)
     log.append(f"Gate1 OK: tier={tier}, VIX={vix}")
 
     # Gate 2 — Capacity
