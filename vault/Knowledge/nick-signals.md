@@ -1,5 +1,5 @@
 # Nick Signals
-*Auto-updated: 2026-05-18 22:27 | RSI14 / MA20-position / RS-vs-SPY(60d)*
+*Auto-updated: 2026-05-18 22:43 | RSI14 / MA20-position / RS-vs-SPY(60d)*
 
 ---
 
@@ -16,70 +16,70 @@
 
 | Ticker | RSI | MA20 | RS | Signal |
 |---|---|---|---|---|
-| NVDA | ? | ? | ? | no data |
-| AMD | ? | ? | ? | no data |
-| AVGO | ? | ? | ? | no data |
-| SMCI | ? | ? | ? | no data |
-| MU | ? | ? | ? | no data |
-| MRVL | ? | ? | ? | no data |
-| LRCX | ? | ? | ? | no data |
-| MOD | ? | ? | ? | no data |
-| DELL | ? | ? | ? | no data |
-| HPE | ? | ? | ? | no data |
-| ASML | ? | ? | ? | no data |
-| ARM | ? | ? | ? | no data |
-| CRDO | ? | ? | ? | no data |
-| AEIS | ? | ? | ? | no data |
-| UCTT | ? | ? | ? | no data |
-| WDC | ? | ? | ? | no data |
-| ONTO | ? | ? | ? | no data |
-| RKLB | ? | ? | ? | no data |
-| ASTS | ? | ? | ? | no data |
-| LUNR | ? | ? | ? | no data |
-| KTOS | ? | ? | ? | no data |
-| BBAI | ? | ? | ? | no data |
-| PLTR | ? | ? | ? | no data |
-| CRM | ? | ? | ? | no data |
-| SNOW | ? | ? | ? | no data |
-| IONQ | ? | ? | ? | no data |
-| RGTI | ? | ? | ? | no data |
-| QBTS | ? | ? | ? | no data |
-| QUBT | ? | ? | ? | no data |
-| ISRG | ? | ? | ? | no data |
-| TER | ? | ? | ? | no data |
-| CGNX | ? | ? | ? | no data |
-| ROK | ? | ? | ? | no data |
-| SYM | ? | ? | ? | no data |
-| PATH | ? | ? | ? | no data |
-| AVAV | ? | ? | ? | no data |
+| NVDA | NEUTRAL | NEAR | STRONG | SETUP — RSI neutral + RS strong |
+| AMD | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| AVGO | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| SMCI | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| MU | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| MRVL | HIGH | MID | STRONG | RS STRONG + near MA |
+| LRCX | HIGH | MID | STRONG | RS STRONG + near MA |
+| MOD | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
+| DELL | HIGH | NEAR | STRONG | RS STRONG + near MA |
+| HPE | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| ASML | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| ARM | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| CRDO | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| AEIS | LOW | BELOW | WEAK | BELOW MA20 |
+| UCTT | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
+| WDC | HIGH | MID | STRONG | RS STRONG + near MA |
+| ONTO | LOW | BELOW | STRONG | BELOW MA20 |
+| RKLB | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| ASTS | NEUTRAL | EXTENDED | WEAK |  |
+| LUNR | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| KTOS | LOW | BELOW | WEAK | BELOW MA20 |
+| BBAI | LOW | BELOW | NEUTRAL | BELOW MA20 |
+| PLTR | LOW | BELOW | WEAK | BELOW MA20 |
+| CRM | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| SNOW | HIGH | NEAR | WEAK |  |
+| IONQ | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
+| RGTI | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| QBTS | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
+| QUBT | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| ISRG | LOW | BELOW | WEAK | BELOW MA20 |
+| TER | LOW | BELOW | WEAK | BELOW MA20 |
+| CGNX | HIGH | NEAR | NEUTRAL |  |
+| ROK | HIGH | MID | NEUTRAL |  |
+| SYM | OVERSOLD | BELOW | WEAK | OVERSOLD — thesis entry watch |
+| PATH | NEUTRAL | MID | WEAK |  |
+| AVAV | LOW | BELOW | WEAK | BELOW MA20 |
 
 **Tier 2 — Growth Expansion (26 tickers)**
 
 | Ticker | RSI | MA20 | RS | Signal |
 |---|---|---|---|---|
-| MRNA | ? | ? | ? | no data |
-| CRSP | ? | ? | ? | no data |
-| BEAM | ? | ? | ? | no data |
-| RXRX | ? | ? | ? | no data |
-| CRWD | ? | ? | ? | no data |
-| PANW | ? | ? | ? | no data |
-| ZS | ? | ? | ? | no data |
-| NET | ? | ? | ? | no data |
-| OKTA | ? | ? | ? | no data |
-| COIN | ? | ? | ? | no data |
-| HOOD | ? | ? | ? | no data |
-| SOFI | ? | ? | ? | no data |
+| MRNA | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| CRSP | LOW | BELOW | WEAK | BELOW MA20 |
+| BEAM | LOW | BELOW | WEAK | BELOW MA20 |
+| RXRX | LOW | BELOW | WEAK | BELOW MA20 |
+| CRWD | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| PANW | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| ZS | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
+| NET | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| OKTA | HIGH | NEAR | STRONG | RS STRONG + near MA |
+| COIN | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| HOOD | LOW | BELOW | NEUTRAL | BELOW MA20 |
+| SOFI | LOW | BELOW | WEAK | BELOW MA20 |
 | SQ | ? | ? | ? | no data |
-| CEG | ? | ? | ? | no data |
-| VST | ? | ? | ? | no data |
-| SMR | ? | ? | ? | no data |
-| NNE | ? | ? | ? | no data |
-| ETN | ? | ? | ? | no data |
-| SHOP | ? | ? | ? | no data |
-| MELI | ? | ? | ? | no data |
-| SE | ? | ? | ? | no data |
-| AXON | ? | ? | ? | no data |
-| HII | ? | ? | ? | no data |
-| DKNG | ? | ? | ? | no data |
-| DUOL | ? | ? | ? | no data |
-| TTD | ? | ? | ? | no data |
+| CEG | OVERSOLD | BELOW | WEAK | OVERSOLD — thesis entry watch |
+| VST | OVERSOLD | BELOW | WEAK | OVERSOLD — thesis entry watch |
+| SMR | LOW | BELOW | WEAK | BELOW MA20 |
+| NNE | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| ETN | LOW | BELOW | NEUTRAL | BELOW MA20 |
+| SHOP | LOW | BELOW | WEAK | BELOW MA20 |
+| MELI | LOW | BELOW | WEAK | BELOW MA20 |
+| SE | NEUTRAL | MID | WEAK |  |
+| AXON | NEUTRAL | MID | WEAK |  |
+| HII | LOW | BELOW | WEAK | BELOW MA20 |
+| DKNG | HIGH | NEAR | STRONG | RS STRONG + near MA |
+| DUOL | NEUTRAL | NEAR | NEUTRAL |  |
+| TTD | LOW | BELOW | WEAK | BELOW MA20 |
