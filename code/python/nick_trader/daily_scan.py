@@ -47,10 +47,11 @@ TRADE_LOG      = NICK_DIR / "trade-log.md"
 NAV_LOG        = NICK_DIR / "performance/nav_log.md"
 STATE_FILE     = NICK_DIR / "nick_state.json"
 DAILY_DIR      = NICK_DIR / "daily"
-CONVERGENCE_MD = REPO / "vault/Knowledge/thesis-convergence.md"
-NICK_SIGNALS   = REPO / "vault/Knowledge/nick-signals.md"
-NEWS_SCRIPT    = REPO / "scripts/news-snapshot.py"
-PYTHON         = Path(sys.executable)
+CONVERGENCE_MD   = REPO / "vault/Knowledge/thesis-convergence.md"
+NICK_SIGNALS     = REPO / "vault/Knowledge/nick-signals.md"
+NEWS_SCRIPT      = REPO / "scripts/news-snapshot.py"
+MISOPHONIA_PATH  = REPO / "vault/Knowledge/misophonia-triggers.md"
+PYTHON           = Path(sys.executable)
 
 MAX_POSITIONS = 3
 
@@ -179,6 +180,54 @@ def get_atr14(ticker: str) -> float | None:
         return float(tr.rolling(14).mean().iloc[-1])
     except Exception:
         return None
+
+# ---------------------------------------------------------------------------
+# Misophonia trigger registry loader
+# ---------------------------------------------------------------------------
+
+def load_misophonia_triggers() -> list[tuple[str, str]]:
+    """Parse Company-Level triggers → [(category, keyword_lowercase)].
+    Only quoted phrases or first token before '|' are extracted.
+    """
+    if not MISOPHONIA_PATH.exists():
+        return []
+    triggers: list[tuple[str, str]] = []
+    in_company = False
+    for line in MISOPHONIA_PATH.read_text(encoding="utf-8").splitlines():
+        if "## Company-Level" in line:
+            in_company = True
+        elif line.startswith("## ") and "Company-Level" not in line:
+            in_company = False
+        elif in_company and line.strip().startswith("["):
+            cat = re.match(r'\[(\w+)\]', line)
+            phrase = re.search(r'"([^"]+)"', line)
+            if cat and phrase:
+                triggers.append((cat.group(1), phrase.group(1).lower()))
+            elif cat:
+                text = re.search(r'\]\s+([^|]+)', line)
+                if text:
+                    triggers.append((cat.group(1), text.group(1).strip().lower()))
+    return triggers
+
+
+# ---------------------------------------------------------------------------
+# Tourette overnight reflex scan
+# ---------------------------------------------------------------------------
+
+def run_tourette_scan(state: dict, market_data: dict) -> list[str]:
+    """Flag any holding that moved >5% overnight — fires BEFORE kill analysis."""
+    flags: list[str] = []
+    for ticker in state.get("positions", {}):
+        d       = market_data.get(ticker, {})
+        current = d.get("current_price")
+        prev    = d.get("prev_close")
+        if current and prev and prev > 0:
+            move = (current - prev) / prev
+            if abs(move) > 0.05:
+                direction = "UP" if move > 0 else "DN"
+                flags.append(f"[REFLEX] {ticker} {direction} {move:+.1%} overnight -- verify kill conditions")
+    return flags
+
 
 # ---------------------------------------------------------------------------
 # Thesis convergence (for Layer 1 of 4-gate funnel)
@@ -350,6 +399,7 @@ def _score_candidate(
     universe_news: dict,
     strong_theses: set[str],
     is_tier1: bool,
+    miso_triggers: list[tuple[str, str]] | None = None,
 ) -> int | None:
     """Score a candidate 0-100. Returns None if hard-blocked."""
     score = 50
@@ -379,6 +429,14 @@ def _score_candidate(
     if news.get("has_catalyst", False):
         score += 15
 
+    # Misophonia hard gate — check headlines against trigger registry
+    if miso_triggers:
+        headlines = news.get("headlines", [])
+        joined    = " ".join(h.lower() for h in headlines)
+        for cat, kw in miso_triggers:
+            if kw in joined:
+                return None  # trigger pattern found — hard block, cannot suppress
+
     # Layer 3 — Thesis convergence
     thesis = univ_mod.TICKER_THESIS.get(ticker, "")
     if thesis in strong_theses:
@@ -401,6 +459,7 @@ def run_universe_scan(
     nav: float,
     audit: dict,
     dry_run: bool = False,
+    miso_triggers: list[tuple[str, str]] | None = None,
 ) -> dict:
     """Scan universe for entry candidates; auto-buy top scorers."""
     tier = regime.get("tier")
@@ -459,7 +518,8 @@ def run_universe_scan(
     # Score all candidates
     scored: list[tuple[int, str, bool]] = []
     for ticker, is_t1 in candidates:
-        s = _score_candidate(ticker, nick_signals, universe_news, strong_theses, is_t1)
+        s = _score_candidate(ticker, nick_signals, universe_news, strong_theses, is_t1,
+                             miso_triggers=miso_triggers)
         tier_label = "T1" if is_t1 else "T2"
         audit["universe_scan"]["candidates_scored"].append(
             {"ticker": ticker, "tier": tier_label, "score": s}
@@ -486,10 +546,17 @@ def run_universe_scan(
     ]
 
     # Execute buys for top candidates
+    # Dyslexia: track bought theses — don't buy 2 candidates from same thesis in one day
+    bought_theses: set[str] = set()
     executed = 0
     for score, ticker, is_t1 in scored:
         if executed >= slots_open:
             break
+
+        thesis = univ_mod.TICKER_THESIS.get(ticker, "")
+        if thesis and thesis in bought_theses:
+            print(f"  [DYSLEXIA] SKIP {ticker}: thesis {thesis} already bought today (concentration guard)")
+            continue
 
         price = get_price(ticker)
         if not price:
@@ -523,6 +590,8 @@ def run_universe_scan(
             if dry_run:
                 print(f"  [DRY-RUN BUY] {ticker}: would buy {shares} shares @ ~${price:.2f} "
                       f"(score={score}, size={size_pct:.0%}, stop={initial_stop:+.1%}, {atr_note})")
+                if thesis:
+                    bought_theses.add(thesis)
                 executed += 1
                 continue
 
@@ -549,6 +618,8 @@ def run_universe_scan(
                 shares=shares, price=price, conviction="high" if is_t1 else "med",
                 vix=vix, reason=f"universe-scan score={score} stop={initial_stop:+.1%}",
             ))
+            if thesis:
+                bought_theses.add(thesis)
             executed += 1
 
         except Exception as e:
@@ -709,8 +780,35 @@ def main() -> None:
             price = get_price(ticker)
             if price:
                 market_data[ticker] = {"current_price": price}
+        # Fetch prev_close for Tourette overnight reflex
+        try:
+            hist = yf.Ticker(ticker).history(period="2d")["Close"]
+            if len(hist) >= 2:
+                market_data.setdefault(ticker, {})["prev_close"] = round(float(hist.iloc[-2]), 4)
+        except Exception:
+            pass
 
     state = update_l3_peaks(state, market_data)
+
+    # Tourette overnight reflex — fires before any analysis
+    tourette_flags = run_tourette_scan(state, market_data)
+    if tourette_flags:
+        print("  Tourette reflex flags (pre-analysis — verify in kill check):")
+        for f in tourette_flags:
+            print(f"    {f}")
+        audit["tourette_flags"] = tourette_flags
+    else:
+        print("  Tourette reflex: clean")
+
+    # Misophonia check on holdings news
+    miso_triggers = load_misophonia_triggers()
+    for ticker, news_data in holdings_news.items():
+        headlines = news_data.get("headlines", [])
+        joined    = " ".join(h.lower() for h in headlines)
+        for cat, kw in miso_triggers:
+            if kw in joined:
+                print(f"  [MISOPHONIA: TRIGGER] {ticker} [{cat}] \"{kw}\" — cannot suppress, review before kill check")
+
     state = run_kill_exits(state, client, market_data, holdings_news, vix, audit, dry_run=dry_run)
 
     # 4. Universe news (entry discovery)
@@ -722,8 +820,10 @@ def main() -> None:
     print("\n[5] Universe scan (entry)...")
     nick_signals   = el_mod.parse_nick_signals()
     strong_theses  = get_strong_convergence_theses()
+    miso_triggers  = load_misophonia_triggers()
     print(f"  Strong convergence theses: {sorted(strong_theses) or 'none detected'}")
-    state = run_universe_scan(state, client, regime, universe_news, nick_signals, strong_theses, nav, audit, dry_run=dry_run)
+    state = run_universe_scan(state, client, regime, universe_news, nick_signals, strong_theses, nav, audit,
+                              dry_run=dry_run, miso_triggers=miso_triggers)
 
     # 6. SELL/TRIM from weekly-rec
     print("\n[6] SELL/TRIM from weekly-rec...")
