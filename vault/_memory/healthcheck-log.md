@@ -3,6 +3,18 @@
 *(auto-updated by /healthcheck — keeps last 5 runs)*
 *(used by OCD persistent WARN escalation layer)*
 
+## 2026-05-19 (resolution update)
+- All items from 2026-05-18 รอบ 2 resolved:
+- [FIXED] commits pushed to origin/main ✓
+- [FIXED] untracked files committed or gitignored ✓
+- [FIXED] nick-daily.sh + nick-signals-update.py registered in healthcheck.sh ✓
+- [FIXED] /token-audit registered in healthcheck.sh ✓
+- [FIXED] nick/daily/ added to .gitignore ✓
+- [FIXED] IR paper improvements (ExpandSearch/FinSearch/Coverage) already in stock-content.md ✓
+- [OPEN] Metadata-contextual vault embedding (arXiv:2510.24402) — medium complexity, not yet built
+- [OPEN] TODO-MED from 2026-05-17: outcomes-index.py script approved but not yet built (ANALYST_LOG 2026-05-16)
+- Current state: PASS 146 | WARN 0 | FAIL 0 — ALL SYSTEMS GO (as of last full run 2026-05-18)
+
 ## 2026-05-18 (รอบ 2)
 - PASS: 141 | WARN: 1 | FAIL: 1 — DEGRADED
 - [FAIL] 17 commits ahead of origin/main — CCR runs stale nick-v3 code → Fix: safe-push.sh
