@@ -254,5 +254,77 @@
     "tags": ["quantum"],
     "date_added": "2026-05-19",
     "why_added": "initial universe"
+  },
+  {
+    "ticker": "ISRG",
+    "name": "Intuitive Surgical",
+    "sector": "XLK",
+    "tags": ["robotics"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "CRM",
+    "name": "Salesforce",
+    "sector": "XLK",
+    "tags": ["AI", "software"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T4 AI software"
+  },
+  {
+    "ticker": "SNOW",
+    "name": "Snowflake",
+    "sector": "XLK",
+    "tags": ["AI", "software"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T4 AI software"
+  },
+  {
+    "ticker": "SYM",
+    "name": "Symbotic",
+    "sector": "XLK",
+    "tags": ["robotics"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "PATH",
+    "name": "UiPath",
+    "sector": "XLK",
+    "tags": ["robotics", "AI"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "TER",
+    "name": "Teradyne",
+    "sector": "SMH",
+    "tags": ["robotics", "semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "CGNX",
+    "name": "Cognex",
+    "sector": "XLK",
+    "tags": ["robotics"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "ROK",
+    "name": "Rockwell Automation",
+    "sector": "XLK",
+    "tags": ["robotics"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics"
+  },
+  {
+    "ticker": "AVAV",
+    "name": "AeroVironment",
+    "sector": "UFO",
+    "tags": ["defense", "robotics"],
+    "date_added": "2026-05-19",
+    "why_added": "Nick T6 robotics/defense"
   }
 ]

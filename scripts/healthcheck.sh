@@ -72,7 +72,6 @@ for script in \
   "scripts/alpaca-paper.py" \
   "scripts/screener.py" \
   "scripts/auto-buy.py" \
-  "scripts/auto-trader.py" \
   "scripts/watchlist-manager.py" \
   "scripts/watchlist.json"
 do

@@ -1,0 +1,37 @@
+name: Nick Kill Check (Pre-Market)
+
+on:
+  schedule:
+    - cron: '0 13 * * 1-5'  # 9:00 AM EDT Mon-Fri (13:00 UTC)
+  workflow_dispatch:           # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  kill-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install yfinance pandas --quiet
+
+      - name: Run kill condition monitor
+        run: python scripts/nick-kill-monitor.py
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+
+      - name: Commit alert if BREACH detected
+        run: |
+          git config user.name "nick-kill-bot"
+          git config user.email "nick-kill-bot@users.noreply.github.com"
+          git add vault/20_investment/nick/alerts/ 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "alert(nick): kill condition BREACH $(date +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push

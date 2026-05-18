@@ -1,9 +1,14 @@
 """
-Nick v3 universe — Tier 1 (active thesis) + Tier 2 (growth expansion).
-Tier 3 (momentum wildcard) is generated dynamically via RS scan.
+Nick v3 universe — Tier 1 (active thesis) + Tier 2 (growth expansion) + Tier 3 (watchlist wildcards).
+
+Tier 3: tickers in scripts/watchlist.json that are NOT in TIER1 or TIER2.
+        Scanned Mondays only. User adds via: python scripts/watchlist-manager.py --add TICKER ...
 
 news-snapshot.py --universe-news imports TIER1/TIER2 directly — no manual sync needed.
 """
+
+import json
+from pathlib import Path
 
 # ---- Tier 1: Active thesis tickers (~40) — scanned DAILY ----
 
@@ -70,6 +75,19 @@ TICKER_THESIS: dict[str, str] = {
 }
 
 
+def load_tier3_from_watchlist() -> list[str]:
+    """Tier 3 wildcards: tickers in watchlist.json not already in TIER1 or TIER2."""
+    watchlist_path = Path(__file__).resolve().parents[3] / "scripts" / "watchlist.json"
+    if not watchlist_path.exists():
+        return []
+    try:
+        entries = json.loads(watchlist_path.read_text(encoding="utf-8"))
+        existing = set(TIER1) | set(TIER2)
+        return [e["ticker"] for e in entries if e.get("ticker") and e["ticker"] not in existing]
+    except Exception:
+        return []
+
+
 def get_universe(tiers: tuple[int, ...] = (1,)) -> list[str]:
     """Return deduplicated ticker list for given tiers."""
     result: list[str] = []
@@ -81,6 +99,11 @@ def get_universe(tiers: tuple[int, ...] = (1,)) -> list[str]:
                 result.append(t)
     if 2 in tiers:
         for t in TIER2:
+            if t not in seen:
+                seen.add(t)
+                result.append(t)
+    if 3 in tiers:
+        for t in load_tier3_from_watchlist():
             if t not in seen:
                 seen.add(t)
                 result.append(t)

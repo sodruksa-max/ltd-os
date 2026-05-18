@@ -584,18 +584,24 @@ def run_universe_scan(
         )
     }
 
-    # Build candidate list (Tier1 daily, Tier2 on Mondays)
+    # Build candidate list (Tier1 daily, Tier2+Tier3 on Mondays)
     tier1_set = set(univ_mod.TIER1)
+    tier2_set = set(univ_mod.TIER2)
     candidates: list[tuple[str, bool]] = []  # (ticker, is_tier1)
     for t in univ_mod.TIER1:
         if t not in already_held and t not in pending_orders:
             candidates.append((t, True))
-    if date.today().weekday() == 0:  # Monday — add Tier2
+    if date.today().weekday() == 0:  # Monday — add Tier2 + Tier3 wildcards
         for t in univ_mod.TIER2:
             if t not in already_held and t not in pending_orders and t not in tier1_set:
                 candidates.append((t, False))
+        for t in univ_mod.load_tier3_from_watchlist():
+            if t not in already_held and t not in pending_orders and t not in tier1_set and t not in tier2_set:
+                candidates.append((t, False))
 
-    print(f"  Universe scan: {len(candidates)} candidates (Tier1 + {'Tier2 Monday' if date.today().weekday() == 0 else 'Tier2 skip'})")
+    tier3_count = len(univ_mod.load_tier3_from_watchlist()) if date.today().weekday() == 0 else 0
+    tier_label = f"Tier2+Tier3({tier3_count} wildcards) Monday" if date.today().weekday() == 0 else "Tier2+Tier3 skip"
+    print(f"  Universe scan: {len(candidates)} candidates (Tier1 + {tier_label})")
 
     # Score all candidates
     scored: list[tuple[int, str, bool]] = []
