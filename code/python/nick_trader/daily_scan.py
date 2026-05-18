@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import functools
 import importlib.util
+import io
 import json
 import os
 import re
@@ -31,6 +32,8 @@ import subprocess
 import sys
 from datetime import date, timedelta
 from pathlib import Path
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 import pandas as pd
 import yfinance as yf
@@ -103,19 +106,22 @@ def append_nav_log(nav: float, note: str = "") -> None:
 # ---------------------------------------------------------------------------
 
 def get_available_capital(state: dict) -> float:
-    """Max capital that can be deployed based on monthly contribution schedule."""
+    """Max capital deployable — preloaded contributions count as already-elapsed months."""
     contrib = state.get("contributions", {})
     if not contrib:
         return float("inf")
     base      = contrib.get("base_capital_usd", 1000.0)
     monthly   = contrib.get("monthly_usd", 110.0)
-    total     = contrib.get("preloaded_total_usd", 2320.0)
+    total     = contrib.get("preloaded_total_usd", base)
     inception = contrib.get("inception_date")
     if not inception:
         return base
     days_elapsed   = max(0, (date.today() - date.fromisoformat(inception)).days)
     months_elapsed = days_elapsed // 30
-    return min(base + months_elapsed * monthly, total)
+    # Preloaded contributions are treated as already-elapsed months
+    preloaded_months = int((total - base) / monthly) if monthly > 0 else 0
+    effective_months = months_elapsed + preloaded_months
+    return min(base + effective_months * monthly, total)
 
 
 def get_deployed_capital(state: dict) -> float:
