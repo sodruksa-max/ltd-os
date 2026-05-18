@@ -76,6 +76,68 @@ THEMES = {
 }
 
 
+# Maps convergence theme → tickers that directly benefit
+# Used to generate the Candidate Mapper section in the report
+THEME_CANDIDATES: dict[str, dict[str, list[str]]] = {
+    "AI Capex / Hyperscaler Spend": {
+        "direct":    ["NVDA", "AMD", "AVGO", "SMCI", "MU"],
+        "secondary": ["LRCX", "MRVL", "DELL", "HPE", "MOD"],
+        "action":    "Size up T1/T2 conviction — structural multi-year tailwind confirmed",
+    },
+    "AI Networking": {
+        "direct":    ["CRDO", "MRVL", "AVGO"],
+        "secondary": ["NVDA", "AMD"],
+        "action":    "CRDO/MRVL = direct Ethernet switch ASIC beneficiaries",
+    },
+    "Semiconductor Moats": {
+        "direct":    ["NVDA", "ASML", "LRCX", "ARM"],
+        "secondary": ["MU", "CRDO", "AEIS", "UCTT"],
+        "action":    "Hold T2 names through cycle — pricing power structural",
+    },
+    "Memory / Storage": {
+        "direct":    ["MU", "WDC"],
+        "secondary": ["LRCX", "AEIS"],
+        "action":    "MU = primary HBM beneficiary — check entry signal",
+    },
+    "Space / Launch": {
+        "direct":    ["RKLB", "ASTS", "LUNR"],
+        "secondary": ["KTOS", "BBAI", "HAWK"],
+        "action":    "RKLB = launch cadence play; ASTS = connectivity; speculative tier",
+    },
+    "Quantum Computing": {
+        "direct":    ["IONQ", "RGTI", "QBTS", "QUBT"],
+        "secondary": ["IBM"],
+        "action":    "Pre-commercial, high binary risk — size MED conviction max",
+    },
+    "Government / Defense Spend": {
+        "direct":    ["PLTR", "KTOS", "BBAI", "AVAV"],
+        "secondary": ["RKLB", "ASTS"],
+        "action":    "PLTR = AI decision layer for gov; KTOS = autonomous defense systems",
+    },
+    "AI Software Monetization": {
+        "direct":    ["PLTR", "CRM", "SNOW"],
+        "secondary": [],
+        "action":    "Verify RS before adding — PLTR RS↓ currently; SNOW RS↑ watch",
+    },
+    "Valuation Compression Risk": {
+        "direct":    [],
+        "secondary": [],
+        "warning":   ["PLTR", "MOD", "QUBT", "RGTI"],
+        "action":    "HIGH-MULTIPLE RISK — reduce or avoid adding to these names",
+    },
+    "Custom Silicon / ASIC": {
+        "direct":    ["AVGO", "MRVL", "AMD"],
+        "secondary": ["NVDA"],
+        "action":    "AVGO = custom ASIC leader for hyperscalers; competitive threat to NVDA watch",
+    },
+    "Datacenter Cooling": {
+        "direct":    ["MOD"],
+        "secondary": ["DELL", "HPE"],
+        "action":    "MOD = highest direct exposure but valuation compressed — size carefully",
+    },
+}
+
+
 def parse_frontmatter(text: str) -> dict:
     """Extract frontmatter key:value pairs."""
     fm = {}
@@ -149,6 +211,52 @@ def match_themes(atom: dict) -> list[str]:
     text = (atom["claim"] + " " + atom["implication"]).lower()
     return [theme for theme, keywords in THEMES.items()
             if any(kw in text for kw in keywords)]
+
+
+def generate_candidate_section(cross_thesis: list) -> list[str]:
+    """Generate Candidate Mapper section for STRONG convergence signals only."""
+    lines = [
+        "---",
+        "",
+        "## Candidate Mapper — STRONG Signals -> Direct Beneficiaries",
+        "",
+        "*Nick: ใช้ section นี้ใน Step 6 เพื่อ map signal -> ticker action*",
+        "",
+    ]
+
+    strong_themes = [
+        (theme, atoms, theses, sources, strength)
+        for theme, atoms, theses, sources, strength in cross_thesis
+        if strength == "STRONG"
+    ]
+
+    if not strong_themes:
+        lines.append("*ยังไม่มี STRONG convergence signals — ยังไม่มี candidate mapping*")
+        lines.append("")
+        return lines
+
+    lines += [
+        "| Convergence Signal | Strength | Direct Beneficiaries | Secondary | Nick Action |",
+        "|---|---|---|---|---|",
+    ]
+
+    for theme, atoms, theses, sources, strength in strong_themes:
+        mapping = THEME_CANDIDATES.get(theme)
+        if not mapping:
+            continue
+
+        badge = "STRONG"
+        direct = ", ".join(mapping.get("direct", [])) or "—"
+        secondary = ", ".join(mapping.get("secondary", [])) or "—"
+        warning = ", ".join(mapping.get("warning", []))
+        if warning:
+            direct = f"WARN: {warning}"
+            secondary = "—"
+        action = mapping.get("action", "—")
+        lines.append(f"| {theme} | {badge} | {direct} | {secondary} | {action} |")
+
+    lines.append("")
+    return lines
 
 
 def main():
@@ -263,6 +371,8 @@ def main():
 
     lines.append("---")
     lines.append("")
+
+    lines.extend(generate_candidate_section(cross_thesis))
     lines.append(f"*{len(all_atoms)} atoms | {len(atom_files)} files | Generated: {now}*")
 
     output = "\n".join(lines)

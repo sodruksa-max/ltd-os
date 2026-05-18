@@ -1,11 +1,11 @@
 ---
 type: kb-convergence
-updated: 2026-05-17
+updated: 2026-05-18
 source: scripts/thesis-convergence.py
 ---
 
 # Thesis Convergence Report
-*Auto-generated 2026-05-17 00:58 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
+*Auto-generated 2026-05-18 14:04 UTC — Nick อ่านไฟล์นี้ใน /nick-weekly Step 5 (KB sweep)*
 
 Atoms analyzed: **63** across **15** files | Themes detected: **12**
 
@@ -87,4 +87,18 @@ Atoms analyzed: **63** across **15** files | Themes detected: **12**
 
 ---
 
-*63 atoms | 15 files | Generated: 2026-05-17 00:58 UTC*
+---
+
+## Candidate Mapper — STRONG Signals -> Direct Beneficiaries
+
+*Nick: ใช้ section นี้ใน Step 6 เพื่อ map signal -> ticker action*
+
+| Convergence Signal | Strength | Direct Beneficiaries | Secondary | Nick Action |
+|---|---|---|---|---|
+| AI Capex / Hyperscaler Spend | STRONG | NVDA, AMD, AVGO, SMCI, MU | LRCX, MRVL, DELL, HPE, MOD | Size up T1/T2 conviction — structural multi-year tailwind confirmed |
+| AI Networking | STRONG | CRDO, MRVL, AVGO | NVDA, AMD | CRDO/MRVL = direct Ethernet switch ASIC beneficiaries |
+| Valuation Compression Risk | STRONG | WARN: PLTR, MOD, QUBT, RGTI | — | HIGH-MULTIPLE RISK — reduce or avoid adding to these names |
+| Memory / Storage | STRONG | MU, WDC | LRCX, AEIS | MU = primary HBM beneficiary — check entry signal |
+| Semiconductor Moats | STRONG | NVDA, ASML, LRCX, ARM | MU, CRDO, AEIS, UCTT | Hold T2 names through cycle — pricing power structural |
+
+*63 atoms | 15 files | Generated: 2026-05-18 14:04 UTC*

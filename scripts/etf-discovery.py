@@ -20,6 +20,7 @@ import io
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
@@ -28,18 +29,37 @@ BLACKLIST_TICKERS = {"CRM", "SNOW", "NOW", "WDAY", "ADBE", "INTU", "TEAM", "ZS",
 
 # ตัวที่อยู่ใน watchlist แล้ว — ข้ามได้เลย
 UNIVERSE_TICKERS = {
-    "NVDA", "AMD", "MU", "AVGO", "MRVL", "ARM", "ASML",
-    "LRCX", "WDC", "ONTO",
-    "SMCI", "DELL", "HPE",
-    "MSFT", "AMZN", "GOOGL", "META",
-    "PLTR",
-    "RKLB", "ASTS", "LUNR", "KTOS",
+    # T1
+    "NVDA","AMD","AVGO","SMCI","MU","MRVL","LRCX","MOD","DELL","HPE",
+    # T2
+    "ASML","ARM","CRDO","AEIS","UCTT","WDC","ONTO",
+    # T3
+    "RKLB","ASTS","LUNR","KTOS","BBAI",
+    # T4
+    "PLTR","CRM","SNOW",
+    # T5
+    "IONQ","RGTI","QBTS","QUBT",
+    # T6
+    "ISRG","TER","CGNX","ROK","SYM","PATH","AVAV",
+    # Tier 2
+    "MRNA","CRSP","BEAM","RXRX",
+    "CRWD","PANW","ZS","NET","OKTA",
+    "COIN","HOOD","SOFI","SQ",
+    "CEG","VST","SMR","NNE","ETN",
+    "SHOP","MELI","SE",
+    "AXON","HII",
+    "DKNG","DUOL","TTD",
+    # C-list + large-caps to skip
+    "TSM","GOOGL","MSFT","AMZN","META","AAPL","INTC","TXN","QCOM",
 }
 
 ETF_LIST = [
-    ("SOXX", "Semicon/Memory"),
-    ("UFO",  "Space"),
-    ("XLK",  "Broad Tech/Datacenter"),
+    ("SOXX", "Semicon [T2]"),
+    ("UFO",  "Space [T3]"),
+    ("ROKT", "Space/Satellite [T3]"),
+    ("XLK",  "Broad Tech [T1]"),
+    ("BOTZ", "Robotics/AI [T6]"),
+    ("ITA",  "Defense [T3]"),
 ]
 
 TOP_N_HOLDINGS   = 30   # holdings ต่อ ETF ที่ดึงมา
@@ -248,6 +268,60 @@ def analyze(ticker: str, bars: list[dict], spy_map: dict) -> dict | None:
     }
 
 
+# ── KB save ───────────────────────────────────────────────────────────────────
+
+def save_to_kb(results: list) -> None:
+    """Write/update the ETF Discovery section in vault/Knowledge/nick-candidates.md."""
+    from datetime import date as _date
+    kb_file = Path(__file__).resolve().parent.parent / "vault/Knowledge/nick-candidates.md"
+    if not kb_file.exists():
+        print(f"  [skip] {kb_file} not found")
+        return
+
+    today = _date.today()
+    header_lines = [
+        "",
+        "## ETF Discovery — หุ้นนอก watchlist ที่ RS กำลังขึ้น",
+        "",
+        f"*Auto-updated: {today} | ETFs: {', '.join(e for e, _ in ETF_LIST)}*",
+        "",
+    ]
+
+    visible = [r for r in results if r[3]["tier"] in ("EARLY", "ALERT")]
+    if visible:
+        header_lines += [
+            "| Ticker | ETF Source | Price | Signal | RS10d | vs MA20 |",
+            "|---|---|---|---|---|---|",
+        ]
+        for sym, name, etf_label, r in visible:
+            star = "★" if r["star"] else ""
+            tier_s = f"[{r['tier']}{star}]"
+            rs_s = rs_label(r["rs_10d"])
+            vsma = f"{r['pct_vs_ma']:+.1f}%"
+            header_lines.append(
+                f"| {sym} | {etf_label} | ${r['price']:.2f} | {tier_s} | {rs_s} | {vsma} |"
+            )
+    else:
+        header_lines.append("_ไม่พบ setup EARLY/ALERT นอก watchlist วันนี้_")
+
+    header_lines += [
+        "",
+        "*ถ้าสนใจตัวไหน: `/stock-content TICKER` ก่อนตัดสินใจ*",
+        "",
+    ]
+    new_section = "\n".join(header_lines)
+
+    text = kb_file.read_text(encoding="utf-8")
+    if "## ETF Discovery" in text:
+        before = text.split("## ETF Discovery")[0].rstrip()
+        text = before + new_section
+    else:
+        text = text.rstrip() + "\n" + new_section
+
+    kb_file.write_text(text, encoding="utf-8")
+    print(f"  KB updated: {kb_file.name} ({len(visible)} EARLY/ALERT entries)")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -324,6 +398,9 @@ def main():
     print()
     print(f"พบ {len(results)} setup | EARLY★=ก่อนวิ่ง+RS↑ EARLY=ก่อนวิ่ง ALERT=เริ่มวิ่งยังเข้าได้")
     print("ถ้าสนใจตัวไหน: /screen TICKER หรือ /stock-research TICKER")
+
+    if "--save-kb" in sys.argv:
+        save_to_kb(results)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,45 @@ KB.mkdir(parents=True, exist_ok=True)
 MIN_DEAL_SIZE_M = 500    # $500M minimum to flag as big
 BUZZ_VOLUME_RATIO = 3.0  # first-week volume 3x+ recent avg = high buzz
 
+# Thesis keyword filter — company name → thesis tag
+THESIS_KEYWORDS: dict[str, list[str]] = {
+    "T1": [
+        "ai", "artificial intelligence", "gpu", "accelerat", "hpc",
+        "datacenter", "data center", "cloud computing", "neural",
+        "inference", "cerebras", "large language", "foundation model",
+    ],
+    "T2": [
+        "semiconductor", "chip", "wafer", "photomask", "foundry", "fab",
+        "lithograph", "etch", "deposition", "silicon", "memory", "dram",
+        "nand", "hbm", "equipment material",
+    ],
+    "T3": [
+        "space", "satellite", "launch", "rocket", "orbital", "aerospace",
+        "drone", "uav", "unmanned aerial", "defense", "reconnaissance",
+        "hawkeye", "rf intelligence", "geospatial intel",
+    ],
+    "T4": [
+        "analytics platform", "decision intelligence", "enterprise ai",
+        "workflow automation", "data intelligence platform", "agentic",
+    ],
+    "T5": [
+        "quantum", "qubit", "photonic computing", "cryogenic",
+    ],
+    "T6": [
+        "robot", "cobot", "robotic", "automation", "actuator",
+        "surgical robot", "humanoid", "autonomous warehouse",
+    ],
+}
+
+
+def classify_thesis(company_name: str) -> str:
+    """Return first matching thesis tag ('T1'–'T6'), or 'OUTSIDE' if none match."""
+    name_lower = company_name.lower()
+    for thesis, keywords in THESIS_KEYWORDS.items():
+        if any(kw in name_lower for kw in keywords):
+            return thesis
+    return "OUTSIDE"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
     "Accept": "application/json",
@@ -195,6 +234,18 @@ def main():
     print(f"\nSaved: {out}")
     print(f"Big priced: {len(big_priced)} | High buzz: {len(buzz_flags)} | Upcoming: {len(upcoming_big)}")
 
+    # Classify thesis for every priced IPO
+    for r in big_priced:
+        r["thesis"] = classify_thesis(r["company"])
+    thesis_priced = [r for r in big_priced if r["thesis"] != "OUTSIDE"]
+    outside_count = len(big_priced) - len(thesis_priced)
+
+    # Classify thesis for upcoming IPOs and filter
+    for r in upcoming_big:
+        r["thesis"] = classify_thesis(r["company"])
+    thesis_upcoming = [r for r in upcoming_big if r["thesis"] != "OUTSIDE"]
+    outside_upcoming_count = len(upcoming_big) - len(thesis_upcoming)
+
     # Write KB-formatted candidates for Nick
     kb_lines = [
         "---",
@@ -208,58 +259,65 @@ def main():
         "",
         "---",
         "",
-        "## Already Trading (deal ≥ $500M)",
+        "## Already Trading (deal ≥ $500M, thesis-relevant only)",
         "",
     ]
 
-    if big_priced:
+    if thesis_priced:
         kb_lines += [
-            "| Ticker | Company | IPO Date | Deal Size | Price Change | Buzz |",
-            "|---|---|---|---|---|---|",
+            "| Ticker | Company | Thesis | IPO Date | Deal Size | Price Change | Buzz |",
+            "|---|---|---|---|---|---|---|",
         ]
-        for r in big_priced:
+        for r in thesis_priced:
             buzz = f"{r.get('volume_ratio')}x vol" if r.get("volume_ratio", 0) >= BUZZ_VOLUME_RATIO else "-"
             kb_lines.append(
-                f"| {r['ticker'] or 'TBD'} | {r['company'][:30]} | {r['date']} | "
+                f"| {r['ticker'] or 'TBD'} | {r['company'][:30]} | {r['thesis']} | {r['date']} | "
                 f"${r['deal_size_m']:.0f}M | {r.get('price_change_pct', '❓')}% | {buzz} |"
             )
     else:
-        kb_lines.append("_No big priced IPOs in last 60 days._")
+        kb_lines.append(
+            f"_No thesis-relevant IPOs in last 60 days._ ({len(big_priced)} total scanned, all outside T1–T6)"
+        )
 
-    kb_lines += ["", "## High Buzz (first-week volume ≥ 3x avg)", ""]
-    if buzz_flags:
-        for r in buzz_flags:
+    kb_lines += ["", "## High Buzz (first-week volume ≥ 3x avg, thesis-relevant only)", ""]
+    # buzz_flags are a subset of big_priced — filter to thesis-relevant
+    thesis_buzz = [r for r in buzz_flags if r.get("thesis", "OUTSIDE") != "OUTSIDE"]
+    if thesis_buzz:
+        for r in thesis_buzz:
             kb_lines.append(
-                f"- **{r['ticker']}** {r['company']} — "
+                f"- **{r['ticker']}** [{r['thesis']}] {r['company']} — "
                 f"{r.get('volume_ratio')}x volume, {r.get('price_change_pct')}% since IPO, "
                 f"current ${r.get('current_price', '❓')}"
             )
     else:
         kb_lines.append("_None._")
 
-    kb_lines += ["", "## Upcoming (deal ≥ $500M)", ""]
-    if upcoming_big:
+    kb_lines += ["", "## Upcoming (deal ≥ $500M, thesis-relevant only)", ""]
+    if thesis_upcoming:
         kb_lines += [
-            "| Company | Ticker | Expected Date | Price Range | Deal Size |",
-            "|---|---|---|---|---|",
+            "| Company | Ticker | Thesis | Expected Date | Price Range | Deal Size |",
+            "|---|---|---|---|---|---|",
         ]
-        for r in upcoming_big:
+        for r in thesis_upcoming:
             kb_lines.append(
-                f"| {r['company'][:30]} | {r['ticker'] or 'TBD'} | {r['expected_date']} | "
+                f"| {r['company'][:30]} | {r['ticker'] or 'TBD'} | {r['thesis']} | {r['expected_date']} | "
                 f"{r['price_range']} | ${r['deal_size_m']:.0f}M |"
             )
     else:
-        kb_lines.append("_No big upcoming IPOs._")
+        kb_lines.append(
+            f"_No thesis-relevant upcoming IPOs._ ({len(upcoming_big)} total scanned, all outside T1–T6)"
+        )
 
     kb_lines += [
         "",
         "---",
+        f"*Filtered: {outside_count} priced + {outside_upcoming_count} upcoming IPOs outside T1–T6 excluded.*",
         "*Nick: สำหรับแต่ละ candidate — ถ้า sector ตรง thesis → เสนอ add THESIS_TRACKER; ถ้าไม่ตรง → note 'outside theses' แล้วข้าม*",
     ]
 
     kb_out = KB / "nick-candidates.md"
     kb_out.write_text("\n".join(kb_lines), encoding="utf-8")
-    print(f"KB candidates: {kb_out}")
+    print(f"KB candidates: {kb_out} (thesis-relevant: {len(thesis_priced)} priced, {len(thesis_upcoming)} upcoming | filtered out: {outside_count} priced, {outside_upcoming_count} upcoming)")
 
 
 if __name__ == "__main__":
