@@ -19,25 +19,23 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install alpaca-py yfinance pandas --quiet
+        run: pip install alpaca-py yfinance pandas requests --quiet
 
-      - name: Exit check (stop/target)
-        run: python code/python/nick_trader/exit_check.py
+      - name: Nick daily scan (kill check + entry check)
+        run: python code/python/nick_trader/daily_scan.py
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
 
-      - name: Execute new weekly rec (self-skips if already done)
-        run: python code/python/nick_trader/execute.py
-        env:
-          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
-          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-
-      - name: Commit trade log + NAV log back to repo
+      - name: Commit state + logs back to repo
         run: |
           git config user.name "nick-bot"
           git config user.email "nick-bot@users.noreply.github.com"
-          git add vault/20_investment/nick/trade-log.md vault/20_investment/nick/nick_state.json vault/20_investment/nick/performance/nav_log.md
-          git diff --staged --quiet || git commit -m "chore(nick): auto trade log $(date +%Y-%m-%d)"
+          git add vault/20_investment/nick/trade-log.md \
+                  vault/20_investment/nick/nick_state.json \
+                  vault/20_investment/nick/performance/nav_log.md \
+                  vault/20_investment/nick/news-digest.md \
+                  vault/20_investment/nick/daily/
+          git diff --staged --quiet || git commit -m "chore(nick): daily scan $(date +%Y-%m-%d)"
           git pull --rebase origin main
           git push
