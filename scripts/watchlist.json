@@ -1,0 +1,258 @@
+[
+  {
+    "ticker": "NVDA",
+    "name": "Nvidia",
+    "sector": "SMH",
+    "tags": ["semicon", "AI"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "AMD",
+    "name": "AMD",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "MU",
+    "name": "Micron",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "AVGO",
+    "name": "Broadcom",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "MRVL",
+    "name": "Marvell",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "ARM",
+    "name": "ARM Holdings",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "ASML",
+    "name": "ASML",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "CRDO",
+    "name": "Credo Technology",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "AEIS",
+    "name": "Advanced Energy",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "UCTT",
+    "name": "Ultra Clean Holdings",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "LRCX",
+    "name": "Lam Research",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "WDC",
+    "name": "Western Digital",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "ONTO",
+    "name": "Onto Innovation",
+    "sector": "SMH",
+    "tags": ["semicon"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "SMCI",
+    "name": "Super Micro",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "DELL",
+    "name": "Dell",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "HPE",
+    "name": "HP Enterprise",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "MSFT",
+    "name": "Microsoft",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "AMZN",
+    "name": "Amazon",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "GOOGL",
+    "name": "Alphabet",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "META",
+    "name": "Meta",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "PLTR",
+    "name": "Palantir",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "MOD",
+    "name": "Modine Manufacturing",
+    "sector": "XLK",
+    "tags": ["AI", "cloud"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "RKLB",
+    "name": "Rocket Lab",
+    "sector": "UFO",
+    "tags": ["space", "defense"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "ASTS",
+    "name": "AST SpaceMobile",
+    "sector": "UFO",
+    "tags": ["space", "defense"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "LUNR",
+    "name": "Intuitive Machines",
+    "sector": "UFO",
+    "tags": ["space", "defense"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "KTOS",
+    "name": "Kratos Defense",
+    "sector": "UFO",
+    "tags": ["space", "defense"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "BBAI",
+    "name": "BigBear.ai",
+    "sector": "UFO",
+    "tags": ["space", "defense"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "IONQ",
+    "name": "IonQ",
+    "sector": "QTUM",
+    "tags": ["quantum"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "RGTI",
+    "name": "Rigetti Computing",
+    "sector": "QTUM",
+    "tags": ["quantum"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "QBTS",
+    "name": "D-Wave Quantum",
+    "sector": "QTUM",
+    "tags": ["quantum"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "QUBT",
+    "name": "Quantum Computing Inc",
+    "sector": "QTUM",
+    "tags": ["quantum"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  },
+  {
+    "ticker": "IBM",
+    "name": "IBM",
+    "sector": "QTUM",
+    "tags": ["quantum"],
+    "date_added": "2026-05-19",
+    "why_added": "initial universe"
+  }
+]

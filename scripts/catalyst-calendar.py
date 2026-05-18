@@ -26,11 +26,37 @@ from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-UNIVERSE_TICKERS = [
+_UNIVERSE_TICKERS_FALLBACK = [
     "NVDA", "AMD", "MU", "AVGO", "PLTR", "SMCI", "MRVL", "ARM", "ASML", "DELL",
     "RKLB", "ASTS", "LUNR", "KTOS",
-    "SPY", "QQQ",  # index proxies — earnings ไม่มี แต่ check ไว้
 ]
+
+# Always included regardless of watchlist (index proxies — no earnings but useful to check)
+_ALWAYS_INCLUDE = ["SPY", "QQQ"]
+
+
+def _load_universe_tickers() -> list[str]:
+    """Load ticker list from scripts/watchlist.json. Falls back to hardcoded list if file missing."""
+    watchlist_path = Path(__file__).parent / "watchlist.json"
+    if not watchlist_path.exists():
+        sys.stderr.write("[catalyst-calendar] watchlist.json not found — using fallback list\n")
+        return _UNIVERSE_TICKERS_FALLBACK + _ALWAYS_INCLUDE
+    try:
+        data = json.load(open(watchlist_path, encoding="utf-8"))
+        tickers = [entry["ticker"] for entry in data]
+        if not tickers:
+            return _UNIVERSE_TICKERS_FALLBACK + _ALWAYS_INCLUDE
+        # Add SPY and QQQ at the end (not in watchlist, but needed for calendar)
+        for t in _ALWAYS_INCLUDE:
+            if t not in tickers:
+                tickers.append(t)
+        return tickers
+    except Exception as e:
+        sys.stderr.write(f"[catalyst-calendar] watchlist.json error: {e} — using fallback\n")
+        return _UNIVERSE_TICKERS_FALLBACK + _ALWAYS_INCLUDE
+
+
+UNIVERSE_TICKERS = _load_universe_tickers()
 
 _HEADERS = {
     "User-Agent": (

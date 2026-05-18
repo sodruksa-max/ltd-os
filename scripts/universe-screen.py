@@ -153,7 +153,7 @@ def llm_news_sentiment(ticker_headlines: dict[str, list[str]]) -> dict[str, str]
     return result
 
 
-UNIVERSE = [
+_UNIVERSE_FALLBACK = [
     # Semicon
     ("NVDA",  "Nvidia"),
     ("AMD",   "AMD"),
@@ -196,6 +196,28 @@ UNIVERSE = [
     ("QUBT",  "Quantum Computing Inc"),
     ("IBM",   "IBM"),
 ]
+
+
+def load_universe_from_watchlist() -> list[tuple[str, str]]:
+    """Load (ticker, name) pairs from scripts/watchlist.json. Returns fallback list if file missing."""
+    import json
+    watchlist_path = Path(__file__).parent / "watchlist.json"
+    if not watchlist_path.exists():
+        sys.stderr.write("[universe-screen] watchlist.json not found — using fallback list\n")
+        return _UNIVERSE_FALLBACK
+    try:
+        data = json.loads(watchlist_path.read_text(encoding="utf-8"))
+        result = [(entry["ticker"], entry.get("name", entry["ticker"])) for entry in data]
+        if not result:
+            sys.stderr.write("[universe-screen] watchlist.json is empty — using fallback list\n")
+            return _UNIVERSE_FALLBACK
+        return result
+    except Exception as e:
+        sys.stderr.write(f"[universe-screen] watchlist.json parse error: {e} — using fallback list\n")
+        return _UNIVERSE_FALLBACK
+
+
+UNIVERSE = load_universe_from_watchlist()
 
 SECTOR_MAP = {
     # Semicon → SMH
@@ -431,11 +453,15 @@ def tier_label(tier: str, star: bool = False) -> str:
 
 
 def main():
-    tickers = UNIVERSE
     if "--tickers" in sys.argv:
+        # Custom tickers passed on command line — use those
         idx = sys.argv.index("--tickers")
         custom = sys.argv[idx + 1:]
         tickers = [(t, t) for t in custom]
+    else:
+        # Load from watchlist.json (already done at module level, but re-load here
+        # so any runtime changes to the file are picked up)
+        tickers = load_universe_from_watchlist()
 
     # Fetch SPY once — ใช้เป็น benchmark RS
     spy_bars = fetch_ohlcv("SPY")
