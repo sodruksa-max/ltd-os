@@ -1,19 +1,25 @@
 """
-Kill condition evaluator for Nick v2.
+Kill condition evaluator for Nick v3.
 
-Reads structured kill_conditions from nick_state.json and evaluates them
-against live market data and a news digest.
+v3 changes vs v2:
+  - Dynamic stop: starts -15% (was -25%), ratchets UP as profit levels hit
+  - Profit ladder:
+      L1: price +40% -> sell 30%, stop ratchets to +5%
+      L2: price +80% -> sell 20%, stop ratchets to +35%
+      L3: price +150% -> sell 20%, remaining 30% rides free (stop removed)
+  - Position schema additions: dynamic_stop_pct (float|None), profit_level (int 0-3)
+  - kill_conditions array in position: news_keyword alert-only conditions only
+  - Price-based exits are generated dynamically from dynamic_stop_pct + profit_level
 
-Supported metrics:
-  price_pct_from_entry  — (current_price - entry_price) / entry_price
-  news_keyword          — substring match against today's headlines (case-insensitive)
-
-Supported operators:
-  lte          — less than or equal (price conditions, stop loss)
-  gte          — greater than or equal (price conditions, take-profit)
-  contains_any — any keyword from threshold list appears in headlines
-
-Each condition returns either action="EXIT" (auto_exit=true) or action="ALERT" (alert_only=true).
+Return schema for each triggered condition:
+  id             — "stop" | "L1" | "L2" | "L3" | condition id from state
+  label          — human-readable
+  action         — "EXIT" (execute order) | "ALERT" (flag for review)
+  partial        — fraction of shares to sell (omitted for full exits)
+  price_pct      — current pct from entry
+  new_stop_pct   — new dynamic_stop_pct to apply after execution (omitted if stop)
+  new_profit_level — profit_level to set after execution (omitted if stop/alert)
+  free_ride      — True if this is L3 (stop should be removed after execution)
 """
 
 from __future__ import annotations
@@ -24,16 +30,19 @@ from typing import Any
 
 STATE_PATH = Path("vault/20_investment/nick/nick_state.json")
 
+DEFAULT_STOP_PCT = -0.15
+
+# (level_id, entry_threshold, sell_fraction, new_stop_pct, tag, label)
+# new_stop_pct = None means "free ride" (no stop after this level)
+PROFIT_LADDER: list[tuple] = [
+    (1, 0.40, 0.30, 0.05,  "L1", "L1 +40% — sell 30%, ratchet stop to +5%"),
+    (2, 0.80, 0.20, 0.35,  "L2", "L2 +80% — sell 20%, ratchet stop to +35%"),
+    (3, 1.50, 0.20, None,  "L3", "L3 +150% — sell 20%, free ride remaining 30%"),
+]
+
 
 def load_state() -> dict:
-    return json.loads(STATE_PATH.read_text())
-
-
-def load_kill_conditions(state: dict) -> dict[str, list[dict]]:
-    return {
-        ticker: pos.get("kill_conditions", [])
-        for ticker, pos in state.get("positions", {}).items()
-    }
+    return json.loads(STATE_PATH.read_text(encoding="utf-8"))
 
 
 def _price_pct(ticker: str, positions: dict, market_data: dict) -> float | None:
@@ -50,36 +59,6 @@ def _headline_match(keywords: list[str], headlines: list[str]) -> bool:
     return any(kw.lower() in joined for kw in keywords)
 
 
-def evaluate_condition(
-    condition: dict,
-    ticker: str,
-    positions: dict,
-    market_data: dict,
-    news_digest: dict,
-) -> bool:
-    metric = condition.get("metric")
-    operator = condition.get("operator")
-    threshold = condition.get("threshold")
-
-    if metric == "price_pct_from_entry":
-        pct = _price_pct(ticker, positions, market_data)
-        if pct is None:
-            return False
-        if operator == "lte":
-            return pct <= threshold
-        if operator == "gte":
-            return pct >= threshold
-        return False
-
-    if metric == "news_keyword":
-        if operator != "contains_any":
-            return False
-        headlines = news_digest.get(ticker, {}).get("headlines", [])
-        return _headline_match(threshold, headlines)
-
-    return False
-
-
 def check_all_kills(
     state: dict,
     market_data: dict,
@@ -88,32 +67,62 @@ def check_all_kills(
     """
     Evaluate all kill conditions for all positions.
 
-    Returns {ticker: [triggered_conditions]} where each triggered entry has:
-      id       — condition id from state
-      label    — human-readable label
-      action   — "EXIT" (auto-execute order) or "ALERT" (flag for weekly review)
-      partial  — fraction to sell (only present when partial exit applies)
+    Returns {ticker: [triggered_conditions]}.
+    Caller (daily_scan.py) applies state mutations after executing orders.
     """
     positions = state.get("positions", {})
-    kill_map = load_kill_conditions(state)
     results: dict[str, list[dict]] = {}
 
-    for ticker, conditions in kill_map.items():
+    for ticker, pos_state in positions.items():
         triggered: list[dict[str, Any]] = []
-        for cond in conditions:
-            if evaluate_condition(cond, ticker, positions, market_data, news_digest):
-                entry: dict[str, Any] = {
-                    "id": cond.get("id"),
-                    "label": cond.get("label"),
-                    "action": "EXIT" if cond.get("auto_exit") else "ALERT",
-                }
-                if "partial" in cond:
-                    entry["partial"] = cond["partial"]
 
-                pct = _price_pct(ticker, positions, market_data)
+        pct = _price_pct(ticker, positions, market_data)
+        dynamic_stop = pos_state.get("dynamic_stop_pct", DEFAULT_STOP_PCT)
+        profit_level = pos_state.get("profit_level", 0)
+
+        # --- Dynamic stop check ---
+        if dynamic_stop is not None and pct is not None and pct <= dynamic_stop:
+            triggered.append({
+                "id":        "stop",
+                "label":     f"Dynamic stop hit at {dynamic_stop:+.0%} ({pct:+.1%} from entry)",
+                "action":    "EXIT",
+                "price_pct": round(pct, 4),
+            })
+
+        # --- Profit ladder check (skip if stop already triggered) ---
+        elif pct is not None:
+            for level_id, threshold, sell_frac, new_stop, tag, label in PROFIT_LADDER:
+                if level_id <= profit_level:
+                    continue  # already taken this level
+                if pct >= threshold:
+                    cond: dict[str, Any] = {
+                        "id":               tag,
+                        "label":            label,
+                        "action":           "EXIT",
+                        "partial":          sell_frac,
+                        "price_pct":        round(pct, 4),
+                        "new_profit_level": level_id,
+                        "free_ride":        (level_id == 3),
+                    }
+                    if new_stop is not None:
+                        cond["new_stop_pct"] = new_stop
+                    triggered.append(cond)
+                    break  # only one profit level triggers per day
+
+        # --- News keyword alert conditions ---
+        headlines = news_digest.get(ticker, {}).get("headlines", [])
+        for cond in pos_state.get("kill_conditions", []):
+            if cond.get("metric") != "news_keyword":
+                continue
+            keywords = cond.get("threshold", [])
+            if _headline_match(keywords, headlines):
+                entry: dict[str, Any] = {
+                    "id":     cond.get("id"),
+                    "label":  cond.get("label"),
+                    "action": "ALERT",
+                }
                 if pct is not None:
                     entry["price_pct"] = round(pct, 4)
-
                 triggered.append(entry)
 
         if triggered:
@@ -130,26 +139,33 @@ def format_kill_report(results: dict[str, list[dict]]) -> str:
     for ticker, conditions in results.items():
         for c in conditions:
             action_tag = "[EXIT]" if c["action"] == "EXIT" else "[ALERT]"
-            pct_str = f" ({c['price_pct']:+.1%})" if "price_pct" in c else ""
-            partial_str = f" [sell {int(c['partial'] * 100)}%]" if "partial" in c else ""
-            lines.append(f"  {action_tag} {ticker} -- {c['id']}: {c['label']}{pct_str}{partial_str}")
+            pct_str    = f" ({c['price_pct']:+.1%})" if "price_pct" in c else ""
+            partial    = c.get("partial")
+            extra      = f" [sell {int(partial * 100)}%]" if partial else ""
+            if c.get("free_ride"):
+                extra += " [free ride after]"
+            lines.append(f"  {action_tag} {ticker} -- {c['id']}: {c['label']}{pct_str}{extra}")
 
     return "\n".join(lines)
 
 
 if __name__ == "__main__":
-    import sys
-
     state = load_state()
 
-    # Minimal smoke-test: inject dummy prices and empty news
-    dummy_market = {
-        ticker: {"current_price": pos["entry_price"] * 0.99}
-        for ticker, pos in state["positions"].items()
-    }
-    dummy_news: dict[str, dict] = {}
+    # Smoke-test: dummy prices at -1% from entry + one L1 hit
+    dummy_market: dict[str, dict] = {}
+    for ticker, pos in state.get("positions", {}).items():
+        ep = pos.get("entry_price", 100)
+        dummy_market[ticker] = {"current_price": ep * 0.99}
 
+    # If there's at least one position, test the L1 trigger on the first one
+    tickers = list(state.get("positions", {}).keys())
+    if tickers:
+        ep = state["positions"][tickers[0]].get("entry_price", 100)
+        dummy_market[tickers[0]] = {"current_price": ep * 1.45}
+
+    dummy_news: dict[str, dict] = {}
     results = check_all_kills(state, dummy_market, dummy_news)
     print(format_kill_report(results))
-    print(f"\nPositions checked: {list(state['positions'].keys())}")
-    print("Smoke-test complete -- all prices at -1% from entry, no news.")
+    print(f"\nPositions checked: {tickers or '(none)'}")
+    print("Smoke-test complete.")

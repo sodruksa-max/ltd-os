@@ -21,9 +21,11 @@ from typing import Optional
 REPO = Path(__file__).resolve().parents[3]
 NICK_SIGNALS_PATH = REPO / "vault/Knowledge/nick-signals.md"
 
-CONVICTION_SIZE  = {"high": 0.15, "med": 0.08, "low": 0.03}
-MAX_POSITION_PCT = 0.30
-MIN_CASH_PCT     = 0.05
+# v3: smaller capital, max 3 positions, 25-33% per position
+CONVICTION_SIZE  = {"high": 0.33, "med": 0.25, "low": 0.15}
+MAX_POSITION_PCT = 0.40
+MIN_CASH_PCT     = 0.10
+MAX_POSITIONS    = 3
 
 
 @dataclass
@@ -97,12 +99,10 @@ def evaluate_entry(
     tier = regime.get("tier", "EARLY")
     vix  = regime.get("VIX", {}).get("value", "?")
 
-    # Gate 1 — VIX tier
-    if tier == "DANGER":
-        return EvaluationResult(ticker, False, f"tier=DANGER (VIX={vix} >=28, no new entries)", gates_log=log)
-    if tier == "EXTENDED" and conviction != "high":
-        return EvaluationResult(ticker, False, f"tier=EXTENDED (VIX={vix}), requires high conviction (got {conviction})", gates_log=log)
-    log.append(f"Gate1 OK: tier={tier}, conviction={conviction}")
+    # Gate 1 — VIX tier (v3: >=25 no entries at all, >=30 danger)
+    if tier in ("DANGER", "EXTENDED"):
+        return EvaluationResult(ticker, False, f"tier={tier} (VIX={vix}): no new entries above 25", gates_log=log)
+    log.append(f"Gate1 OK: tier={tier}, VIX={vix}")
 
     # Gate 2 — Capacity
     if ticker in existing_positions:

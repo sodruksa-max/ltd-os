@@ -5,11 +5,16 @@ News snapshot via Alpaca News API — last 12h, market-relevant, categorized.
 Usage:
     code/python/.venv/Scripts/python scripts/news-snapshot.py
     code/python/.venv/Scripts/python scripts/news-snapshot.py --nick-news
+    code/python/.venv/Scripts/python scripts/news-snapshot.py --universe-news
 
-  --nick-news   Fetch per-holding company news for Nick portfolio.
-                Reads nick_state.json for tickers + kill condition keywords.
-                Outputs JSON to stdout: {TICKER: {clean, flags, headlines}}.
-                Also writes vault/20_investment/nick/news-digest.md.
+  --nick-news      Fetch per-holding company news for Nick portfolio.
+                   Reads nick_state.json for tickers + kill condition keywords.
+                   Outputs JSON to stdout: {TICKER: {clean, flags, headlines}}.
+                   Also writes vault/20_investment/nick/news-digest.md.
+
+  --universe-news  Fetch news for full Nick v3 universe (Tier1+Tier2, ~65 tickers).
+                   Used for ENTRY discovery: which candidates have catalysts / concerns.
+                   Outputs JSON: {TICKER: {clean_for_entry, has_catalyst, headlines}}.
 
 Output (markdown, embed directly in pre-market brief):
   - Geopolitical  (XLE/USO/GLD/TLT tagged + keyword detection)
@@ -39,6 +44,39 @@ NICK_LOOKBACK_HOURS = 48   # 2 days to cover weekends / missed days
 MAX_ARTICLES       = 30
 NICK_STATE_PATH    = Path("vault/20_investment/nick/nick_state.json")
 NICK_DIGEST_PATH   = Path("vault/20_investment/nick/news-digest.md")
+UNIVERSE_LOOKBACK_HOURS = 24
+
+# Mirrors universe.py TIER1 + TIER2 — keep in sync
+UNIVERSE_TIER1 = [
+    "NVDA", "AMD", "AVGO", "SMCI", "MU", "MRVL", "LRCX", "MOD", "DELL", "HPE",
+    "ASML", "ARM", "CRDO", "AEIS", "UCTT", "WDC", "ONTO",
+    "RKLB", "ASTS", "LUNR", "KTOS", "BBAI",
+    "PLTR", "CRM", "SNOW",
+    "IONQ", "RGTI", "QBTS", "QUBT",
+    "ISRG", "TER", "CGNX", "ROK", "SYM", "PATH", "AVAV",
+]
+UNIVERSE_TIER2 = [
+    "MRNA", "CRSP", "BEAM", "RXRX",
+    "CRWD", "PANW", "ZS", "NET", "OKTA",
+    "COIN", "HOOD", "SOFI", "SQ",
+    "CEG", "VST", "SMR", "NNE", "ETN",
+    "SHOP", "MELI", "SE",
+    "AXON", "HII",
+    "DKNG", "DUOL", "TTD",
+]
+
+CATALYST_POSITIVE = {
+    "contract", "awarded", "wins", "partnership", "launch", "fda approved",
+    "raised guidance", "beat expectations", "revenue beat", "eps beat",
+    "upgrade", "breakthrough", "record revenue", "expansion", "new product",
+    "collaboration", "strategic deal", "accelerating growth",
+}
+CONCERN_NEGATIVE = {
+    "miss", "lowered guidance", "lowers outlook", "guidance cut", "downgrade",
+    "layoffs", "fraud", "investigation", "class action", "recall", "bankruptcy",
+    "subpoena", "sec probe", "doj", "revenue miss", "earnings miss",
+    "guidance reduced", "warns", "profit warning",
+}
 
 # Symbols that surface geopolitical / macro-sensitive news
 GEO_SYMBOLS    = ["XLE", "USO", "GLD", "TLT", "UUP", "ITA", "EEM", "XAR"]
@@ -337,6 +375,69 @@ def _write_nick_digest(digest: dict, state: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Universe-news mode (entry discovery for Nick v3)
+# ---------------------------------------------------------------------------
+
+def universe_news_mode(api_key: str, secret_key: str) -> None:
+    """Fetch news for full universe (Tier1+Tier2). Output JSON for entry screening."""
+    all_tickers = list(dict.fromkeys(UNIVERSE_TIER1 + UNIVERSE_TIER2))
+
+    # Alpaca allows up to 100 symbols per call — batch if needed
+    batches: list[list[str]] = []
+    for i in range(0, len(all_tickers), 100):
+        batches.append(all_tickers[i:i + 100])
+
+    raw: list[dict] = []
+    now   = datetime.now(timezone.utc)
+    start = now - timedelta(hours=UNIVERSE_LOOKBACK_HOURS)
+
+    headers = {
+        "APCA-API-KEY-ID":     api_key,
+        "APCA-API-SECRET-KEY": secret_key,
+    }
+    for batch in batches:
+        params = {
+            "symbols":         ",".join(batch),
+            "start":           start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end":             now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "limit":           200,
+            "sort":            "desc",
+            "include_content": "false",
+        }
+        try:
+            resp = requests.get(NEWS_ENDPOINT, params=params, headers=headers, timeout=20)
+            resp.raise_for_status()
+            raw.extend(resp.json().get("news", []))
+        except Exception as e:
+            sys.stderr.write(f"[universe-news] batch fetch error: {e}\n")
+
+    # Group headlines by ticker
+    by_ticker: dict[str, list[str]] = {t: [] for t in all_tickers}
+    for article in dedup(raw):
+        headline = article.get("headline", "")
+        for sym in (article.get("symbols") or []):
+            if sym in by_ticker:
+                by_ticker[sym].append(headline)
+
+    # Score each ticker: clean_for_entry, has_catalyst
+    result: dict[str, dict] = {}
+    for ticker in all_tickers:
+        headlines = by_ticker[ticker]
+        joined    = " ".join(h.lower() for h in headlines)
+
+        has_concern  = any(kw in joined for kw in CONCERN_NEGATIVE)
+        has_catalyst = any(kw in joined for kw in CATALYST_POSITIVE)
+
+        result[ticker] = {
+            "clean_for_entry": not has_concern,
+            "has_catalyst":    has_catalyst,
+            "headlines":       headlines[:4],
+        }
+
+    print(json.dumps(result))
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -344,6 +445,14 @@ def main():
     load_env()
     api_key    = os.environ.get("ALPACA_API_KEY")
     secret_key = os.environ.get("ALPACA_SECRET_KEY")
+
+    if "--universe-news" in sys.argv:
+        if not api_key or not secret_key:
+            sys.stderr.write("[universe-news] ALPACA_API_KEY / ALPACA_SECRET_KEY not set\n")
+            print(json.dumps({}))
+            return
+        universe_news_mode(api_key, secret_key)
+        return
 
     if "--nick-news" in sys.argv:
         if not api_key or not secret_key:

@@ -1,15 +1,22 @@
 """
-Nick v2 daily scanner — runs every US trading day at 9:30 AM EDT.
+Nick v3 daily scanner — runs every US trading day at 9:30 AM EDT.
+
+v3 changes vs v2:
+  - Regime: VIX <25 EARLY, 25-30 EXTENDED (no entries), >=30 DANGER (no entries + alerts)
+  - Trade logic: profit ladder L1/L2/L3 + ratchet stop (see kill_conditions.py)
+  - Entry: universe scan (Tier1 daily, Tier2 weekly/Monday) replaces weekly-rec BUY execution
+  - Capital: contribution gate — available_capital grows $110/month from inception
+  - Max positions: 3
+  - SELL/TRIM orders from weekly-rec.md are still executed
 
 Flow:
   1. Load state + market context (regime)
-  2. Fetch news digest per holding (news-snapshot.py --nick-news)
-  3. Kill condition check + execute exits (EXIT actions)
-  4. Entry check from latest weekly-rec.md ORDERS (guarded against re-execution)
-  5. Write daily audit log to vault/20_investment/nick/daily/YYYY-MM-DD.json
-  6. Update NAV log + save state
-
-Replaces exit_check.py + execute.py.
+  2. Fetch holdings news (--nick-news) for kill check
+  3. Kill check + execute exits (stop / profit ladder / news alerts)
+  4. Fetch universe news (--universe-news) for entry discovery
+  5. Universe scan — find candidates, run 4-layer funnel, auto-buy
+  6. Execute SELL/TRIM from latest weekly-rec.md (if any)
+  7. Write daily audit log + update NAV + save state
 """
 
 from __future__ import annotations
@@ -31,31 +38,36 @@ from alpaca.trading.enums import OrderSide, TimeInForce, QueryOrderStatus
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-REPO      = Path(__file__).resolve().parents[3]
-NICK_DIR  = REPO / "vault/20_investment/nick"
-WEEKLY_DIR = NICK_DIR / "weekly"
-TRADE_LOG  = NICK_DIR / "trade-log.md"
-NAV_LOG    = NICK_DIR / "performance/nav_log.md"
-STATE_FILE = NICK_DIR / "nick_state.json"
-DAILY_DIR  = NICK_DIR / "daily"
+REPO           = Path(__file__).resolve().parents[3]
+NICK_DIR       = REPO / "vault/20_investment/nick"
+WEEKLY_DIR     = NICK_DIR / "weekly"
+TRADE_LOG      = NICK_DIR / "trade-log.md"
+NAV_LOG        = NICK_DIR / "performance/nav_log.md"
+STATE_FILE     = NICK_DIR / "nick_state.json"
+DAILY_DIR      = NICK_DIR / "daily"
+CONVERGENCE_MD = REPO / "vault/Knowledge/thesis-convergence.md"
+NICK_SIGNALS   = REPO / "vault/Knowledge/nick-signals.md"
+NEWS_SCRIPT    = REPO / "scripts/news-snapshot.py"
+PYTHON         = Path(sys.executable)
 
-NICK_SIGNALS_PATH = REPO / "vault/Knowledge/nick-signals.md"
-NEWS_SCRIPT       = REPO / "scripts/news-snapshot.py"
-PYTHON            = Path(sys.executable)
+MAX_POSITIONS = 3
 
 # ---------------------------------------------------------------------------
-# Import sibling modules (no package __init__)
+# Sibling module loader
 # ---------------------------------------------------------------------------
+
 def _import_sibling(name: str):
     path = Path(__file__).parent / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     mod  = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod  # must register before exec so @dataclass can find module context
+    sys.modules[name] = mod
     spec.loader.exec_module(mod)
     return mod
 
-kc_mod = _import_sibling("kill_conditions")
-el_mod = _import_sibling("entry_logic")
+
+kc_mod   = _import_sibling("kill_conditions")
+el_mod   = _import_sibling("entry_logic")
+univ_mod = _import_sibling("universe")
 
 # ---------------------------------------------------------------------------
 # State helpers
@@ -82,6 +94,32 @@ def append_nav_log(nav: float, note: str = "") -> None:
     with open(NAV_LOG, "a", encoding="utf-8") as f:
         f.write(row)
 
+# ---------------------------------------------------------------------------
+# Contribution gate
+# ---------------------------------------------------------------------------
+
+def get_available_capital(state: dict) -> float:
+    """Max capital that can be deployed based on monthly contribution schedule."""
+    contrib = state.get("contributions", {})
+    if not contrib:
+        return float("inf")
+    base      = contrib.get("base_capital_usd", 1000.0)
+    monthly   = contrib.get("monthly_usd", 110.0)
+    total     = contrib.get("preloaded_total_usd", 2320.0)
+    inception = contrib.get("inception_date")
+    if not inception:
+        return base
+    days_elapsed   = max(0, (date.today() - date.fromisoformat(inception)).days)
+    months_elapsed = days_elapsed // 30
+    return min(base + months_elapsed * monthly, total)
+
+
+def get_deployed_capital(state: dict) -> float:
+    """Sum of entry_price * shares for all open positions (cost basis)."""
+    total = 0.0
+    for pos in state.get("positions", {}).values():
+        total += pos.get("entry_price", 0) * pos.get("shares", 0)
+    return total
 
 # ---------------------------------------------------------------------------
 # Market context
@@ -98,8 +136,9 @@ def get_regime() -> dict:
         except Exception:
             data[name] = {"value": None, "above_50ma": None}
 
-    vix = data.get("VIX", {}).get("value") or 25
-    data["tier"] = "EARLY" if vix < 20 else ("EXTENDED" if vix < 28 else "DANGER")
+    vix = data.get("VIX", {}).get("value") or 20
+    # v3 thresholds: <25 EARLY, 25-30 EXTENDED, >=30 DANGER
+    data["tier"] = "EARLY" if vix < 25 else ("EXTENDED" if vix < 30 else "DANGER")
     return data
 
 
@@ -109,30 +148,58 @@ def get_price(ticker: str) -> float | None:
     except Exception:
         return None
 
+# ---------------------------------------------------------------------------
+# Thesis convergence (for Layer 1 of 4-gate funnel)
+# ---------------------------------------------------------------------------
+
+def get_strong_convergence_theses() -> set[str]:
+    """Parse thesis-convergence.md and return thesis IDs with STRONG signal."""
+    if not CONVERGENCE_MD.exists():
+        return set()
+    text = CONVERGENCE_MD.read_text(encoding="utf-8")
+    strong: set[str] = set()
+    in_strong = False
+    for line in text.splitlines():
+        if line.startswith("###") and "STRONG" in line:
+            in_strong = True
+        elif line.startswith("###"):
+            in_strong = False
+        elif in_strong and "**Theses:**" in line:
+            for m in re.findall(r"T(\d+)", line):
+                strong.add(f"T{m}")
+    return strong
 
 # ---------------------------------------------------------------------------
-# News digest
+# News helpers
 # ---------------------------------------------------------------------------
 
-def fetch_news_digest() -> dict:
+def _run_news_script(flag: str) -> dict:
     try:
         result = subprocess.run(
-            [str(PYTHON), str(NEWS_SCRIPT), "--nick-news"],
-            capture_output=True, text=True, timeout=60,
+            [str(PYTHON), str(NEWS_SCRIPT), flag],
+            capture_output=True, text=True, timeout=90,
             cwd=str(REPO),
         )
-        # stderr has per-ticker warnings — print them
         if result.stderr:
             for line in result.stderr.strip().splitlines():
                 print(f"  {line}")
         if result.returncode != 0 or not result.stdout.strip():
-            print("  [WARN] news digest fetch failed — proceeding without news gate")
+            print(f"  [WARN] {flag} fetch failed — proceeding without news")
             return {}
         return json.loads(result.stdout)
     except Exception as e:
-        print(f"  [WARN] news digest exception: {e} -- proceeding without news gate")
+        print(f"  [WARN] {flag} exception: {e}")
         return {}
 
+
+def fetch_holdings_news() -> dict:
+    print("  Fetching holdings news (--nick-news)...")
+    return _run_news_script("--nick-news")
+
+
+def fetch_universe_news() -> dict:
+    print("  Fetching universe news (--universe-news)...")
+    return _run_news_script("--universe-news")
 
 # ---------------------------------------------------------------------------
 # Kill check + exits
@@ -146,176 +213,326 @@ def run_kill_exits(
     vix: float,
     audit: dict,
 ) -> dict:
-    """Evaluate kill conditions; execute EXIT orders; log ALERT flags. Returns updated state."""
-    triggered = kc_mod.check_all_kills(state, market_data, news_digest)
+    """Evaluate kill conditions; execute exits; apply state mutations."""
+    triggered_map = kc_mod.check_all_kills(state, market_data, news_digest)
     audit["kill_check"] = {}
 
-    for ticker, conditions in triggered.items():
+    if not triggered_map:
+        print("  Kill check: all clear")
+        return state
+
+    for ticker, conditions in triggered_map.items():
+        audit["kill_check"][ticker] = conditions
+
         for cond in conditions:
             action = cond["action"]
             label  = cond["label"]
             pct    = cond.get("price_pct", 0)
-            audit["kill_check"].setdefault(ticker, []).append(cond)
 
-            if action == "EXIT":
-                pos_state = state["positions"].get(ticker, {})
+            if action == "ALERT":
+                print(f"  [ALERT] {ticker}: {label} ({pct:+.1%})")
+                continue
+
+            # --- EXIT ---
+            try:
+                alpaca_pos = {p.symbol: p for p in client.get_all_positions()}.get(ticker)
+                if not alpaca_pos:
+                    print(f"  [EXIT] {ticker}: no Alpaca position — skipping")
+                    continue
+
+                total_qty = int(float(alpaca_pos.qty))
+                price     = float(alpaca_pos.current_price)
                 partial   = cond.get("partial")
+                sell_qty  = max(1, int(total_qty * partial)) if partial else total_qty
 
-                try:
-                    alpaca_positions = {p.symbol: p for p in client.get_all_positions()}
-                    pos = alpaca_positions.get(ticker)
-                    if not pos:
-                        print(f"  [EXIT] {ticker}: no Alpaca position found — skipping order")
-                        continue
+                client.submit_order(MarketOrderRequest(
+                    symbol=ticker, qty=sell_qty, side=OrderSide.SELL, time_in_force=TimeInForce.DAY
+                ))
+                action_label = f"PARTIAL-EXIT ({int(partial * 100)}%)" if partial else "EXIT"
+                print(f"  [{action_label}] {ticker}: {sell_qty} shares @ ${price:.2f} -- {label} ({pct:+.1%})")
 
-                    qty    = int(float(pos.qty))
-                    price  = float(pos.current_price)
-                    sell_q = max(1, int(qty * partial)) if partial else qty
+                append_trade_log(dict(
+                    date=date.today(), ticker=ticker, action=action_label,
+                    shares=sell_qty, price=price, conviction="auto",
+                    vix=vix, reason=label,
+                ))
 
-                    # Guard: don't sell if partial already taken for kc2
-                    if cond.get("id") == "kc2" and pos_state.get("partial_taken"):
-                        print(f"  [SKIP] {ticker} kc2: partial already taken")
-                        continue
+                # Apply state mutations
+                pos = state["positions"].get(ticker, {})
 
-                    client.submit_order(MarketOrderRequest(
-                        symbol=ticker, qty=sell_q, side=OrderSide.SELL, time_in_force=TimeInForce.DAY
-                    ))
-                    print(f"  [EXIT ORDER] {ticker}: {sell_q} shares @ ${price:.2f} -- {label} ({pct:+.1%})")
+                if not partial:
+                    # Full exit — remove position
+                    state["positions"].pop(ticker, None)
+                else:
+                    # Partial exit — update shares + ratchet state
+                    pos["shares"] = max(0, pos.get("shares", 0) - sell_qty)
+                    if "new_profit_level" in cond:
+                        pos["profit_level"] = cond["new_profit_level"]
+                    if cond.get("free_ride"):
+                        pos["dynamic_stop_pct"] = None  # L3: no more auto stop
+                    elif "new_stop_pct" in cond:
+                        pos["dynamic_stop_pct"] = cond["new_stop_pct"]
+                    state["positions"][ticker] = pos
 
-                    append_trade_log(dict(
-                        date=date.today(), ticker=ticker,
-                        action="EXIT" if not partial else "PARTIAL-EXIT",
-                        shares=sell_q, price=price, conviction="kill",
-                        vix=vix, reason=label,
-                    ))
+            except Exception as e:
+                print(f"  [ERROR] {ticker} exit failed: {e}")
 
-                    if partial and cond.get("id") == "kc2":
-                        state["positions"].setdefault(ticker, {})["partial_taken"] = True
-                    elif not partial:
-                        state["positions"].pop(ticker, None)
-
-                except Exception as e:
-                    print(f"  [ERROR] {ticker} exit failed: {e}")
-
-            else:  # ALERT
-                print(f"  [ALERT] {ticker}: {label} ({pct:+.1%}) -- flag for /nick-weekly review")
-
-    if not triggered:
-        print("  Kill check: all clear")
+    # DANGER regime: alert all remaining positions
+    if state.get("_regime_tier") == "DANGER":
+        for ticker in state.get("positions", {}):
+            if ticker not in triggered_map:
+                print(f"  [DANGER ALERT] {ticker}: VIX>=30, review for manual exit")
 
     return state
 
-
 # ---------------------------------------------------------------------------
-# Entry check (from latest weekly-rec.md ORDERS)
+# Universe scan (4-layer entry funnel)
 # ---------------------------------------------------------------------------
 
-def get_latest_weekly_orders() -> tuple[str | None, list[dict]]:
-    files = sorted(WEEKLY_DIR.glob("*_weekly-rec.md"), reverse=True)
-    if not files:
-        return None, []
-    rec = files[0]
-    m   = re.search(r"## ORDERS.*?```json\s*\n(\[.*?\])\s*\n```", rec.read_text(encoding="utf-8"), re.DOTALL)
-    if not m:
-        return rec.name, []
-    return rec.name, json.loads(m.group(1))
+def _score_candidate(
+    ticker: str,
+    nick_signals: dict,
+    universe_news: dict,
+    strong_theses: set[str],
+    is_tier1: bool,
+) -> int | None:
+    """Score a candidate 0-100. Returns None if hard-blocked."""
+    score = 50
+
+    # Layer 1 — Signal quality (nick-signals.md)
+    sig  = nick_signals.get(ticker, {})
+    rsi  = sig.get("rsi", "?")
+    ma20 = sig.get("ma20", "?")
+    rs   = sig.get("rs", "?")
+
+    if rsi == "OVERBOUGHT" and ma20 == "EXTENDED":
+        return None  # stretched — don't chase
+
+    if rsi == "NEUTRAL":
+        score += 10
+    if ma20 in ("NEAR", "MID"):
+        score += 10
+    if rs == "STRONG":
+        score += 15
+    elif rs == "WEAK":
+        score -= 10
+
+    # Layer 2 — News clean for entry (universe-news)
+    news = universe_news.get(ticker, {})
+    if not news.get("clean_for_entry", True):
+        return None  # negative news gates entry
+    if news.get("has_catalyst", False):
+        score += 15
+
+    # Layer 3 — Thesis convergence
+    thesis = univ_mod.TICKER_THESIS.get(ticker, "")
+    if thesis in strong_theses:
+        score += 10
+
+    # Layer 4 — Tier priority
+    if is_tier1:
+        score += 5
+
+    return score
 
 
-def run_entry_check(
+def run_universe_scan(
     state: dict,
     client: TradingClient,
     regime: dict,
-    news_digest: dict,
+    universe_news: dict,
+    nick_signals: dict,
+    strong_theses: set[str],
     nav: float,
-    cash: float,
     audit: dict,
 ) -> dict:
-    """Try to execute BUY orders from latest weekly rec if not already done."""
-    rec_name, orders = get_latest_weekly_orders()
-    audit["entry_check"] = {"rec": rec_name, "orders_tried": [], "orders_executed": []}
-
-    if not rec_name:
-        print("  No weekly rec found — skipping entry check")
-        return state
-
-    if state.get("last_executed_rec") == rec_name:
-        print(f"  Entry: {rec_name} already executed -- skipping")
-        return state
-
-    tier = regime.get("tier", "EARLY")
+    """Scan universe for entry candidates; auto-buy top scorers."""
+    tier = regime.get("tier")
     vix  = regime.get("VIX", {}).get("value", "?")
+    audit["universe_scan"] = {"tier": tier, "candidates_scored": [], "orders_executed": []}
 
-    nick_signals  = el_mod.parse_nick_signals()
-    alpaca_positions = {p.symbol: p for p in client.get_all_positions()}
-    pending_orders   = {
+    if tier in ("EXTENDED", "DANGER"):
+        print(f"  Universe scan: SKIP (tier={tier}, VIX={vix})")
+        return state
+
+    current_count = len(state.get("positions", {}))
+    if current_count >= MAX_POSITIONS:
+        print(f"  Universe scan: SKIP (at max {MAX_POSITIONS} positions)")
+        return state
+
+    slots_open = MAX_POSITIONS - current_count
+
+    # Contribution gate: how much capital can we deploy?
+    avail_cap   = get_available_capital(state)
+    deployed    = get_deployed_capital(state)
+    free_cap    = avail_cap - deployed
+    if free_cap < 50:
+        print(f"  Universe scan: SKIP (available_capital=${avail_cap:.0f}, deployed=${deployed:.0f}, free=${free_cap:.0f})")
+        return state
+
+    # Get existing holdings + pending orders
+    alpaca_held    = {p.symbol for p in client.get_all_positions()}
+    state_held     = set(state.get("positions", {}).keys())
+    already_held   = alpaca_held | state_held
+    pending_orders = {
         o.symbol for o in client.get_orders(
             filter=GetOrdersRequest(status=QueryOrderStatus.OPEN)
         )
     }
 
-    buy_executed = False
+    # Build candidate list (Tier1 daily, Tier2 on Mondays)
+    tier1_set = set(univ_mod.TIER1)
+    candidates: list[tuple[str, bool]] = []  # (ticker, is_tier1)
+    for t in univ_mod.TIER1:
+        if t not in already_held and t not in pending_orders:
+            candidates.append((t, True))
+    if date.today().weekday() == 0:  # Monday — add Tier2
+        for t in univ_mod.TIER2:
+            if t not in already_held and t not in pending_orders and t not in tier1_set:
+                candidates.append((t, False))
 
-    for order in orders:
-        action     = order.get("action", "").upper()
-        ticker     = order.get("ticker", "").upper()
-        conviction = order.get("conviction", "med").lower()
-        reason     = order.get("reason", "")
+    print(f"  Universe scan: {len(candidates)} candidates (Tier1 + {'Tier2 Monday' if date.today().weekday() == 0 else 'Tier2 skip'})")
 
-        if action != "BUY":
-            continue
+    # Score all candidates
+    scored: list[tuple[int, str, bool]] = []
+    for ticker, is_t1 in candidates:
+        s = _score_candidate(ticker, nick_signals, universe_news, strong_theses, is_t1)
+        tier_label = "T1" if is_t1 else "T2"
+        audit["universe_scan"]["candidates_scored"].append(
+            {"ticker": ticker, "tier": tier_label, "score": s}
+        )
+        if s is not None:
+            scored.append((s, ticker, is_t1))
 
-        audit["entry_check"]["orders_tried"].append(ticker)
+    scored.sort(reverse=True)
+    print(f"  Universe scan: {len(scored)} passed all gates, top={scored[0][1] if scored else 'none'}")
+
+    # Execute buys for top candidates
+    executed = 0
+    for score, ticker, is_t1 in scored:
+        if executed >= slots_open:
+            break
+
         price = get_price(ticker)
         if not price:
-            print(f"  SKIP {ticker}: cannot get price")
+            print(f"  SKIP {ticker}: cannot fetch price")
             continue
 
-        result = el_mod.evaluate_entry(
-            ticker=ticker,
-            conviction=conviction,
-            nav=nav,
-            cash=cash,
-            price=price,
-            regime=regime,
-            news_digest=news_digest,
-            nick_signals=nick_signals,
-            existing_positions=set(alpaca_positions.keys()),
-            pending_orders=pending_orders,
-        )
+        # Size: 33% of available_capital per position (T1), 25% (T2)
+        size_pct     = 0.33 if is_t1 else 0.25
+        target_value = avail_cap * size_pct
+        per_slot_cap = free_cap / max(1, slots_open - executed)
+        order_value  = min(target_value, per_slot_cap * 0.95)
 
-        if not result.should_buy:
-            print(f"  SKIP {ticker}: {result.skip_reason}")
+        if order_value < price:
+            print(f"  SKIP {ticker}: order_value=${order_value:.0f} < price=${price:.2f}")
             continue
+
+        shares = max(1, int(order_value / price))
 
         try:
             client.submit_order(MarketOrderRequest(
-                symbol=ticker, qty=result.shares, side=OrderSide.BUY, time_in_force=TimeInForce.DAY
+                symbol=ticker, qty=shares, side=OrderSide.BUY, time_in_force=TimeInForce.DAY
             ))
-            print(f"  [BUY ORDER] {ticker}: {result.shares} shares @ ~${price:.2f} ({result.size_pct*100:.0f}% NAV)")
+            print(f"  [BUY] {ticker}: {shares} shares @ ~${price:.2f} (score={score}, size={size_pct:.0%} avail_cap)")
+
+            state["positions"][ticker] = {
+                "entry_date":        str(date.today()),
+                "entry_price":       round(price, 2),
+                "shares":            shares,
+                "weight":            round(size_pct, 3),
+                "dynamic_stop_pct":  kc_mod.DEFAULT_STOP_PCT,
+                "profit_level":      0,
+                "kill_conditions":   [],  # news alerts added by /nick-weekly
+            }
+            audit["universe_scan"]["orders_executed"].append(ticker)
+
             append_trade_log(dict(
                 date=date.today(), ticker=ticker, action="BUY",
-                shares=result.shares, price=price, conviction=conviction,
-                vix=vix, reason=reason,
+                shares=shares, price=price, conviction="high" if is_t1 else "med",
+                vix=vix, reason=f"universe-scan score={score}",
             ))
-            state["positions"][ticker] = {
-                "partial_taken": False,
-                "entry_date": str(date.today()),
-                "entry_price": round(price, 2),
-                "shares": result.shares,
-                "weight": result.size_pct,
-            }
-            audit["entry_check"]["orders_executed"].append(ticker)
-            cash -= result.shares * price
-            buy_executed = True
+            executed += 1
 
         except Exception as e:
             print(f"  [ERROR] {ticker} buy failed: {e}")
 
-    if buy_executed:
-        state["last_executed_rec"] = rec_name
+    if executed == 0:
+        print("  Universe scan: no buys executed")
 
     return state
 
+# ---------------------------------------------------------------------------
+# SELL/TRIM from weekly-rec.md (manual override / nick weekly decisions)
+# ---------------------------------------------------------------------------
+
+def run_weekly_sell_trim(
+    state: dict,
+    client: TradingClient,
+    vix: float,
+    audit: dict,
+) -> dict:
+    """Execute SELL/TRIM orders from latest weekly-rec.md."""
+    files = sorted(WEEKLY_DIR.glob("*_weekly-rec.md"), reverse=True)
+    if not files:
+        return state
+
+    rec_name = files[0].name
+    if state.get("last_sell_trim_rec") == rec_name:
+        print(f"  SELL/TRIM: {rec_name} already executed")
+        return state
+
+    m = re.search(
+        r"## ORDERS.*?```json\s*\n(\[.*?\])\s*\n```",
+        files[0].read_text(encoding="utf-8"), re.DOTALL
+    )
+    if not m:
+        return state
+
+    orders = json.loads(m.group(1))
+    alpaca_positions = {p.symbol: p for p in client.get_all_positions()}
+    executed_any = False
+
+    audit["sell_trim"] = {"rec": rec_name, "executed": []}
+
+    for order in orders:
+        action = order.get("action", "").upper()
+        ticker = order.get("ticker", "").upper()
+        reason = order.get("reason", "")
+
+        if action not in ("SELL", "TRIM"):
+            continue
+
+        pos = alpaca_positions.get(ticker)
+        if not pos:
+            print(f"  SKIP {action} {ticker}: no Alpaca position")
+            continue
+
+        qty      = int(float(pos.qty))
+        price    = float(pos.current_price)
+        sell_qty = max(1, qty // 2) if action == "TRIM" else qty
+
+        try:
+            client.submit_order(MarketOrderRequest(
+                symbol=ticker, qty=sell_qty, side=OrderSide.SELL, time_in_force=TimeInForce.DAY
+            ))
+            print(f"  [{action}] {ticker}: {sell_qty}/{qty} shares @ ${price:.2f} -- {reason}")
+            append_trade_log(dict(
+                date=date.today(), ticker=ticker, action=action,
+                shares=sell_qty, price=price, conviction="manual",
+                vix=vix, reason=reason,
+            ))
+            if action == "SELL":
+                state["positions"].pop(ticker, None)
+            audit["sell_trim"]["executed"].append(ticker)
+            executed_any = True
+        except Exception as e:
+            print(f"  [ERROR] {ticker} {action} failed: {e}")
+
+    if executed_any:
+        state["last_sell_trim_rec"] = rec_name
+
+    return state
 
 # ---------------------------------------------------------------------------
 # Audit log
@@ -327,7 +544,6 @@ def write_daily_audit(audit: dict) -> None:
     path.write_text(json.dumps(audit, indent=2, default=str), encoding="utf-8")
     print(f"  Audit log: {path.name}")
 
-
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -337,11 +553,11 @@ def main() -> None:
     state = load_state()
 
     audit: dict = {
-        "date": str(date.today()),
-        "version": "nick-v2",
+        "date":    str(date.today()),
+        "version": "nick-v3",
     }
 
-    print(f"\n=== Nick Daily Scan {date.today()} ===")
+    print(f"\n=== Nick v3 Daily Scan {date.today()} ===")
 
     # 1. Market context
     print("\n[1] Market context...")
@@ -349,25 +565,32 @@ def main() -> None:
     tier   = regime.get("tier")
     vix    = regime.get("VIX", {}).get("value", "?")
     tnx    = regime.get("TNX", {}).get("value", "?")
+    avail  = get_available_capital(state)
+    deployed = get_deployed_capital(state)
     print(f"  Tier={tier} | VIX={vix} | 10Y={tnx}")
+    print(f"  Capital: available=${avail:.0f} | deployed=${deployed:.0f} | free=${avail - deployed:.0f}")
     audit["regime"] = regime
+    audit["capital"] = {"available": avail, "deployed": deployed}
 
-    # 2. News digest
-    print("\n[2] Fetching news digest...")
-    news_digest = fetch_news_digest()
-    audit["news_tickers_clean"] = {t: d.get("clean") for t, d in news_digest.items()}
+    # Store tier for DANGER alert in kill exits
+    state["_regime_tier"] = tier
 
-    # 3. Build market_data from Alpaca positions
+    # 2. Holdings news (kill check)
+    print("\n[2] Holdings news...")
+    holdings_news = fetch_holdings_news() if state.get("positions") else {}
+    audit["holdings_news_tickers"] = {t: d.get("clean") for t, d in holdings_news.items()}
+
+    # 3. Kill check + exits
     print("\n[3] Kill condition check...")
-    client = TradingClient(os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True)
+    client  = TradingClient(os.environ["ALPACA_API_KEY"], os.environ["ALPACA_SECRET_KEY"], paper=True)
     account = client.get_account()
     nav     = round(float(account.portfolio_value), 2)
     cash    = float(account.cash)
 
-    alpaca_positions = {p.symbol: p for p in client.get_all_positions()}
+    alpaca_positions_map = {p.symbol: p for p in client.get_all_positions()}
     market_data: dict[str, dict] = {}
     for ticker in state.get("positions", {}):
-        pos = alpaca_positions.get(ticker)
+        pos = alpaca_positions_map.get(ticker)
         if pos:
             market_data[ticker] = {"current_price": float(pos.current_price)}
         else:
@@ -375,23 +598,37 @@ def main() -> None:
             if price:
                 market_data[ticker] = {"current_price": price}
 
-    state = run_kill_exits(state, client, market_data, news_digest, vix, audit)
+    state = run_kill_exits(state, client, market_data, holdings_news, vix, audit)
 
-    # 4. Entry check
-    print("\n[4] Entry check (latest weekly rec)...")
-    state = run_entry_check(state, client, regime, news_digest, nav, cash, audit)
+    # 4. Universe news (entry discovery)
+    print("\n[4] Universe news...")
+    universe_news = fetch_universe_news()
+    audit["universe_news_count"] = len(universe_news)
 
-    # 5. Save state + NAV log
+    # 5. Universe scan (auto-buy)
+    print("\n[5] Universe scan (entry)...")
+    nick_signals   = el_mod.parse_nick_signals()
+    strong_theses  = get_strong_convergence_theses()
+    print(f"  Strong convergence theses: {sorted(strong_theses) or 'none detected'}")
+    state = run_universe_scan(state, client, regime, universe_news, nick_signals, strong_theses, nav, audit)
+
+    # 6. SELL/TRIM from weekly-rec
+    print("\n[6] SELL/TRIM from weekly-rec...")
+    state = run_weekly_sell_trim(state, client, vix, audit)
+
+    # 7. Save state + NAV + audit
+    state.pop("_regime_tier", None)  # transient — don't persist
     save_state(state)
+
     nav_after = round(float(client.get_account().portfolio_value), 2)
-    append_nav_log(nav_after, f"daily-scan | tier={tier} | VIX={vix}")
+    append_nav_log(nav_after, f"daily-scan | tier={tier} | VIX={vix} | v3")
     audit["nav_after"] = nav_after
 
-    # 6. Write audit log
-    print("\n[5] Writing audit log...")
+    print("\n[7] Writing audit log...")
     write_daily_audit(audit)
 
-    print(f"\nDone. NAV=${nav_after:,.2f} | Tier={tier}\n")
+    positions_count = len(state.get("positions", {}))
+    print(f"\nDone. NAV=${nav_after:,.2f} | Tier={tier} | Positions={positions_count}/{MAX_POSITIONS}\n")
 
 
 def load_env() -> None:
