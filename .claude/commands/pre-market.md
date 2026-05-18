@@ -62,6 +62,8 @@ ls vault/daily/$(date '+%Y-%m-%d')*.md 2>/dev/null | head -3
 
 ### 0. Load TRADING_RULES.md (ถ้ามี)
 
+> **[KLS: SKIP IF SAME-SESSION]** TRADING_RULES.md ถูกโหลดอัตโนมัติใน session start (CLAUDE.md §8) — ถ้าโหลดแล้วในรอบนี้ ข้ามเงียบๆ ไม่ต้อง re-read (~400 tok)
+
 ```bash
 cat vault/_memory/TRADING_RULES.md 2>/dev/null | head -80
 ```
@@ -72,6 +74,8 @@ cat vault/_memory/TRADING_RULES.md 2>/dev/null | head -80
 ---
 
 ### 0.1. Load Behavior Handbook (arXiv:2509.13237 — Metacognitive Reuse)
+
+> **[KLS: SKIP IF SAME-SESSION]** ถ้า pre-market-behaviors.md ถูกโหลดแล้วใน session นี้ภายใน 4 ชั่วโมง → ข้ามเงียบๆ ประหยัด ~1,800 tok
 
 ```bash
 cat vault/Knowledge/pre-market-behaviors.md

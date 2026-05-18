@@ -108,6 +108,8 @@ cat vault/Knowledge/nick-soul.md
 
 1. อ่าน nick-soul.md
 
+> **[FOP/KLS GATE]** ถ้า nick-soul.md ถูกอ่านแล้วใน session นี้ (เช่น STEP 0) → ข้ามเงียบๆ ห้าม re-read — ประหยัด ~1,500 tok
+
 1.5 **Session Depth Decision — ตัดสิน tier ก่อนโหลดทุกอย่าง**
 
 **Narcolepsy Flash — 1 ประโยคก่อนดูข้อมูล:**
@@ -135,7 +137,10 @@ Steps 5.29-5.43: [SKIP — Tier 2 / RUN — Tier 3]
 ```
 
 2. **ดึงราคา + ข่าวสำคัญ (web — 3-4 searches)**
-   - ราคาปัจจุบันทุก holdings + SPY + VIX
+
+> **[ANTON GATE]** ถ้า macro-snapshot.py รันแล้วใน session นี้ → ดึง VIX + SPY จาก output นั้นโดยตรง ห้าม search ซ้ำ — ประหยัด 1-2 search slots (~1,200 tok)
+
+   - ราคาปัจจุบันทุก holdings + SPY + VIX (ถ้า macro-snapshot ไม่มี → search)
    - ข่าวสำคัญสัปดาห์นี้ต่อแต่ละ holding (1 search รวม)
    - Earnings calendar 4 สัปดาห์ข้างหน้าสำหรับ universe ทั้งหมด (1 search)
 
