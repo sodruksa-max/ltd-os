@@ -25,6 +25,7 @@ Output (markdown, embed directly in pre-market brief):
 Requires ALPACA_API_KEY + ALPACA_SECRET_KEY in .secrets/.env
 """
 
+import importlib.util
 import json
 import os
 import sys
@@ -44,26 +45,10 @@ NICK_LOOKBACK_HOURS = 48   # 2 days to cover weekends / missed days
 MAX_ARTICLES       = 30
 NICK_STATE_PATH    = Path("vault/20_investment/nick/nick_state.json")
 NICK_DIGEST_PATH   = Path("vault/20_investment/nick/news-digest.md")
-UNIVERSE_LOOKBACK_HOURS = 24
+UNIVERSE_LOOKBACK_HOURS = 72  # 72h covers Mon morning (captures Fri/Sat/Sun news)
 
-# Mirrors universe.py TIER1 + TIER2 — keep in sync
-UNIVERSE_TIER1 = [
-    "NVDA", "AMD", "AVGO", "SMCI", "MU", "MRVL", "LRCX", "MOD", "DELL", "HPE",
-    "ASML", "ARM", "CRDO", "AEIS", "UCTT", "WDC", "ONTO",
-    "RKLB", "ASTS", "LUNR", "KTOS", "BBAI",
-    "PLTR", "CRM", "SNOW",
-    "IONQ", "RGTI", "QBTS", "QUBT",
-    "ISRG", "TER", "CGNX", "ROK", "SYM", "PATH", "AVAV",
-]
-UNIVERSE_TIER2 = [
-    "MRNA", "CRSP", "BEAM", "RXRX",
-    "CRWD", "PANW", "ZS", "NET", "OKTA",
-    "COIN", "HOOD", "SOFI", "SQ",
-    "CEG", "VST", "SMR", "NNE", "ETN",
-    "SHOP", "MELI", "SE",
-    "AXON", "HII",
-    "DKNG", "DUOL", "TTD",
-]
+REPO          = Path(__file__).resolve().parent.parent
+UNIVERSE_PATH = REPO / "code/python/nick_trader/universe.py"
 
 CATALYST_POSITIVE = {
     "contract", "awarded", "wins", "partnership", "launch", "fda approved",
@@ -378,9 +363,17 @@ def _write_nick_digest(digest: dict, state: dict) -> None:
 # Universe-news mode (entry discovery for Nick v3)
 # ---------------------------------------------------------------------------
 
+def _load_universe():
+    spec = importlib.util.spec_from_file_location("universe_ns", UNIVERSE_PATH)
+    mod  = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def universe_news_mode(api_key: str, secret_key: str) -> None:
     """Fetch news for full universe (Tier1+Tier2). Output JSON for entry screening."""
-    all_tickers = list(dict.fromkeys(UNIVERSE_TIER1 + UNIVERSE_TIER2))
+    _univ = _load_universe()
+    all_tickers = list(dict.fromkeys(_univ.TIER1 + _univ.TIER2))
 
     # Alpaca allows up to 100 symbols per call — batch if needed
     batches: list[list[str]] = []
@@ -431,7 +424,7 @@ def universe_news_mode(api_key: str, secret_key: str) -> None:
         result[ticker] = {
             "clean_for_entry": not has_concern,
             "has_catalyst":    has_catalyst,
-            "headlines":       headlines[:4],
+            "headlines":       headlines[:10],
         }
 
     print(json.dumps(result))

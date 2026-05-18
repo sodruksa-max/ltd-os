@@ -2,8 +2,7 @@
 Nick v3 universe — Tier 1 (active thesis) + Tier 2 (growth expansion).
 Tier 3 (momentum wildcard) is generated dynamically via RS scan.
 
-NOTE: If you update TIER1/TIER2 here, also update UNIVERSE_TIER1/TIER2
-in scripts/news-snapshot.py (used for --universe-news mode).
+news-snapshot.py --universe-news imports TIER1/TIER2 directly — no manual sync needed.
 """
 
 # ---- Tier 1: Active thesis tickers (~40) — scanned DAILY ----

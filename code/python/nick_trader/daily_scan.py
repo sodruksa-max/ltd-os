@@ -22,13 +22,14 @@ Flow:
 from __future__ import annotations
 
 import argparse
+import functools
 import importlib.util
 import json
 import os
 import re
 import subprocess
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -180,6 +181,28 @@ def get_atr14(ticker: str) -> float | None:
         return float(tr.rolling(14).mean().iloc[-1])
     except Exception:
         return None
+
+
+@functools.lru_cache(maxsize=256)
+def _earnings_within_days(ticker: str, days: int = 2) -> bool:
+    """Return True if ticker has confirmed earnings date within next `days` calendar days."""
+    try:
+        cal = yf.Ticker(ticker).calendar
+        if not cal:
+            return False
+        today  = date.today()
+        cutoff = today + timedelta(days=days)
+        for d in cal.get("Earnings Date", []):
+            try:
+                d_date = d.date() if hasattr(d, "date") else d
+                if today <= d_date <= cutoff:
+                    return True
+            except Exception:
+                pass
+        return False
+    except Exception:
+        return False
+
 
 # ---------------------------------------------------------------------------
 # Misophonia trigger registry loader
@@ -428,6 +451,10 @@ def _score_candidate(
         return None  # negative news gates entry
     if news.get("has_catalyst", False):
         score += 15
+
+    # Layer 2.5 — Earnings-eve gate (binary event risk within 2 calendar days)
+    if _earnings_within_days(ticker):
+        return None  # undisclosed binary risk — skip until after earnings
 
     # Misophonia hard gate — check headlines against trigger registry
     if miso_triggers:
