@@ -201,13 +201,20 @@ Price Reflex:
 
 | Sub-steps | รันเมื่อไหร่ |
 |---|---|
-| 5.5 Autism, 5.6 Dyslexia, 5.7 Psychopathy, 5.8 Schizophrenia | **ทุกสัปดาห์เสมอ** |
+| 5.5 Autism, 5.6 Dyslexia, 5.7 Psychopathy, 5.8 Schizophrenia | **ทุกสัปดาห์เสมอ** (แต่ถ้า holdings=0 → ข้าม 5.6 Dyslexia เพราะต้องการ ≥2 holdings) |
 | 5.17 Alexithymia, 5.18 Aphantasia, 5.19 BPD, 5.20 CIP | **ทุกสัปดาห์เสมอ** |
 | 5.9 Synesthesia, 5.13 Schizotypal, 5.15 DPDR, 5.16 MD Narrative | is_monthly_first_week = TRUE เท่านั้น |
 | 5.10 GAD Pre-mortem, 5.11 DR Calibration, 5.14 SA Adversarial | has_buy_candidate = TRUE เท่านั้น |
 | 5.12 Hyperlexia Transcript | has_recent_earnings = TRUE เท่านั้น |
+| **5.21 TLE, 5.22 Parasomnia, 5.23 Hypergraphia, 5.24 Stendhal, 5.25 Split-Brain, 5.26 PTSD, 5.27 OBE, 5.28 Dopamine** | **has_holdings = TRUE AND Tier 3 เท่านั้น** (token-audit 2026-05-18: ungated steps → gated) |
 
 ถ้าไม่ผ่านเงื่อนไข → ข้าม step นั้นทั้งหมด ไม่ต้องเขียนผลออกมา
+
+**⚡ Early exit — holdings=0:**
+ถ้า Step 2 โหลด nick_state.json แล้วพบว่า positions ว่าง (holdings=0) →
+- ข้าม Steps 3.5, 4, 5.5–5.28 ทั้งหมด
+- กระโดดตรงไป Step 5 (universe scan)
+- เหตุผล: kill check + cognitive portfolio audit บน portfolio ว่างไม่มีประโยชน์
 
 ---
 

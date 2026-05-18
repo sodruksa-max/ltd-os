@@ -122,6 +122,32 @@ cat vault/Knowledge/misophonia-triggers.md | grep "^\[" | grep "Market-Level" -A
 ถ้า match trigger ใดๆ → `[MISOPHONIA: MARKET TRIGGER] <trigger name>` — escalate เป็น primary concern ของ brief วันนี้ ไม่สามารถ suppress หรือ rationalize away ได้
 ถ้าไม่ match → ข้ามเงียบๆ ดำเนินต่อ
 
+---
+
+### ⚡ EXECUTE SCRIPTS NOW — ก่อนรัน cognitive layers ทุกตัวที่เหลือ
+
+> **[TOKEN-AUDIT FIX 2026-05-18]** Steps 0.75–0.994 ต้องการ script data — รันก่อนเพื่อกำจัด [unverified] outputs
+
+รัน Step 1 + Step 1.5 ทันทีตอนนี้ (parallel):
+
+```bash
+# Step 1.5 — Run all scripts in parallel
+code/python/.venv/Scripts/python scripts/macro-snapshot.py &
+code/python/.venv/Scripts/python scripts/news-snapshot.py &
+code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD --brief &
+code/python/.venv/Scripts/python scripts/universe-screen.py &
+code/python/.venv/Scripts/python scripts/sector-flow.py &
+code/python/.venv/Scripts/python scripts/catalyst-calendar.py &
+wait
+```
+
+และรัน Step 1 web searches พร้อมกัน (overnight news + Polymarket)
+
+**หลังจาก scripts + searches เสร็จ → ดำเนิน Step 0.75–0.994 ด้วยข้อมูลจริง**
+*(Steps 1 และ 1.5 ในส่วนหลังคือ embed output ลง brief เท่านั้น — data ได้รันแล้ว)*
+
+---
+
 ### 0.75 Tourette Reflex Scan — สัญญาณก่อน analysis (30 วินาที)
 
 **รันก่อน analyze** — ก่อนที่ logic จะ rationalize อะไรออก
@@ -263,163 +289,24 @@ Aura Early Warning: [N signals / none]
 
 ถ้าไม่มี peripheral signals → `Aura: no early signals today ✅`
 
-### 0.985 Hyperosmia — Sub-threshold Faint Signal Scan
+### 0.985–0.994 Advanced Faint-Signal Layers
 
-ตรวจ signals ที่อยู่ต่ำกว่า threshold ของทุก layer ก่อนหน้า — ไม่ trigger PTSD, ไม่ trigger HSP, ไม่ trigger Aura แต่มีทิศทางชัดเจน
+> **[TIER GATE]** รันเฉพาะ **Tier 3 — Active day** (SPY range ≥1.5% OR VIX >18 OR major catalyst)
+> Tier 2 / Quiet day → ข้ามทั้ง section นี้ทันที
+>
+> Full layer instructions: `vault/Knowledge/pre-market-advanced-layers.md`
 
-**4 faint signal patterns:**
-- **Drift without event:** metric เดิมทิศทางเดียวกัน ≥3 วันติดต่อกัน แต่ยังไม่ถึง threshold → ถ้า drift ต่อ 2 วัน = threshold จะถูก breach เมื่อไหร่?
-- **Micro-rotation:** sector เดียวที่ outperform/underperform < 0.3% แต่เกิดซ้ำ ≥3 วัน = early institutional accumulation/distribution
-- **Volume divergence:** ราคา flat แต่ volume เพิ่ม/ลด > 15% จาก avg โดยไม่มี catalyst = ใครบางคนกำลังทำอะไร
-- **Calendar proximity:** Fed/CPI/earnings ภายใน 96h แต่ implied volatility ยังไม่ขยับ = ตลาด under-pricing event risk
+| Layer | Signal watched | Action if triggered |
+|---|---|---|
+| 0.985 Hyperosmia | metric drift ≥3 days without threshold breach | flag + project breach date |
+| 0.987 KLS | VIX ≤14 + low volume + stalled rotation | flag hibernation/awakening state |
+| 0.989 Color Blindness | bare categorical labels in brief draft | replace with quantified versions |
+| 0.991 Narcolepsy | 1-sentence flash (always) + volume collapse | Flash required; drop = flag |
+| 0.992 Dermatographia | VIX-move ratio >1.5× | -30% all setup sizes |
+| 0.993 Supertaster | faint signals in 4 channels (credit/options/vol-price/FX) | flag + heightened caution |
+| 0.994 FAS | Fed/earnings/analyst language shift from prior | flag + monitor |
 
-→ flag `[HYPEROSMIA: FAINT SIGNAL] <signal> — day N of drift — projected threshold breach: [date range]`
-
-```
-Hyperosmia Scan:
-- [HYPEROSMIA: FAINT SIGNAL] N / none
-- Strongest drift: [metric — N days — projected breach: date]
-Implication: [ปรับ position sizing ล่วงหน้า / เฝ้าระวัง]
-```
-
-ถ้าไม่พบ → `Hyperosmia: no sub-threshold drift today ✅`
-
----
-
-### 0.987 Kleine-Levin Syndrome — Market Hibernation Detector
-
-KLS = ช่วงหลับลึกแล้วตื่นฉับพลัน — ตลาดก็มี cycle นี้
-
-**Hibernation signal (ตลาดหลับ — อย่าสับสนว่าเป็น calm):**
-- VIX ≤ 14 + volume < 70% ของ 20-day avg + sector rotation stalled (ทุก sector ±0.5%) = market in KLS sleep
-- Hibernation ≠ stability — เป็น pre-awakening compression
-
-**Awakening signal (กำลังจะตื่น — ทำอะไรก่อนตลาดทั่วไปรู้):**
-- หลัง 5+ วัน hibernation: VIX term structure เริ่ม steepen (front month ขยับแต่ back month ยังนิ่ง)
-- หรือ dark pool volume เพิ่ม ขณะที่ lit market ยังเงียบ
-- หรือ options open interest เพิ่มใน OTM calls/puts ของ index
-
-```
-KLS Market State: [HIBERNATING / AWAKING / ACTIVE / N/A]
-- Duration: [N days in current state]
-- Trigger: [VIX / volume / OI — ถ้า AWAKING ระบุ signal]
-Implication: [ถ้า HIBERNATING: อย่า overfit intraday noise / ถ้า AWAKING: เตรียม position ก่อน breakout]
-```
-
-ถ้าไม่มีข้อมูลเพียงพอ → `KLS: [unverified — insufficient data] ✅`
-
----
-
-### 0.989 Color Blindness — Strip Categorical Color Labels
-
-ระบบที่ตาบอดสี ไม่เห็น "แดง = แย่ / เขียว = ดี" โดยอัตโนมัติ — บังคับ quantify ทุก categorical judgment
-
-**สแกน brief ที่เขียนมาจนถึงจุดนี้** — หาคำ/วลีที่ใช้ label โดยไม่มีตัวเลขรองรับ:
-
-| Categorical label (ห้ามใช้แบบ bare) | ต้องแทนด้วย |
-|---|---|
-| "red sector / weak sector" | "[sector] -X% vs SPY -Y% = underperform Z%" |
-| "bullish day / bearish day" | "SPY +/-X%, breadth X% advancing, VIX ±Y" |
-| "VIX high / VIX elevated" | "VIX X.X = Xσ above 20-day avg (Y.Y)" |
-| "strong / weak dollar" | "DXY +/-X% = X-day high/low" |
-| "risk-on / risk-off" | "gold ±X%, TLT ±Y%, HY spread ±Zbps" |
-
-→ flag `[COLORBLIND: LABEL] "<vague term>" → replace: "<quantified version>"`
-→ ถ้าพบ 3+ labels → brief มี color-dependent shortcuts ที่ทำให้อ่านต่างกันขึ้นอยู่กับ bias ก่อนอ่าน
-
-```
-Color Blind Check:
-- Labels stripped: N
-- [COLORBLIND: LABEL] "<term>" → "<quantified>"
-- Brief quantification: [complete ✅ / partial — N labels remain]
-```
-
----
-
-### 0.991 Narcolepsy — Flash Insight + Market Drop Detection
-
-Narcolepsy = สลับระหว่าง hyperfocus กับ sudden clarity flash ที่ตัดผ่านทุกอย่าง
-
-**Narcolepsy Flash (รัน 1 ครั้งก่อน generate brief):**
-
-> "ถ้าต้องสรุปสภาพตลาดวันนี้เป็น 1 ประโยค โดยไม่อ่าน analysis อีกครั้ง — ประโยคนั้นคืออะไร?"
-
-เขียนลงทันที — ห้ามคิดนาน:
-```
-Narcolepsy Flash: "[1-sentence market read — raw, unfiltered]"
-```
-
-หลัง brief เสร็จ → เปรียบเทียบ flash กับ scenario ที่เขียน:
-- ตรงกัน → `[NARCOLEPSY: FLASH CONFIRMED]` — brief aligned with instant read
-- ขัดกัน → `[NARCOLEPSY: FLASH-BRIEF CONFLICT]` — ระบุ dimension ที่ต่าง; หนึ่งในสองอาจผิด
-
-**Market Narcoleptic Drop (ตรวจ overnight/pre-market):**
-Sudden volume collapse > 40% จาก 5-day avg โดยไม่มี catalyst + price flat = institutional withdrawal เงียบๆ
-→ flag `[NARCOLEPSY: MARKET DROP] volume fell X% with no catalyst — watch for directional resolution`
-
-### 0.992 Dermatographia — Market Hypersensitivity Scan
-
-Dermatographia = ผิวที่ถูกสัมผัสเบาๆ แล้วเกิดรอยแดงชัดเจนเกินสมควร — stimulus เล็กน้อยแต่ reaction ใหญ่มาก
-
-Applied: ตลาดวันนี้มี sensitivity สูงผิดปกติไหม? — ข่าวเล็กน้อยอาจทำ price move ใหญ่กว่าปกติ
-
-ตรวจ 3 hypersensitivity signals:
-1. **VIX-move ratio**: VIX implies daily range X% — SPY เคลื่อนจริง Y% ใน 24h (ถ้า Y > 1.5× X = amplified)
-2. **News-to-move ratio**: headline ระดับ minor (<0.5% event) ทำให้ sector move >1.5% = dermatographic session
-3. **Breadth amplification**: SPY move เล็ก แต่ advance/decline spread ≥ 65/35 = sentiment leading price
-
-→ flag `[DERMATOGRAPHIA: HYPERSENSITIVE] expected X%, actual Y% (Z× ratio) — reduce all setup sizes 30%`
-
-กฎ: amplification ratio >2× → ลด position size ทุก setup 30% โดยอัตโนมัติวันนี้
-
-```
-Dermatographia Check:
-- VIX implied: X% | SPY 24h actual: Y% | Ratio: Z×
-- News magnitude: [minor/moderate/major] | Price reaction: [proportional / amplified]
-- Verdict: [NORMAL / [DERMATOGRAPHIA: HYPERSENSITIVE] — -30% all sizes today]
-```
-
-### 0.993 Supertaster — Pre-Market Bitter Signal Scan
-
-Supertaster = รู้สึกรสขมแรงกว่า 4-6× ของคนปกติ — จับ signal เบาก่อน mainstream เห็น
-
-สแกน 4 bitter channels ใน data ที่มีอยู่แล้วจาก script outputs:
-1. **Credit pre-signal**: HY spreads ขยาย <5bps แต่ equity ยังไม่ปรับ = early credit stress
-2. **Options quiet flow**: unusual put volume ใน index/sector โดยไม่มีข่าว = insider signal
-3. **Volume-price mismatch**: SPY/QQQ ราคา flat แต่ volume เบา >20% ของ 5-day avg = distribution เงียบ
-4. **Currency micro-shift**: DXY ±0.3%+ โดยไม่มีข่าว macro = pre-signal ก่อน commodity/EM move
-
-→ flag `[SUPERTASTER: FAINT BITTER] <channel> — strength: <magnitude> — mainstream visibility: [none/barely]`
-
-```
-Supertaster Scan:
-- Credit: [clean / [SUPERTASTER: FAINT BITTER] HY +Xbps vs equity flat]
-- Options: [clean / unusual put volume in TICKER/sector — no news catalyst]
-- Volume-price: [proportional / [SUPERTASTER: FAINT BITTER] volume -X%, price flat]
-- Currency: [clean / [SUPERTASTER: FAINT BITTER] DXY ±X% no trigger]
-Bitter count: N — [normal session / heightened caution]
-```
-
-### 0.994 Foreign Accent Syndrome — Communication Shift Scan
-
-Foreign Accent Syndrome = พูดภาษาตัวเองด้วยสำเนียงภาษาต่างประเทศโดยไม่ตั้งใจ — สัญญาณว่าสมองเปลี่ยนไปแล้ว
-
-Applied: ตรวจ Fed/management language ที่เริ่มพูดด้วย "สำเนียงใหม่" ไม่ตรงกับสิ่งที่เคยสื่อสารมาก่อน
-
-ตรวจ 3 sources จาก news-snapshot + web:
-1. **Fed accent**: FOMC statement/minutes มี keyword ที่เปลี่ยนจาก prior (เช่น "patient" → "vigilant", "monitoring" → "concerned") = policy shift signal
-2. **Earnings pre-announcement**: CFO ที่เคยพูดตัวเลข guidance ตรงๆ แต่ shift เป็น "consistent with market conditions" = specificity drop
-3. **Analyst language**: sell-side suddenly adopts new vocabulary ("AI-driven upside", "structural re-rate") ใน sector ที่เคยใช้ conservative language = narrative adoption = possible peak
-
-→ flag `[FAS: LANGUAGE SHIFT] <source> — prior: "<old>" → current: "<new>"`
-
-```
-FAS Communication Scan:
-- Fed: [consistent / [FAS: LANGUAGE SHIFT] — key terms changed]
-- Earnings pre-announcement: [specific / [FAS: LANGUAGE SHIFT] — numbers replaced by vague]
-- Analyst: [consistent vocabulary / accent shift — N new buzzwords in conservative sector]
-Verdict: [no accent changes ✅ / N shifts — watch for policy/guidance reversal]
-```
+**Suppress-clean rule:** แสดงเฉพาะ layers ที่ triggered — ถ้าไม่มีอะไร flag → `Advanced layers: no flags ✅`
 
 ---
 
