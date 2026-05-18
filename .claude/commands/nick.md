@@ -190,6 +190,27 @@ Price Reflex:
    - contradiction-registry.md — มี unresolved contradiction ที่กระทบ holdings ไหม?
    - nick-signals.md — RSI/MA20/RS tier ปัจจุบันต่อแต่ละ holding
 
+---
+
+**Step 5 Cognitive Gate — กำหนดก่อนรัน sub-steps 5.5+**
+
+ตรวจ 3 flags จากข้อมูลที่มีอยู่ใน session นี้แล้ว (ไม่ต้อง fetch ใหม่):
+- `has_buy_candidate` — universe scan พบ ≥1 ticker ที่ score ≥ 55 สัปดาห์นี้
+- `has_recent_earnings` — holding ไหนมี earnings report ใน 14 วันที่ผ่านมา
+- `is_monthly_first_week` — วันที่ปัจจุบัน ≤ 7 ของเดือน
+
+| Sub-steps | รันเมื่อไหร่ |
+|---|---|
+| 5.5 Autism, 5.6 Dyslexia, 5.7 Psychopathy, 5.8 Schizophrenia | **ทุกสัปดาห์เสมอ** |
+| 5.17 Alexithymia, 5.18 Aphantasia, 5.19 BPD, 5.20 CIP | **ทุกสัปดาห์เสมอ** |
+| 5.9 Synesthesia, 5.13 Schizotypal, 5.15 DPDR, 5.16 MD Narrative | is_monthly_first_week = TRUE เท่านั้น |
+| 5.10 GAD Pre-mortem, 5.11 DR Calibration, 5.14 SA Adversarial | has_buy_candidate = TRUE เท่านั้น |
+| 5.12 Hyperlexia Transcript | has_recent_earnings = TRUE เท่านั้น |
+
+ถ้าไม่ผ่านเงื่อนไข → ข้าม step นั้นทั้งหมด ไม่ต้องเขียนผลออกมา
+
+---
+
 5.5 **Autism Pattern Check — cross-time memory (รันก่อน recommend ทุกครั้ง)**
 
 เป้าหมาย: จับ pattern และ contradiction ที่ข้ามเวลา ที่ human มักมองข้ามเพราะจำ session ก่อนไม่ได้
@@ -322,6 +343,8 @@ Schizophrenia Scan:
 
 5.9 **Synesthesia Portfolio Color Map — แปลทุก holding เป็น multi-channel texture**
 
+> **[MONTHLY GATE]** รันเฉพาะ `is_monthly_first_week = TRUE` — ถ้าไม่ใช่สัปดาห์แรกของเดือน ข้ามทั้ง step นี้
+
 เป้าหมาย: ให้แต่ละ holding มี "สี + พื้นผิว" จาก 3 input channels พร้อมกัน — ก่อนที่ recommendation จะถูกเขียน
 
 **3 input channels ต่อ holding:**
@@ -353,6 +376,8 @@ Dissonant holdings: N — flagged for priority kill check
 
 5.10 **GAD Pre-mortem — สมมติ failure ก่อน Buy/Add ทุกรายการ**
 
+> **[BUY GATE]** รันเฉพาะ `has_buy_candidate = TRUE` — ถ้าไม่มี Buy/Add candidate สัปดาห์นี้ ข้ามทั้ง step นี้
+
 บังคับก่อน finalize recommendation ทุกรายการที่เป็น **Buy หรือ Add** — ห้ามข้าม
 
 **Pre-mortem protocol:**
@@ -377,6 +402,8 @@ Pre-mortem complete: ✅ Buy confirmed / ⚠️ Watch (paths unclear)
 ```
 
 5.11 **Depressive Realism — Conviction Base Rate Calibration**
+
+> **[BUY GATE]** รันเฉพาะ `has_buy_candidate = TRUE` — ข้ามถ้าไม่มี Buy/Add candidate
 
 รันหลัง GAD pre-mortem — ตรวจ optimism bias ใน conviction rating และ ROI estimate ทุกรายการ
 
@@ -403,6 +430,8 @@ DR clean: [Y/N]
 
 5.12 **Hyperlexia — Earnings Transcript Q&A Scan (บังคับก่อน Buy ถ้ามี transcript)**
 
+> **[EARNINGS GATE]** รันเฉพาะ `has_recent_earnings = TRUE` — ถ้าไม่มี holding ที่มี earnings ใน 14 วันที่ผ่านมา ข้ามทั้ง step นี้
+
 ถ้า holding มี earnings transcript ที่เข้าถึงได้ (จาก KB หรือ search) — บังคับสแกน Q&A section โดยเฉพาะ ไม่ใช่แค่ prepared remarks หรือ guidance numbers
 
 **ตรวจหา evasion patterns:**
@@ -424,6 +453,8 @@ Hyperlexia Q&A Scan: [TICKER]
 
 5.13 **Schizotypal — Hidden Correlation Detector**
 
+> **[MONTHLY GATE]** รันเฉพาะ `is_monthly_first_week = TRUE` — ถ้าไม่ใช่สัปดาห์แรกของเดือน ข้ามทั้ง step นี้
+
 มองพอร์ตทั้งหมดพร้อมกันในช่วง 4 สัปดาห์ที่ผ่านมา:
 > "holdings เหล่านี้ move together ในแบบที่ thesis ไม่ได้อธิบายไหม?"
 
@@ -438,6 +469,8 @@ Hyperlexia Q&A Scan: [TICKER]
 ถ้าไม่พบ → ข้ามเงียบๆ
 
 5.14 **Social Anxiety — Adversarial Perception Check (ก่อน Buy ทุกรายการ)**
+
+> **[BUY GATE]** รันเฉพาะ `has_buy_candidate = TRUE` — ถ้าไม่มี Buy/Add candidate สัปดาห์นี้ ข้ามทั้ง step นี้
 
 > "ถ้า bearish analyst ที่ฉลาดที่สุดอ่าน thesis นี้ — สิ่งแรกที่เขาจะโจมตีคืออะไร?"
 
@@ -459,6 +492,8 @@ SA Adversarial Check: [TICKER]
 
 5.15 **DPDR Stranger Portfolio Test** — อ่านพอร์ตนี้ในฐานะคนแปลกหน้าที่ไม่รู้อะไรเลย
 
+> **[MONTHLY GATE]** รันเฉพาะ `is_monthly_first_week = TRUE` — ถ้าไม่ใช่สัปดาห์แรกของเดือน ข้ามทั้ง step นี้
+
 > "ผมเพิ่งได้รับ portfolio นี้ครั้งแรก — ไม่รู้ผู้ถือ, ไม่รู้ thesis ที่แท้จริง, ไม่รู้ว่า bought เมื่อไร"
 
 สำหรับแต่ละ position ตั้งคำถาม:
@@ -475,6 +510,8 @@ DPDR Stranger Test:
 ```
 
 5.16 **MD 12-Month Forward Narrative** — สร้าง vivid story ของพอร์ตใน 12 เดือนข้างหน้า
+
+> **[MONTHLY GATE]** รันเฉพาะ `is_monthly_first_week = TRUE` — ถ้าไม่ใช่สัปดาห์แรกของเดือน ข้ามทั้ง step นี้
 
 ไม่ใช่ probability range — เป็น narrative ที่ concrete ที่สุดตาม base case ปัจจุบัน
 
