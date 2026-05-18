@@ -134,6 +134,31 @@ Generate 20 critiques (each proposer critiques the other 4) โดยใช้ M
 
 **ทำไม:** MARS ลด token ~50% vs MAD โดยตัด reviewer-to-reviewer interaction ออก (context ไม่ blow up ระหว่าง critique rounds)
 
+## Phase 3.3: Stability Check (arXiv:2510.12697)
+
+> **รัน immediately หลัง Phase 3 critiques เสร็จ — ก่อน spawn expertise agent**
+
+ตรวจว่า debate converge แล้วหรือยัง — ประหยัด token และส่ง confidence signal ไปยัง synthesizer
+
+**Directional alignment scan:**
+อ่าน 5 proposals ด้วยสายตาเร็ว — classify แต่ละ proposal:
+- `FAVOR` — proposal แนะนำ direction นั้น / สนับสนุน action
+- `OPPOSE` — แนะนำตรงข้าม
+- `NEUTRAL/CONDITIONAL` — ขึ้นกับเงื่อนไข ยังไม่ชัดเจน
+
+นับ: `N_favor / N_oppose / N_neutral`
+
+**Stability verdict:**
+```
+[STABILITY: HIGH CONFIDENCE — EARLY CONVERGENCE] ถ้า N_favor ≥ 4 หรือ N_oppose ≥ 4
+[STABILITY: MODERATE CONFIDENCE — PROCEED NORMAL] ถ้า max(N_favor, N_oppose) = 3
+[STABILITY: LOW CONFIDENCE — DEBATE UNRESOLVED] ถ้า N_neutral ≥ 3 หรือ N_favor = N_oppose
+```
+
+**ส่ง verdict ไปยัง Phase 4:**
+- HIGH CONFIDENCE → synthesizer note "4/5 proposers converged" + สามารถ skip recap proposals ทีละตัว (สรุปรวมได้เลย) — ประหยัด ~30% token
+- LOW CONFIDENCE → synthesizer escalate ไปยัง "Hard questions to answer first"
+
 ## Phase 3.5: Expertise lens (NEW — 1 turn)
 
 Invoke chosen expertise agent (`engineer` / `strategist` / `financial_risk`).
@@ -159,6 +184,30 @@ Synthesizer reads brief + 5 proposals + 20 critiques (after dedup) + **expertise
 - Expertise warnings highlighted
 - Hybrid options
 - Open questions
+
+**Confidence Score (arXiv:2604.07667 Conformal Social Choice) — synthesizer คำนวณหลังเขียน synthesis.md เสร็จ:**
+
+| Factor | Score |
+|---|---|
+| Proposal alignment (Phase 3.3 stability) | HIGH=3 / MODERATE=2 / LOW=1 |
+| Expert lens alignment | Confirms synthesis direction=2 / Partial=1 / Contradicts=0 |
+| Devil's advocate severity (Phase 5 — ประเมิน pre-emptively ถ้ายังไม่รัน) | Mild expected=2 / Moderate expected=1 / Likely severe=0 |
+
+**Total /7 → threshold:**
+- 6-7 → `confidence: HIGH` — debate resolved, eligible for immediate decision logging
+- 4-5 → `confidence: MEDIUM` — user review recommended before deciding
+- 0-3 → `confidence: LOW` — open questions must be answered first
+
+Output ใน synthesis.md และ DECISION.md frontmatter:
+```yaml
+confidence: HIGH / MEDIUM / LOW
+confidence_score: N/7
+confidence_factors: alignment=[H/M/L], expert=[C/P/X], da=[mild/mod/severe]
+```
+
+**Outcome tracking rule:**
+- `confidence: HIGH` → append ใน `vault/_memory/COUNCIL_LOG.md`: `[HIGH_CONF] <date> <topic> — N/7 — track outcome 2-8wk`
+- `confidence: LOW` → append: `[UNRESOLVED] <date> <topic> — open questions block decision`
 
 ## Phase 4.5: Synthesis Audit Stack (always — synthesizer รันก่อนเขียน decision matrix)
 

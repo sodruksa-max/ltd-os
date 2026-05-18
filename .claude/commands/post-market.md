@@ -407,6 +407,41 @@ grep -A 3 "Kill condition" vault/Knowledge/THESIS_TRACKER.md
 
 ---
 
+### 8.2 ERL Heuristic Extraction (arXiv:2603.24639)
+
+> **[FULL MODE ONLY — ข้ามใน review-only mode]**
+
+สกัด transferable rule จาก prediction vs reality ของวันนี้ → accumulate ใน OUTCOMES.md เป็น ERL loop
+
+**ERL loop:** outcome → structured rule → ใช้ใน session ถัดไป (closes feedback loop ที่ /weekly-calibration ไม่มีอะไร calibrate บน)
+
+**Format:**
+```
+[ERL-HEURISTIC YYYY-MM-DD] Rule: <กฎที่ถ่ายทอดได้ใน 1 ประโยค active voice> | Trigger: <สถานการณ์ที่ activate rule นี้> | Evidence: <data จากวันนี้ที่หนุน> | Confidence: [H/M/L]
+```
+
+**3 gates ก่อน extract — ผ่านครบทั้งหมดถึงจะ append:**
+1. **Novel:** rule นี้ไม่ใน ERL Heuristics section ที่มีอยู่แล้ว (grep ก่อน)
+2. **Falsifiable:** สามารถพิสูจน์ผิดได้ด้วยข้อมูล — ไม่ใช่ observation ล้วนๆ
+3. **Actionable:** trigger เกิด → บอกได้ทันทีว่าทำ/ไม่ทำอะไร
+
+**ตัวอย่างที่ผ่าน:**
+`Rule: ถ้า VIX เปิด >22 + data release day → ลด position size 50% ก่อน open | Trigger: high-VIX + scheduled macro release | Evidence: VIX 24.1 + CPI miss → S&P -1.4% | Confidence: M`
+
+**ตัวอย่างที่ไม่ผ่าน:**
+`Rule: ตลาดผันผวน` — ไม่ falsifiable, ไม่ actionable → ข้าม
+
+**Append ใน `vault/_memory/OUTCOMES.md`** ใต้ section `## ERL Heuristics`:
+```
+[ERL-HEURISTIC YYYY-MM-DD] Rule: ... | Trigger: ... | Evidence: ... | Confidence: H/M/L
+```
+
+ถ้า `## ERL Heuristics` ยังไม่มี → สร้าง section header ก่อน แล้ว append
+
+ถ้าวันนี้ไม่มี prediction error ที่ produce rule ที่ผ่าน 3 gates → ข้ามเงียบๆ ห้าม fabricate
+
+---
+
 ### 8.5 Psychopathy Sunk Cost Audit
 
 ตรวจว่า analysis ใน review นี้ปนเปื้อน sunk cost หรือ emotional reasoning ไหม — รันก่อน print verdict

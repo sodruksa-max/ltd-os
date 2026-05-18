@@ -85,6 +85,7 @@ echo "-- Scripts (data pipelines)"
 for script in \
   "scripts/nick-monitor.py" \
   "scripts/nick-score.py" \
+  "scripts/nick-kill-monitor.py" \
   "scripts/weekly-snapshot.py" \
   "scripts/post-snapshot.py" \
   "scripts/news-snapshot.py" \

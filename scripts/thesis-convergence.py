@@ -151,6 +151,45 @@ def parse_frontmatter(text: str) -> dict:
     return fm
 
 
+def load_contradiction_signals() -> dict[tuple[str, str], int]:
+    """
+    Parse vault/Knowledge/contradiction-registry.md → return {(source_file_stem, theme_keyword): weight}
+    weight = -1 if that source contradicts that theme, +1 if explicit corroboration.
+
+    Registry entry format:
+    [YYYY-MM-DD] [TICKER/MARKET] — <claim> | Source A: <value> vs Source B: <value> | Thesis link: T#
+
+    Simple heuristic: if registry entry mentions a ticker AND a theme keyword → mark that ticker's
+    atom source as contradicting that theme (weight -1).
+    """
+    registry_path = ROOT / "vault/Knowledge/contradiction-registry.md"
+    signals: dict[tuple[str, str], int] = {}
+
+    if not registry_path.exists():
+        return signals
+
+    try:
+        text = registry_path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return signals
+
+    # Each line: [DATE] [TICKER] — claim | Source A: X vs Source B: Y | Thesis: T#
+    entry_re = re.compile(r"^\[[\d-]+\]\s+\[([^\]]+)\].*?\|.*?Thesis link:\s*(T\d+)", re.IGNORECASE)
+    for line in text.splitlines():
+        m = entry_re.match(line.strip())
+        if not m:
+            continue
+        ticker = m.group(1).strip().upper()
+        # Map ticker → likely source file stems (e.g. "LRCX" → files containing "lrcx")
+        # We'll key on ticker string, resolved later against atom source_file
+        for theme, keywords in THEMES.items():
+            line_lower = line.lower()
+            if any(kw in line_lower for kw in keywords):
+                signals[(ticker.lower(), theme)] = -1  # contradiction weight
+
+    return signals
+
+
 def parse_atoms_from_file(path: Path) -> list[dict]:
     """
     Parse individual atom sections from a file.
@@ -226,7 +265,7 @@ def generate_candidate_section(cross_thesis: list) -> list[str]:
 
     strong_themes = [
         (theme, atoms, theses, sources, strength)
-        for theme, atoms, theses, sources, strength in cross_thesis
+        for theme, atoms, theses, sources, strength, *_ in cross_thesis
         if strength == "STRONG"
     ]
 
@@ -271,6 +310,9 @@ def main():
         print("No insight atoms found.")
         return
 
+    # Load contradiction signals (KARMA weighting)
+    contradiction_signals = load_contradiction_signals()
+
     # --- Build: theme → list of atoms ---
     theme_map: dict[str, list[dict]] = defaultdict(list)
     for atom in all_atoms:
@@ -283,17 +325,42 @@ def main():
         for t in atom["theses"]:
             thesis_sources[t].add(atom["source_file"])
 
-    # --- Convergence signals ---
-    # Cross-thesis: theme appears in atoms from ≥2 distinct thesis groups
+    # --- Convergence signals (KARMA weighted — arXiv:OpenReview:k0wyi4cOGy) ---
     cross_thesis = []
     for theme, atoms in sorted(theme_map.items()):
         distinct_theses = sorted({t for a in atoms for t in a["theses"]})
         distinct_sources = sorted({a["source_file"] for a in atoms})
-        if len(distinct_theses) >= 2 or len(distinct_sources) >= 3:
-            strength = "STRONG" if len(distinct_theses) >= 3 or len(distinct_sources) >= 4 else "MODERATE"
-            cross_thesis.append((theme, atoms, distinct_theses, distinct_sources, strength))
 
-    cross_thesis.sort(key=lambda x: (x[4] != "STRONG", -len(x[2]), -len(x[3])))
+        # KARMA: compute net weight = sum(+1 corroborate / -1 contradict per source)
+        net_weight = 0
+        contradiction_count = 0
+        for source_file in distinct_sources:
+            source_stem = source_file.lower().replace(".md", "")
+            # Check if this source contradicts this theme
+            contradicts = any(
+                signals < 0
+                for (ticker, t), signals in contradiction_signals.items()
+                if t == theme and ticker in source_stem
+            )
+            if contradicts:
+                net_weight -= 1
+                contradiction_count += 1
+            else:
+                net_weight += 1
+
+        # Threshold: need net_weight ≥ 2 AND enough sources (contradiction can downgrade)
+        if net_weight >= 2 and (len(distinct_theses) >= 2 or len(distinct_sources) >= 3):
+            if contradiction_count > 0:
+                # Contradictions present — cap at MODERATE unless overwhelming corroboration
+                strength = "STRONG" if net_weight >= 4 else "MODERATE"
+            else:
+                strength = "STRONG" if len(distinct_theses) >= 3 or len(distinct_sources) >= 4 else "MODERATE"
+            cross_thesis.append((theme, atoms, distinct_theses, distinct_sources, strength, net_weight, contradiction_count))
+        elif net_weight < 2 and len(distinct_sources) >= 3:
+            # Was strong but contradictions reduced it — show as CONTESTED
+            cross_thesis.append((theme, atoms, distinct_theses, distinct_sources, "CONTESTED", net_weight, contradiction_count))
+
+    cross_thesis.sort(key=lambda x: (x[4] not in ("STRONG",), -x[5], -len(x[2])))
 
     # Within-thesis multi-source confirmation
     within_thesis = [(t, srcs) for t, srcs in sorted(thesis_sources.items())
@@ -324,11 +391,20 @@ def main():
     lines.append("## Cross-Thesis Convergence")
     lines.append("")
     if cross_thesis:
-        for theme, atoms, theses, sources, strength in cross_thesis:
-            badge = "🔴 STRONG" if strength == "STRONG" else "🟡 MODERATE"
-            lines.append(f"### {theme} [{badge}]")
+        for theme, atoms, theses, sources, strength, net_weight, contradiction_count in cross_thesis:
+            if strength == "STRONG":
+                badge = "🔴 STRONG"
+            elif strength == "MODERATE":
+                badge = "🟡 MODERATE"
+            else:
+                badge = "⚠️ CONTESTED"
+
             theses_str = " + ".join(theses) if theses else "multiple"
-            lines.append(f"- **Theses:** {theses_str} | **Sources:** {len(sources)} independent files")
+            weight_str = f"net={net_weight:+d}"
+            if contradiction_count > 0:
+                weight_str += f" ({contradiction_count} contradicting source{'s' if contradiction_count > 1 else ''})"
+            lines.append(f"### {theme} [{badge}]")
+            lines.append(f"- **Theses:** {theses_str} | **Sources:** {len(sources)} | **KARMA weight:** {weight_str}")
             # Top 3 claims
             seen_sources = set()
             shown = 0
