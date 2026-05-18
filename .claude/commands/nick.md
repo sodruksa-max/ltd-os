@@ -182,7 +182,11 @@ Price Reflex:
 5. **KB sweep — ตรวจ 4 แหล่ง:**
    - **thesis-convergence.md** — theme ไหน STRONG (3+ sources)? → structural tailwind
    - insight-atoms/ — มี atom ใหม่ที่เกี่ยวข้องกับ holdings ไหม?
-     **Keyphrase retrieval:** แทนที่จะ grep ด้วย ticker เปล่าๆ → extract keyphrases จาก kill conditions ก่อน (เช่น "hyperscaler capex", "RPO stagnation", "customer concentration") แล้วค้น atoms ด้วย keyphrases เหล่านั้น — จะ surface atoms ที่เกี่ยวข้องได้ดีกว่า
+     **Grep-first (บังคับ):** ห้าม Read ทุกไฟล์แล้วค่อย filter ใน context — ให้ทำตามลำดับนี้:
+     1. Extract keyphrases จาก kill conditions ของแต่ละ holding (เช่น "hyperscaler capex", "RPO", "customer concentration")
+     2. `grep -ril "<keyphrase>" vault/Knowledge/insight-atoms/` — อ่านเฉพาะไฟล์ที่ match
+     3. **Synonym fallback:** ถ้า grep ไม่เจอไฟล์ใดเลย (0 matches) → อ่านทั้งหมดแทน เหตุผล: vocabulary mismatch บน macro-level atoms
+     4. ถ้า match ≥1 ไฟล์ → อ่านเฉพาะไฟล์เหล่านั้น ห้ามอ่านไฟล์อื่น
    - contradiction-registry.md — มี unresolved contradiction ที่กระทบ holdings ไหม?
    - nick-signals.md — RSI/MA20/RS tier ปัจจุบันต่อแต่ละ holding
 

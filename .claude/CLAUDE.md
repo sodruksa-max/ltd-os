@@ -210,6 +210,7 @@ At end of heavy tasks, report: "Used ~X searches, Y vault reads, ~Z tokens"
 - **Research tasks** (/stock-content, /stock-research): โหลด PREFERENCES.md + vault/Knowledge/THESIS_TRACKER.md
 - **Nick tasks** (/nick-init, /nick-weekly, /nick-quarterly): โหลด vault/Knowledge/ เท่านั้น (THESIS_TRACKER + INDEX_insights) — ห้ามโหลด PREFERENCES หรือ OUTCOMES
 - **Full load** (PROJECTS + DECISIONS + PREFERENCES): เฉพาะ session start ครั้งแรก, /council, หรือ task ที่ span หลาย domain
+- **WORKFLOWS.md**: โหลดเฉพาะเมื่อ task เกี่ยวกับ /workflow, /workflow-audit, /weekly-calibration เท่านั้น — ห้ามโหลดใน Full load ทั่วไป
 
 ### 9. Static-first prompt ordering — ห้าม break prefix cache
 (From: arXiv:2601.06007 — Don't Break the Cache — ลด cost 41-80% per session)
