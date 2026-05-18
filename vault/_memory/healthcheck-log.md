@@ -3,7 +3,17 @@
 *(auto-updated by /healthcheck — keeps last 5 runs)*
 *(used by OCD persistent WARN escalation layer)*
 
-## 2026-05-18
+## 2026-05-18 (รอบ 2)
+- PASS: 141 | WARN: 1 | FAIL: 1 — DEGRADED
+- [FAIL] 17 commits ahead of origin/main — CCR runs stale nick-v3 code → Fix: safe-push.sh
+- [WARN] 3 untracked files: ipo-radar-2026-05-18.md, nick-v3-sizing-exits-survey.md, nick/daily/2026-05-18.json
+- [NEW] nick-daily.sh + nick-signals-update.py on disk, not in healthcheck.sh
+- [NEW] /token-audit command not in healthcheck.sh
+- [DECISION NEEDED] vault/20_investment/nick/daily/ — add to .gitignore (runtime output) or commit
+- [KNOWN] dashboard.py, dashboard.sh, discovery.py, update-sectors.py, update-universe.py — CCR/Streamlit utilities, intentionally not in healthcheck
+- [KNOWN] backup.sh, new-project.sh, install-cron.sh — general utilities, kept
+
+## 2026-05-18 (รอบ 1)
 - PASS: 141 | WARN: 0 | FAIL: 1 — DEGRADED
 - [FAIL — FIXED] 8 commits unpushed → pushed origin/main ✓
 - [FIXED] Orphan scripts cluster: deleted bot.sh, bot-real.sh, screen.sh, eod.sh, stats-paper-trade.py; archived stock-screener.py, screener-performance.py, crypto-screener.py → vault/90_archive/scripts-archive/

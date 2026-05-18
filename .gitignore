@@ -96,6 +96,7 @@ vault/.smart-env/
 
 # --- Auto-generated reports (regenerated on each script run) ---
 vault/20_investment/portfolio-real.md
+vault/20_investment/nick/daily/
 
 # --- Obsidian (strict — ignore all, allow only essentials) ---
 vault/.obsidian/*

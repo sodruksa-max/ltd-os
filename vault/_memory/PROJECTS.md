@@ -1,6 +1,6 @@
 ---
 type: memory-index
-updated: 2026-05-16
+updated: 2026-05-18
 ---
 
 # Active Projects
@@ -40,3 +40,19 @@ updated: 2026-05-16
 - **Goal**: Learn US stock trading — paper trade 6 months, then real money if win rate ≥40% + R-multiple ≥1.5
 - **Next**: log first paper trades → run /eod to test pipeline → run /weekly-calibration after 2 weeks
 - **Notes**: [[vault/20_investment/_journal/]]
+
+### Nick v3 — Blinded Paper Portfolio
+- **Status**: active — live since 2026-05-18
+- **Goal**: Beat SPY rolling multi-year; $2,320 starting capital on Alpaca paper; target grow to $10K–$100K
+- **Architecture**: daily_scan.py (entry logic + profit ladder + ratchet stop + ATR sizing) + nick-daily.sh wrapper + nick-score.py feedback loop + nick-signals-update.py (RSI/MA20/RS tiers)
+- **Current holdings**: IONQ 4sh (medium conv, thesis-aligned); remaining cash ~$2,200 for NVDA post-earnings
+- **Performance tracking**: vault/20_investment/nick/performance/nav_log.md (exact NAV vs SPY)
+- **Last touch**: 2026-05-18
+- **Next**: /nick-weekly after next trading day — verify kill conditions + check NVDA entry signal
+
+### Token Efficiency Project
+- **Status**: complete (2026-05-18)
+- **Goal**: Audit + reduce token waste across all commands to extend session budget
+- **Result**: ~50,500 tok/heavy session reduction — pre-market, nick-weekly, post-market, stock-content
+- **Decisions logged**: see Decisions → Token audit section above
+- **Last touch**: 2026-05-18

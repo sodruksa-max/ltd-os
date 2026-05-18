@@ -93,7 +93,9 @@ for script in \
   "scripts/etf-discovery.py" \
   "scripts/universe-screen.py" \
   "scripts/brier-score.py" \
-  "scripts/thesis-convergence.py"
+  "scripts/thesis-convergence.py" \
+  "scripts/nick-daily.sh" \
+  "scripts/nick-signals-update.py"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"
@@ -165,7 +167,7 @@ done
 
 echo ""
 echo "-- Slash commands (system)"
-for cmd in review daily-brief handoff context condense weekly-learnings onboard analyst challenge council healthcheck; do
+for cmd in review daily-brief handoff context condense weekly-learnings onboard analyst challenge council healthcheck token-audit; do
   if [[ -f "$ROOT/.claude/commands/${cmd}.md" ]]; then
     p "/${cmd}"
   else

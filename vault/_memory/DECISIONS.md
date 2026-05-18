@@ -1,6 +1,6 @@
 ---
 type: memory-index
-updated: 2026-05-16
+updated: 2026-05-18
 ---
 
 # Locked Decisions
@@ -67,3 +67,14 @@ Claude reads this every session. These are decisions already made — **do not r
 - 2026-04-25 — ภาษา: Thai เมื่อ user พิมพ์ Thai, English เมื่อ English. Technical terms ใน English เสมอ
 - 2026-04-25 — ไม่ใช้ emoji ถ้า user ไม่ใช้ก่อน
 - 2026-04-25 — Writer หลีกเลี่ยง AI-tells ("let's dive in", "in today's fast-paced world", excess em-dashes)
+
+## Nick v3 Paper Portfolio (2026-05-18)
+
+- 2026-05-18 — Nick v3 inception: $2,320 paper capital on Alpaca (base $1,000 + $1,320 preloaded = 12 months × $110 contribution), inception date 2026-05-18
+- 2026-05-18 — First position: IONQ 4 shares @ ~$30 (medium conviction, thesis-convergence signal); cash held for NVDA post-earnings entry
+- 2026-05-18 — Profit ladder: L1=+40% sell 40%, L2=+80% sell 30%, L3=+150% sell 20%, keep 10% runner — ratchet stop activates after L1
+- 2026-05-18 — ATR-based stop (1.5×ATR14) + VIX-rank continuous sizing: max position = 30% of available capital, min 5%
+- 2026-05-18 — Contribution gate: preloaded months count as elapsed — all $2,320 immediately deployable at inception
+- 2026-05-18 — Nick is blinded: reads KB only (THESIS_TRACKER, insight-atoms, thesis-convergence) — ห้ามดู real trades, bot positions, PREFERENCES, OUTCOMES
+- 2026-05-18 — nick-daily.sh runs daily pre-market: signals update → dry-run preview; `--live` flag enables live scan
+- 2026-05-18 — Token audit complete: pre-market ~8K tok saved (script reorder + advanced-layers extraction); nick ~6.4K (holdings=0 short-circuit + step gating); post-market ~3.5K (HAS_TRADES gate); stock-content ~1.1K (Vera suppress-clean); total ~50.5K/heavy session
