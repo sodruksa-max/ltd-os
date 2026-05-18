@@ -6,17 +6,32 @@
     "preloaded_total_usd": 2320,
     "base_capital_usd": 1000
   },
-  "last_executed_rec": null,
-  "positions": {},
+  "last_executed_rec": "2026-05-19 BUY IONQ 4sh @ $48.54 (MED conviction)",
+  "positions": {
+    "IONQ": {
+      "shares": 4,
+      "avg_entry": 48.54,
+      "conviction": "med",
+      "thesis": "T5 Quantum — decorrelated anchor, RPO $470M +554% YoY, EARLY★ RS strong",
+      "kill_conditions": [
+        "Q2 2026 RPO <= Q1 RPO → SELL ALL",
+        "Federal quantum funding cut / contract loss >30% revenue → SELL ALL",
+        "VIX >=28 sustained 2+ days → FREEZE adds only (hold existing)"
+      ],
+      "hold_horizon_months": 12,
+      "entry_date": "2026-05-19",
+      "nav_pct_at_entry": 8.38
+    }
+  },
   "cash": {
-    "amount": 2320.00,
-    "note": "Pre-loaded: $1000 base + 12x$110 monthly simulation. Contribution gate limits deployment to available_capital."
+    "amount": 2125.84,
+    "note": "Post-IONQ entry. Reserve for post-NVDA T1 deployment (May 21+) and monthly contributions."
   },
   "nav": {
-    "current": 2320.00,
+    "current": 2319.88,
     "inception": 2320.00,
     "spy_inception_price": 737.71,
-    "as_of": "2026-05-18",
-    "note": "Alpaca paper account confirmed at $2320 on 2026-05-18. Ready for v3 scans."
+    "as_of": "2026-05-19",
+    "note": "First v3 position executed: IONQ 4sh @ $48.54. NAV = cash $2,125.84 + IONQ mkt $194.04."
   }
 }
