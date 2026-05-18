@@ -1,23 +1,27 @@
 ---
 type: nick-earnings-checklist
 ticker: NVDA
-event: Q1 FY2027 Earnings (post-close 2026-05-19)
+event: Q1 FY2027 Earnings (post-close 2026-05-20 — corrected from original)
 decision_due: 2026-05-20 pre-market
 ---
 
 # NVDA Q1 FY2027 Earnings Checklist
 
-**รายงานหลัง market close วันนี้ — ตรวจ checklist นี้คืนนี้หรือเช้าพรุ่งนี้ก่อนตลาดเปิด**
+> ⚠️ **THRESHOLD UPDATE 2026-05-19:** Thresholds below were FY2026-era (stale). Use corrected values from `vault/20_investment/NVDA-2026-05-19.md` and `vault/10_research/nvda-reese-2026-05-19.md`.
+> Report date corrected: **May 20, 2026** after close (not May 19).
+
+**รายงานหลัง market close MAY 20 — ตรวจ checklist นี้คืนนี้หรือเช้าพรุ่งนี้ก่อนตลาดเปิด**
 
 ---
 
-## ตัวเลขที่ต้องดูก่อน (ภายใน 5 นาทีแรก)
+## ตัวเลขที่ต้องดู — FY2027 CORRECTED THRESHOLDS
 
-| ตัวเลข | สิ่งที่ต้องหา | Threshold |
+| ตัวเลข | Threshold (CORRECTED FY2027) | ~~Stale FY2026~~ |
 |---|---|---|
-| EPS Adjusted | Beat vs consensus | > $0.88 = beat |
-| Revenue | Data center segment | > $43B total / DC > $38B = strong |
-| Q2 FY2027 Guidance | Revenue guide | > $45B = thesis intact |
+| EPS Adjusted | > $1.77 = beat | ~~$0.88~~ |
+| Revenue Total | > $78.8B = beat / < $77B = miss | ~~$43B~~ |
+| Data Center Revenue | > $73B = strong / < $70B = concern | ~~$38B~~ |
+| Q2 FY2027 Guidance | > $86B = intact / < $80B = guide cut | ~~$45B~~ |
 | Blackwell mention | Demand language | "strong / accelerating / record" = bullish |
 | Hyperscaler language | AWS/Azure/Google/Meta capex | "increasing / committed" = bullish |
 | Gross Margin | Trajectory | > 71% = intact; < 69% = concern |

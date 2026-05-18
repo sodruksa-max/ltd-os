@@ -20,6 +20,8 @@ Exact numbers collected by Nick and Vera during research and weekly reviews.
 
 *(Nick appends here after each /nick-weekly: exact price × exact shares = exact position value)*
 
+[NVDA — 2026-05-19 pre-earnings] Price ~$224-225 | Q1 FY2027 reports 2026-05-20 after close | No position (price > HIGH cap ~$157 at NAV $2,321) | Source: search data 2026-05-19
+
 [v3 INCEPTION — 2026-05-18] NAV = $2,320.00 | SPY = $737.71 | Cash = $2,320.00 | 0 positions | Source: Alpaca paper account + macro-snapshot.py
 [IONQ — 2026-05-18] RECOMMENDATION: 4 shares × $51.95 = $207.80 = 8.96% NAV | Signal: EARLY★ RS↑↑ | Conviction: MED | Source: universe-screen.py
 [IONQ — 2026-05-18 live] Price confirmed: $51.44 | Recommendation still valid | Source: web search session 2
