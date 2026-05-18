@@ -158,6 +158,12 @@ Save to `vault/20_investment/_journal/<date>-review.md`.
     ดึง BS values 10 entries ล่าสุด → คำนวณ average → ถ้า > 0.25 = over-confident โดยรวม
     ถ้ามีน้อยกว่า 3 entries → แสดง "ข้อมูลไม่พอคำนวณ rolling avg" แทน ห้ามประมาณ
 
+  **Auto-calculate (แทน manual grep):**
+  ```bash
+  code/python/.venv/Scripts/python scripts/brier-score.py --window 10
+  ```
+  Output: rolling 10-day Brier score + over-confidence flag (`[OVER-CONFIDENT]` ถ้า avg > 0.25)
+
 ---
 
 ## Setup Outcomes

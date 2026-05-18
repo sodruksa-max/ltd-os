@@ -138,7 +138,7 @@ cat vault/Knowledge/misophonia-triggers.md | grep "^\[" | grep "Market-Level" -A
 # Step 1.5 — Run all scripts in parallel
 code/python/.venv/Scripts/python scripts/macro-snapshot.py &
 code/python/.venv/Scripts/python scripts/news-snapshot.py &
-code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD --brief &
+{ WTICKERS=$(code/python/.venv/Scripts/python -c "import json; print(' '.join(e['ticker'] for e in json.load(open('scripts/watchlist.json'))))") && code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM $WTICKERS --brief; } &
 code/python/.venv/Scripts/python scripts/universe-screen.py &
 code/python/.venv/Scripts/python scripts/sector-flow.py &
 code/python/.venv/Scripts/python scripts/catalyst-calendar.py &
@@ -348,7 +348,8 @@ While web searches are running, execute all three in parallel:
 ```bash
 code/python/.venv/Scripts/python scripts/macro-snapshot.py
 code/python/.venv/Scripts/python scripts/news-snapshot.py
-code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD --brief
+WTICKERS=$(code/python/.venv/Scripts/python -c "import json; print(' '.join(e['ticker'] for e in json.load(open('scripts/watchlist.json'))))")
+code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM $WTICKERS --brief
 code/python/.venv/Scripts/python scripts/universe-screen.py
 code/python/.venv/Scripts/python scripts/sector-flow.py
 code/python/.venv/Scripts/python scripts/catalyst-calendar.py
@@ -359,11 +360,7 @@ code/python/.venv/Scripts/python scripts/etf-discovery.py --top 10
 `sector-flow.py` ดูว่า sector ไหนดูด money เข้า/ออก — ใช้ประกอบ setup selection
 `catalyst-calendar.py` แสดง earnings + space events 21 วันข้างหน้า — ใช้เป็น trigger reference ใน setups
 
-เพิ่ม SMCI MRVL ARM ใน sr-levels ถ้ามีข่าว/catalyst วันนั้น (ยังคงใช้ --brief):
-
-```bash
-code/python/.venv/Scripts/python scripts/sr-levels.py SPY QQQM NVDA AMD MU AVGO PLTR RKLB ASTS CRDO AEIS UCTT BBAI MOD SMCI MRVL --brief
-```
+sr-levels อ่านจาก watchlist.json อัตโนมัติ — ทุก ticker รวม SMCI/MRVL/ARM ถูก include แล้ว ไม่ต้องเพิ่ม manual
 
 **How to use the output:**
 - `macro-snapshot.py` → embeds into "Alpaca Macro Snapshot" section; use to cross-check VIX proxy (VXX), oil (USO), dollar (UUP), bonds (TLT) against web search results. If web and Alpaca conflict, flag ⚠️ CONFLICT as usual.

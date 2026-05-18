@@ -1,31 +1,28 @@
 ---
 type: memory-index
-updated: 2026-05-18
+updated: 2026-05-19
 ---
 
 # Active Projects
 
-## Active
+## Complete
 
-### Full-Auto Paper Trading Bot + Unified Watchlist
-- **Status**: planned — build week of 2026-05-12
-- **Goal**: watchlist.json เป็น single source of truth ของทั้ง system — auto-managed, ทุก script/command อ่านจากที่เดียว ไม่ต้องแตะโค้ดเมื่อเพิ่ม/ลบหุ้น
-- **Architecture** (ดู outline ใน chat 2026-05-07):
-  1. `scripts/watchlist.json` — single source of truth: ticker, name, sector, tags, date_added, why_added
-  2. `scripts/watchlist-manager.py` — auto-add (ETF scanner + RS > SPY + volume) / auto-remove (extended >20d หรือ volume หาย) รันทุกเช้า
-  3. `scripts/universe-screen.py` — อ่าน watchlist.json แทน hardcoded UNIVERSE
-  4. `scripts/sr-levels.py` — รับ args จาก watchlist.json แทน hardcoded list ใน pre-market.md
-  5. `scripts/etf-discovery.py` — feed discoveries → watchlist-manager พิจารณา auto-add
-  6. `scripts/catalyst-calendar.py` — filter เฉพาะ ticker ใน watchlist.json
-  7. `scripts/auto-trader.py` — screen watchlist → rank → Alpaca paper order top 3
-  8. `.claude/commands/pre-market.md` — build sr-levels args จาก watchlist.json อัตโนมัติ
-  9. `scripts/trade-log.json` + `scripts/trade-logger.py` — บันทึกทุก order: ticker, date, entry price, size, signal tier, reason → append ทุกครั้งที่ auto-trader place order
-  10. `.github/workflows/auto-trader.yml` — GitHub Actions schedule (`cron: '0 13 * * 1-5'` = 9:00 AM ET, วันจันทร์-ศุกร์): watchlist-manager → universe-screen → auto-trader → trade-logger → commit trade-log.json + watchlist.json กลับ repo อัตโนมัติ
-- **Trade data feeds into**: /eod (open positions + P&L), /weekly-calibration (win rate, R-multiple patterns), future backtest
-- **Trade log schema**: ticker | date | entry_price | shares | signal_tier | reason | exit_price | exit_date | pnl | r_multiple | status (open/closed)
-- **Integration**: /eod, /screen, /bot ทุก command อ่าน watchlist.json + trade-log.json
-- **Constraints**: paper trading เท่านั้น, Alpaca paper account, ไม่ใช้เงินจริง
-- **Next**: เริ่ม build สัปดาห์หน้า — ลำดับ: watchlist.json → watchlist-manager.py → แก้ universe-screen → sr-levels dynamic → auto-trader → trade-logger → cron
+### Unified Watchlist + Nick v3 Elevation
+- **Status**: complete — 2026-05-19
+- **Goal**: watchlist.json เป็น single source of truth ของทั้ง system — ทุก script/command อ่านจากที่เดียว ไม่ต้องแตะโค้ดเมื่อเพิ่ม/ลบหุ้น
+- **Completed items:**
+  1. `scripts/watchlist.json` (41 tickers) — single source of truth
+  2. `scripts/watchlist-manager.py` — `--list`, `--add`, `--remove`, `--auto-discover`
+  3. `scripts/universe-screen.py` — reads watchlist.json at runtime (fallback list kept)
+  4. `scripts/catalyst-calendar.py` — reads watchlist.json at runtime
+  5. `.claude/commands/pre-market.md` — sr-levels args built dynamically from watchlist.json
+  6. `scripts/trade-log.json` — empty log initialized
+  7. **Nick Tier3 wildcards** — `universe.py` `load_tier3_from_watchlist()` + `daily_scan.py` Monday scan
+  8. **Nick Kill Monitor** — `scripts/nick-kill-monitor.py` + `.github/workflows/nick-kill-check.yml` (9 AM ET daily)
+  9. **auto-trader.py deleted** — conflict with Nick on same Alpaca account eliminated
+- **Notes**: auto-trader.yml + auto-trader.py removed; Nick v3 daily_scan.py replaces function
+
+## Active
 
 ### LTD-OS
 - **Status**: active
@@ -44,11 +41,13 @@ updated: 2026-05-18
 ### Nick v3 — Blinded Paper Portfolio
 - **Status**: active — live since 2026-05-18
 - **Goal**: Beat SPY rolling multi-year; $2,320 starting capital on Alpaca paper; target grow to $10K–$100K
-- **Architecture**: daily_scan.py (entry logic + profit ladder + ratchet stop + ATR sizing) + nick-daily.sh wrapper + nick-score.py feedback loop + nick-signals-update.py (RSI/MA20/RS tiers)
+- **Architecture**: daily_scan.py (entry logic + profit ladder + ratchet stop + ATR sizing + VIX-Rank scaling) + nick-daily.sh wrapper + nick-score.py feedback loop + nick-signals-update.py (RSI/MA20/RS tiers)
+- **Tier system**: Tier1 (37 core tickers, daily) | Tier2 (30 growth, Monday) | Tier3 wildcards (watchlist.json residual, Monday)
+- **Kill monitor**: nick-kill-monitor.py + .github/workflows/nick-kill-check.yml — alerts on BREACH at 9 AM ET daily
 - **Current holdings**: IONQ 4sh (medium conv, thesis-aligned); remaining cash ~$2,200 for NVDA post-earnings
 - **Performance tracking**: vault/20_investment/nick/performance/nav_log.md (exact NAV vs SPY)
-- **Last touch**: 2026-05-18
-- **Next**: /nick-weekly after next trading day — verify kill conditions + check NVDA entry signal
+- **Last touch**: 2026-05-19
+- **Next**: /nick-weekly after NVDA earnings (May 20) — check NVDA kill conditions with actual Q1 FY2027 results (EPS >$1.77, Rev >$78.8B, DC >$73B, Q2 guide >$86B)
 
 ### Token Efficiency Project
 - **Status**: complete (2026-05-18)
