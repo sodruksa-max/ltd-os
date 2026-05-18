@@ -62,3 +62,4 @@ Exact numbers collected by Nick and Vera during research and weekly reviews.
 | 2026-05-16 | $10,063.15 (exact) | $739.17 (exact) | Week 1 |
 | 2026-05-16b | $10,178.03 (exact — intraday, pre-EOD) | ~$740.00 (approx) | Post-IONQ entry |
 | 2026-05-17 | ~$10,075.89 ❓ (NVDA est $227; AVGO $423.50 exact; ASML $1,501.81 exact; PLTR $133.06 exact; IONQ $51.95 approx) | ~$740.85 (derived: S&P 500 ~7,408.50) | Week 2 |
+| 2026-05-18 | $2,320.00 (exact — v3 inception, Alpaca paper confirmed) | $737.71 (exact — locked) | v3 Inception |
