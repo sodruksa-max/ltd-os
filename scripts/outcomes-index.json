@@ -1,0 +1,36 @@
+[
+  {
+    "date": "2026-05-11",
+    "title": "Command iteration freeze หลัง /pre-market v5",
+    "type": "decision",
+    "decision": "freeze /pre-market command 1-2 สัปดาห์หลัง v5 เพื่อ validate ก่อน iterate — ไม่แตะ command จนถึง /weekly-learnings ~4 พ.ค.",
+    "reasoning": "บ่ออยากแก้ command ทุกวัน — validate ใน real use ก่อน ไม่งั้นไม่รู้ว่า v5 ดีจริงหรือแค่ดูดีในหัว",
+    "outcome": "ok",
+    "learned": "- freeze ช่วยให้ focus ไปที่ Nick system ได้เต็มที่โดยไม่กระจัดกระจาย\n  - /pre-market ไม่ได้ใช้ตลอดสัปดาห์ WN19 — market focus เบาลง ทำให้ freeze ไม่รู้สึก painful เลย\n  - 2 สัปดาห์เหมาะกับ command ที่ใช้ 3-4 ครั้ง/สัปดาห์ ถ้าใช้ทุกวันอาจต้องสั้นกว่า",
+    "recommend": "",
+    "tags": [
+      "process",
+      "workflow",
+      "pre-market",
+      "command-design"
+    ],
+    "domain": "trading"
+  },
+  {
+    "date": "2026-04-25",
+    "title": "Use NotebookLM for heavy summarization instead of Claude",
+    "type": "decision",
+    "decision": "Offload PDF/audio summarization to NotebookLM (free), import via /import-notebooklm",
+    "reasoning": "Claude tokens expensive for 100-300 page docs; NotebookLM has generous free tier",
+    "outcome": "ok",
+    "learned": "- NotebookLM summary quality > my fear; needed ~5% manual cleanup\n  - Manual copy/paste isn't a bottleneck at this volume\n  - Vault-first lookup (CLAUDE.md policy) compounded the savings",
+    "recommend": "",
+    "tags": [
+      "tooling",
+      "cost-optimization",
+      "notebooklm",
+      "vault"
+    ],
+    "domain": "process"
+  }
+]
