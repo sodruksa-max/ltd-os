@@ -339,3 +339,31 @@ Remaining budget: ~10 saved for post-NVDA session
 ---
 
 *Session: Tier 3 | Searches used: ~5 (scripts) | NAV: $2,320.00 | Rec: BUY IONQ 4sh | Cash: $2,112.20*
+
+---
+
+## Update — 2026-05-18 Session 2 (post-system-check)
+
+*State.json confirmed: positions = {} — IONQ buy above is still a pending recommendation.*
+
+**Current prices (2026-05-18 live):**
+- IONQ: $51.44 (vs $51.95 in rec above — lower = better entry ✅)
+- NVDA: $222.93 | SPY: $740.31 | VIX: 18.63 (68th pct, multiplier 0.45x)
+
+**NEW: Position size arithmetic — NVDA also impractical at current NAV:**
+HIGH conviction cap = 15% × $2,320 × 0.45 = $156.60 < NVDA $222.93
+→ NVDA joins ASML/AVGO on "v3 impractical" list. T1 exposure via NVDA requires NAV > ~$2,972 (~6 months)
+
+**NEW candidates surfaced:**
+- CBRS (Cerebras Systems) — T1 AI chips, IPO May 14, $5.5B deal → potential affordable T1 proxy. Price unknown. Research queue priority 1.
+- BKSY (BlackSky) — T3 Space, EARLY★, $39.20 → affordable. Research queue priority 2.
+- DCO (Ducommun) — T3 Space/Satellite, EARLY★, $145.18 → affordable. Research queue priority 3.
+
+**ORDERS remain unchanged:**
+```json
+[
+  {"action": "BUY", "ticker": "IONQ", "conviction": "med", "reason": "T5 quantum anchor, decorrelated from NVDA earnings risk, $51.44 confirmed live price"}
+]
+```
+
+*Session 2 searches used: 5 | Total session: 10/15*

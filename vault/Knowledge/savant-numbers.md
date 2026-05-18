@@ -22,6 +22,9 @@ Exact numbers collected by Nick and Vera during research and weekly reviews.
 
 [v3 INCEPTION — 2026-05-18] NAV = $2,320.00 | SPY = $737.71 | Cash = $2,320.00 | 0 positions | Source: Alpaca paper account + macro-snapshot.py
 [IONQ — 2026-05-18] RECOMMENDATION: 4 shares × $51.95 = $207.80 = 8.96% NAV | Signal: EARLY★ RS↑↑ | Conviction: MED | Source: universe-screen.py
+[IONQ — 2026-05-18 live] Price confirmed: $51.44 | Recommendation still valid | Source: web search session 2
+[v3 POSITION SIZE CAPS — 2026-05-18] HIGH=$156.60 / MED=$83.52 / LOW=$31.32 (NAV $2,320 × VIX-scale 0.45x) | Impractical: NVDA $222.93, ASML $1,502, AVGO $425, MU $715, CRDO $183, LRCX $285, AEIS $323
+[SPY — 2026-05-18 live] $740.31 | Session 2 macro-snapshot | VIX 18.63 (68th pct)
 
 ---
 
