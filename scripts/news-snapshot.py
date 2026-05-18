@@ -394,10 +394,11 @@ def universe_news_mode(api_key: str, secret_key: str) -> None:
     _univ = _load_universe()
     all_tickers = list(dict.fromkeys(_univ.TIER1 + _univ.TIER2))
 
-    # Alpaca allows up to 100 symbols per call — batch if needed
+    # Alpaca news API rejects requests with >~50 symbols (URL length limit) — use batch of 30
+    BATCH_SIZE = 30
     batches: list[list[str]] = []
-    for i in range(0, len(all_tickers), 100):
-        batches.append(all_tickers[i:i + 100])
+    for i in range(0, len(all_tickers), BATCH_SIZE):
+        batches.append(all_tickers[i:i + BATCH_SIZE])
 
     raw: list[dict] = []
     now   = datetime.now(timezone.utc)
