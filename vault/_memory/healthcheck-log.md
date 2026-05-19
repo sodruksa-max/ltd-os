@@ -7,7 +7,7 @@
 - PASS: 151 | WARN: 1 | FAIL: 0 — OK WITH WARNINGS
 - [WARN] DECISIONS.md header stale — `updated: 2026-05-18` but git last touch 2026-05-19 → FIXED inline (header updated to 2026-05-19)
 - [OPEN] Metadata-contextual vault embedding (arXiv:2510.24402) — medium complexity, deferred, 3rd carry
-- [OPEN] outcomes-index.py — approved in ANALYST_LOG 2026-05-16, not yet built, 2nd carry
+- [DEFERRED] outcomes-index.py — OUTCOMES.md only 114 lines, index not useful yet; revisit when > 300 lines
 - [KNOWN] 9 unregistered scripts: backup.sh, dashboard.py, dashboard.sh, discovery.py, install-cron.sh, key-rotate.sh, new-project.sh, update-sectors.py, update-universe.py — all intentional
 - youtube-transcript.py newly registered this session ✓
 - daily-brief Phase 2 (macro-snapshot + news-snapshot) wired this session ✓
