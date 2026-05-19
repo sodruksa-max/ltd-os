@@ -3,6 +3,16 @@
 *(auto-updated by /healthcheck — keeps last 5 runs)*
 *(used by OCD persistent WARN escalation layer)*
 
+## 2026-05-19 (current run — after session improvements)
+- PASS: 151 | WARN: 1 | FAIL: 0 — OK WITH WARNINGS
+- [WARN] DECISIONS.md header stale — `updated: 2026-05-18` but git last touch 2026-05-19 → FIXED inline (header updated to 2026-05-19)
+- [OPEN] Metadata-contextual vault embedding (arXiv:2510.24402) — medium complexity, deferred, 3rd carry
+- [OPEN] outcomes-index.py — approved in ANALYST_LOG 2026-05-16, not yet built, 2nd carry
+- [KNOWN] 9 unregistered scripts: backup.sh, dashboard.py, dashboard.sh, discovery.py, install-cron.sh, key-rotate.sh, new-project.sh, update-sectors.py, update-universe.py — all intentional
+- youtube-transcript.py newly registered this session ✓
+- daily-brief Phase 2 (macro-snapshot + news-snapshot) wired this session ✓
+- DECISIONS.md stale header fixed inline → no carry to next run
+
 ## 2026-05-19 (resolution update)
 - All items from 2026-05-18 รอบ 2 resolved:
 - [FIXED] commits pushed to origin/main ✓
@@ -41,18 +51,3 @@
 - [KNOWN] 8 templates not in symmetry audit — active templates, no orphans
 - [TODO-HIGH] ExpandSearch + FinSearch + Coverage matrix — IR paper survey improvements not yet in stock-content.md
 - [TODO-MED] Metadata-contextual vault embedding — new feature from IR survey
-
-## 2026-05-17 (รอบ 2)
-- PASS: 97 | WARN: 0 | FAIL: 0 — ALL SYSTEMS GO
-- [PERSISTED — 1 run, ACCEPTED] scripts/trade-log.json — runtime-generated file referenced in nick.md blocklist, low impact, no fix needed
-- [INFO] 17 unregistered scripts — ทั้งหมด utility/wrapper ที่รู้จักแล้ว ไม่ต้อง monitor เพิ่ม
-- [INFO] ทุก improvement จากรอบ 1 ปิดครบแล้ว
-
-## 2026-05-17 (รอบ 1)
-- [WARN] scripts/trade-log.json — referenced in nick.md as blocklist but not a script (runtime-generated, low impact)
-- [NEW] 20 unregistered scripts found on disk vs healthcheck.sh
-- [RESOLVED] vault-review-trigger.sh / usage-tracker.py / bubble-risk-monitor.py — added to healthcheck
-- [RESOLVED] video-note.md archived — no active references
-- [INFO] content-draft.md retained — still used by writer agent + vault-review-trigger
-- [INFO] stock-screener.py retained — different purpose from screener.py (ต้นรอบ vs momentum)
-

@@ -1,6 +1,6 @@
 ---
 type: memory-index
-updated: 2026-05-18
+updated: 2026-05-19
 ---
 
 # Locked Decisions
