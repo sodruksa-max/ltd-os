@@ -16,6 +16,11 @@ Claude reads this every session. These are decisions already made — **do not r
 
 ## Architecture / system
 
+- 2026-05-19 — Self-Healing monitoring deferred — system is interactive (user-in-loop), runaway risk low; revisit after Local Fallback (Ollama) is running background processes autonomously
+- 2026-05-19 — Obsidian UI buttons (Shell Commands plugin) — keep for later; useful only if Obsidian is primary workspace with no terminal open; low complexity, reversible
+- 2026-05-19 — Local Fallback / Tiered AI Routing (Ollama router) — approved to build; hardware qualifies (RX 9070 XT 16GB VRAM, 48GB RAM, Ryzen 9800X3D); start with Ollama + Qwen2.5 14B, validate quality on daily-brief/handoff/brainstorm before building router; reversible (uninstall = delete ~/.ollama/)
+- 2026-05-19 — Agentic Web Surfing (Playwright) deferred — WebFetch covers ~90% of research sources; build only when specific site blocks current tools
+- 2026-05-19 — Event-Driven Automation (inotifywait) deferred — inotifywait does not fire on Windows filesystem changes via WSL2 /mnt/c/; revisit with PowerShell FileSystemWatcher after Local Fallback done
 - 2026-05-19 — External Pipeline (separate claude sessions per agent step) deferred — cold-start prefix cache cost negates benefit for short pipelines; council orchestrator compression (Phase 2.8 + 3.2 Trajectory Prune) applied as lighter alternative; revisit when /council routinely hits context limit
 - 2026-05-16 — ถ้า quarterly run-rate vs annual guidance ห่างกัน > 3x → ระบุ "magnitude risk: high" ใน earnings section ของ /pre-market เสมอ — เรียนรู้จาก ASTS EPS miss 223% (คาด moderate แต่ actual catastrophic)
 - 2026-05-16 — Nick CI fix loop: ถ้า push failed 3 ครั้งติด → หยุด investigate root cause ก่อน ห้าม commit ต่อทันที — 2026-05-10 รัน fix loop 8+ ครั้งในวันเดียว ไม่ effective
