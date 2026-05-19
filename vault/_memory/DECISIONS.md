@@ -18,6 +18,7 @@ Claude reads this every session. These are decisions already made — **do not r
 
 - 2026-05-19 — Self-Healing monitoring deferred — system is interactive (user-in-loop), runaway risk low; revisit after Local Fallback (Ollama) is running background processes autonomously
 - 2026-05-19 — Obsidian UI buttons (Shell Commands plugin) — keep for later; useful only if Obsidian is primary workspace with no terminal open; low complexity, reversible
+- 2026-05-19 — Screensaver Brainstorm (idle vault connection) — deferred until Ollama validated; use Ollama as engine (free local inference), run when idle > 15min, randomly connect 2 vault notes → dump rough ideas to 00_inbox; build as Ollama use case #2 after daily-brief/handoff validate
 - 2026-05-19 — Local Fallback / Tiered AI Routing (Ollama router) — approved to build; hardware qualifies (RX 9070 XT 16GB VRAM, 48GB RAM, Ryzen 9800X3D); start with Ollama + Qwen2.5 14B, validate quality on daily-brief/handoff/brainstorm before building router; reversible (uninstall = delete ~/.ollama/)
 - 2026-05-19 — Agentic Web Surfing (Playwright) deferred — WebFetch covers ~90% of research sources; build only when specific site blocks current tools
 - 2026-05-19 — Event-Driven Automation (inotifywait) deferred — inotifywait does not fire on Windows filesystem changes via WSL2 /mnt/c/; revisit with PowerShell FileSystemWatcher after Local Fallback done
