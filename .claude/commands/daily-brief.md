@@ -1,5 +1,5 @@
 ---
-description: Generate a morning briefing from vault context — recent notes, open projects, today's focus. Can be invoked manually or by scripts/daily-brief.sh. Phase 1: vault-only (no external data fetch yet).
+description: Generate a morning briefing — vault context + live market data (weekdays). Can be invoked manually or by scripts/daily-brief.sh.
 ---
 
 # /daily-brief
@@ -30,8 +30,23 @@ Read:
 - Latest `vault/20_investment/screener-performance-*.md` — any "pending" entries that now have data? (D+N date ≤ today)
 - `vault/_memory/OUTCOMES.md` Trading Calibration Log — count reviews since last `[weekly-calibration ...]` line
 
-**Do NOT** fetch external data (news, market). That's Phase 2.
 **Do NOT** re-read vault/10_research/ or large sections — stay lean.
+
+### 1.5 External data (Phase 2 — weekdays only, skip on weekends)
+
+ถ้าวันนี้เป็น Mon-Fri → รัน scripts แล้วเก็บ output ไว้ใน context:
+
+```bash
+PYTHON="code/python/.venv/Scripts/python"
+"$PYTHON" scripts/macro-snapshot.py 2>/dev/null || echo "[macro-snapshot: unavailable]"
+"$PYTHON" scripts/news-snapshot.py 2>/dev/null || echo "[news-snapshot: unavailable]"
+```
+
+**กฎ:**
+- ถ้า scripts ทั้งสองรันสำเร็จ → เพิ่ม "Market Pulse" section ใน brief (ดู template ด้านล่าง)
+- ถ้า script fail (ไม่มี Alpaca key หรือ network error) → ข้ามเงียบๆ ไม่แสดง error ใน brief
+- ห้ามรัน script ซ้ำถ้ารันแล้วใน session นี้ภายใน 4 ชั่วโมง (KLS Gate)
+- ข้อมูล market ใช้เฉพาะ Market Pulse section — ห้าม carry ไปส่วนอื่น
 
 ### 1b. Derive suggested focus signals
 
@@ -62,6 +77,10 @@ Format (keep short, ≤ 400 words):
 
 ```markdown
 # Daily Brief — YYYY-MM-DD (Day Name)
+
+## Market Pulse (weekdays only — omit if scripts unavailable or weekend)
+SPY: X% | VIX: X | 10Y: X% | Oil: $X
+Top news: [1-2 headlines from news-snapshot — most market-relevant only]
 
 ## Yesterday's open threads
 (from last daily note "Tomorrow first thing" + uncommitted work)
@@ -132,7 +151,7 @@ Next: open Obsidian to see it in context
 - ❌ Long motivational openings ("Good morning! Today is going to be amazing!")
 - ❌ Repeating yesterday's brief verbatim if nothing changed
 - ❌ Making up statistics about "how productive you were"
-- ❌ Adding external data (news, markets) — that's Phase 2
+- ❌ Market Pulse section longer than 3 lines — ถ้า macro data เยอะ ให้ตัดเหลือ SPY/VIX/10Y + 1-2 headlines สำคัญสุดเท่านั้น
 - ❌ Writing > 400 words — if tempted, you're padding
 
 ## When to return empty brief

@@ -99,7 +99,8 @@ for script in \
   "scripts/brier-score.py" \
   "scripts/thesis-convergence.py" \
   "scripts/nick-daily.sh" \
-  "scripts/nick-signals-update.py"
+  "scripts/nick-signals-update.py" \
+  "scripts/youtube-transcript.py"
 do
   if [[ -f "$ROOT/$script" ]]; then
     p "$script"
