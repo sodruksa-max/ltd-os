@@ -1,5 +1,5 @@
 # Nick Signals
-*Auto-updated: 2026-05-19 02:10 | RSI14 / MA20-position / RS-vs-SPY(60d)*
+*Auto-updated: 2026-05-19 03:59 | RSI14 / MA20-position / RS-vs-SPY(60d)*
 
 ---
 
@@ -16,33 +16,33 @@
 
 | Ticker | RSI | MA20 | RS | Signal |
 |---|---|---|---|---|
-| NVDA | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
-| AMD | HIGH | NEAR | STRONG | RS STRONG + near MA |
-| AVGO | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
+| NVDA | NEUTRAL | NEAR | STRONG | SETUP — RSI neutral + RS strong |
+| AMD | HIGH | EXTENDED | STRONG |  |
+| AVGO | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
 | SMCI | NEUTRAL | MID | WEAK |  |
-| MU | HIGH | NEAR | STRONG | RS STRONG + near MA |
+| MU | HIGH | EXTENDED | STRONG |  |
 | MRVL | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
 | LRCX | HIGH | MID | STRONG | RS STRONG + near MA |
 | MOD | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
-| DELL | HIGH | MID | STRONG | RS STRONG + near MA |
-| HPE | OVERBOUGHT | NEAR | STRONG | RS STRONG + near MA |
+| DELL | HIGH | NEAR | STRONG | RS STRONG + near MA |
+| HPE | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
 | ASML | NEUTRAL | BELOW | WEAK | BELOW MA20 |
-| ARM | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
-| CRDO | LOW | BELOW | STRONG | BELOW MA20 |
+| ARM | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
+| CRDO | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
 | AEIS | LOW | BELOW | WEAK | BELOW MA20 |
 | UCTT | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
 | WDC | HIGH | MID | STRONG | RS STRONG + near MA |
 | ONTO | LOW | BELOW | STRONG | BELOW MA20 |
 | RKLB | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
-| ASTS | NEUTRAL | EXTENDED | WEAK |  |
+| ASTS | HIGH | EXTENDED | NEUTRAL |  |
 | LUNR | OVERBOUGHT | EXTENDED | STRONG | STRETCHED — wait for pullback |
 | KTOS | LOW | BELOW | WEAK | BELOW MA20 |
-| BBAI | LOW | BELOW | NEUTRAL | BELOW MA20 |
-| PLTR | LOW | BELOW | WEAK | BELOW MA20 |
-| CRM | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| BBAI | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
+| PLTR | LOW | BELOW | NEUTRAL | BELOW MA20 |
+| CRM | NEUTRAL | MID | WEAK |  |
 | SNOW | OVERBOUGHT | EXTENDED | NEUTRAL | STRETCHED — wait for pullback |
 | IONQ | NEUTRAL | MID | STRONG | SETUP — RSI neutral + RS strong |
-| RGTI | NEUTRAL | BELOW | WEAK | BELOW MA20 |
+| RGTI | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
 | QBTS | NEUTRAL | BELOW | NEUTRAL | BELOW MA20 |
 | QUBT | NEUTRAL | BELOW | STRONG | SETUP — RSI neutral + RS strong |
 | ISRG | LOW | BELOW | WEAK | BELOW MA20 |
