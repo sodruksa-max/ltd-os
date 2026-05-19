@@ -120,6 +120,31 @@ Angles ที่มักโดนข้ามโดย proposers ทุก mind
 Synthesizer ต้องเพิ่ม missing angles เหล่านี้ใน "Open questions" section ของ synthesis.md — ห้ามข้าม
 ถ้าไม่มี missing angles → `[ADHD: FULL COVERAGE] ✅`
 
+## Phase 2.8: Proposal Compression (Trajectory Prune — arXiv:2509.23586 AgentDiet)
+
+> **รันทันทีหลัง Phase 2.5 เสร็จ — ก่อน spawn Phase 3 critiques**
+
+**จุดประสงค์:** หลัง 5 proposals ถูก received แล้ว raw proposal text ถือว่า "expired" — compress เป็น structured summaries ก่อนส่งต่อ ลด ~60% input token ของ Phase 3 + Phase 4
+
+**สร้าง `proposal-summaries.md`** โดย compress แต่ละ proposal เป็น 3 บรรทัด:
+```
+[PROPOSER: optimist]
+Core claim: <1 ประโยค — recommendation สุดท้ายคืออะไร>
+Key mechanism: <1 ประโยค — ทำงานอย่างไร / ทำไมถึงจะสำเร็จ>
+Fatal risk: <1 ประโยค — สิ่งที่ทำให้ proposal นี้พังได้>
+```
+
+**กฎ:**
+- summaries ทั้งหมดรวมกัน < 200 words
+- ห้ามใส่ supporting argument, background, หรือ nuance — 3 บรรทัดเท่านั้น
+- Full proposal text = expired หลัง Phase 2.8 — ห้าม carry ไปยัง Phase 3, 3.5, หรือ 4
+- Phase 3 critiquers อ่าน **full proposals** เพื่อ generate critique (ยังใช้งานอยู่) — แต่ Phase 4 synthesizer รับเฉพาะ proposal-summaries.md
+
+```
+Phase 2.8 complete: proposal-summaries.md created (<N> words, 5 proposals compressed)
+Full proposal text: expired — not forwarded to Phase 4
+```
+
 ## Phase 3: Cross-critique (MARS pattern — arXiv:2509.20502)
 
 **MARS rule: reviewers work INDEPENDENTLY — ห้าม pass critique ระหว่าง agents**
@@ -133,6 +158,30 @@ Generate 20 critiques (each proposer critiques the other 4) โดยใช้ M
 - Hypomania critiques: fast, multiple angles — at least 2 angles per proposal
 
 **ทำไม:** MARS ลด token ~50% vs MAD โดยตัด reviewer-to-reviewer interaction ออก (context ไม่ blow up ระหว่าง critique rounds)
+
+## Phase 3.2: Critique Compression (Trajectory Prune — arXiv:2509.23586 AgentDiet)
+
+> **รันทันทีหลัง Phase 3 critiques ทั้ง 20 ถูก generate เสร็จ — ก่อน Phase 3.3**
+
+**จุดประสงค์:** raw critiques (steelman + weakness + question per critique = ~60 words × 20 = ~1,200 words) → extract เฉพาะส่วนที่ synthesizer ต้องการจริงๆ — ลด ~70% input token ของ Phase 4
+
+**สร้าง `critique-extracts.md`** โดย drop steelman preamble ทั้งหมด — เก็บเฉพาะ:
+```
+[proposer-A → proposal-B]
+Weakness: <1 ประโยค>
+Question: <1 ประโยค>
+```
+
+**กฎ:**
+- ห้ามเก็บ steelman section — synthesizer ไม่ต้องการ (proposals summaries ครอบคลุมแล้ว)
+- ห้ามเก็บ preamble, rationale, หรือ positive framing
+- critique-extracts ทั้งหมดรวมกัน ≤ 600 words (20 critiques × 2 บรรทัด + header)
+- Full critiques text = expired หลัง Phase 3.2 — ห้าม carry ไปยัง Phase 3.5 หรือ Phase 4
+
+```
+Phase 3.2 complete: critique-extracts.md created (<N> words, 20 critiques → weakness+question only)
+Full critique text: expired — not forwarded to Phase 4
+```
 
 ## Phase 3.3: Stability Check (arXiv:2510.12697)
 
@@ -175,7 +224,7 @@ This is NOT a 4th proposal — it's a reality check from one specific angle.
 **AgentDropout filter (arXiv:2503.18891) — รันก่อน synthesis:**
 Synthesizer scan critiques ทั้งหมดก่อน process — ถ้า 2 critiques overlap >80% (paraphrase กัน) → mark duplicate → process เพียง 1 ไม่ทั้งคู่; บันทึก `[DUPLICATE DROPPED] proposer-A critique on X ≈ proposer-B critique on X` ใน synthesis.md header; ลด noise + synthesizer input token
 
-Synthesizer reads brief + 5 proposals + 20 critiques (after dedup) + **expertise findings**. Produces `synthesis.md`:
+Synthesizer reads brief + **proposal-summaries.md** + **critique-extracts.md** (after dedup) + **expertise findings**. Full proposals and full critiques are expired (Trajectory Prune — Phase 2.8 + 3.2). Produces `synthesis.md`:
 - Decision matrix (now includes expertise dimensions)
 - Where proposers AGREE / DIVERGE
 - **Caveman gut signal** — did primal brain say SAFE, UNEASY, or DANGER? Note if gut contradicts sophisticates
