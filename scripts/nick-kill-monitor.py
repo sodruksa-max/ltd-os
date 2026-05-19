@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE  = ROOT / "vault/20_investment/nick/nick_state.json"
 ALERTS_DIR  = ROOT / "vault/20_investment/nick/alerts"
+FUND_JSON   = ROOT / "vault/Knowledge/nick-fundamentals.json"
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -219,6 +220,53 @@ def write_alerts(alerts: list[dict], market_data: dict, dry_run: bool = False) -
 
 
 # ---------------------------------------------------------------------------
+# 2.5 Fundamentals Checker (Finnhub — optional, skipped if JSON missing)
+# ---------------------------------------------------------------------------
+
+def load_fundamentals() -> dict:
+    """Load nick-fundamentals.json if available. Returns {} if missing/stale."""
+    if not FUND_JSON.exists():
+        return {}
+    try:
+        data = json.loads(FUND_JSON.read_text(encoding="utf-8"))
+        return data.get("tickers", {})
+    except Exception:
+        return {}
+
+
+def check_fundamentals(state: dict, fundamentals: dict) -> list[dict]:
+    """Flag holdings where Finnhub analyst consensus = BEAR."""
+    alerts: list[dict] = []
+    if not fundamentals:
+        return alerts
+    for ticker in state.get("positions", {}):
+        fd = fundamentals.get(ticker)
+        if not fd:
+            continue
+        if fd.get("cons_label") == "BEAR":
+            detail = fd.get("cons_detail", "?")
+            alerts.append({
+                "type":      "ANALYST_BEAR",
+                "severity":  "MEDIUM",
+                "condition": f"{ticker} analyst consensus BEAR: {detail}",
+                "action":    "Verify thesis still intact — consensus shift may precede fundamental change",
+                "tickers":   [ticker],
+            })
+        surp = fd.get("surp_label")
+        surp_pct = fd.get("surp_pct")
+        if surp == "MISS" and surp_pct is not None and surp_pct <= -10:
+            period = fd.get("surp_period", "?")
+            alerts.append({
+                "type":      "EARNINGS_MISS",
+                "severity":  "MEDIUM",
+                "condition": f"{ticker} EPS miss {surp_pct:+.1f}% vs estimate ({period})",
+                "action":    "Check kill conditions vs actual earnings — run /stock-content for update",
+                "tickers":   [ticker],
+            })
+    return alerts
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -240,6 +288,17 @@ def main() -> None:
 
     print("[2/3] Checking kill condition thresholds...")
     alerts = check_thresholds(state, market_data)
+
+    fundamentals = load_fundamentals()
+    if fundamentals:
+        fund_alerts = check_fundamentals(state, fundamentals)
+        alerts.extend(fund_alerts)
+        if fund_alerts:
+            print(f"  Finnhub: {len(fund_alerts)} fundamental alert(s) added")
+        else:
+            print("  Finnhub: no fundamental alerts")
+    else:
+        print("  Finnhub: nick-fundamentals.json not found — run nick-fundamentals.py")
 
     print("[3/3] Writing alert report...")
     result = write_alerts(alerts, market_data, dry_run=dry_run)

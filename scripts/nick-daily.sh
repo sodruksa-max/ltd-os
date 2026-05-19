@@ -20,19 +20,24 @@ echo ""
 echo "=== Nick v3 Daily Routine — $(date '+%Y-%m-%d %H:%M') ==="
 echo ""
 
-# Step 1: Update nick-signals.md
-echo "[1/3] Updating nick-signals.md..."
+# Step 1: Update nick-signals.md (RSI/MA20/RS tiers)
+echo "[1/4] Updating nick-signals.md..."
 "$PYTHON" "$SIGNALS_UPDATE"
 echo ""
 
+# Step 1.5: Update nick-fundamentals.md (Finnhub earnings + analyst consensus)
+echo "[2/4] Updating nick-fundamentals.md (Finnhub)..."
+"$PYTHON" "$REPO/scripts/nick-fundamentals.py" || echo "  [WARN] Skipped — add FINNHUB_API_KEY to .secrets/.env"
+echo ""
+
 # Step 2: Dry-run preview
-echo "[2/3] Dry-run preview..."
+echo "[3/4] Dry-run preview..."
 "$PYTHON" "$DAILY_SCAN" --dry-run
 echo ""
 
 # Step 3: Live scan (only with --live flag)
 if [[ "$LIVE" == true ]]; then
-  echo "[3/3] Live scan..."
+  echo "[4/4] Live scan..."
   read -r -p "  Review dry-run above. Execute live scan? [y/N] " confirm
   if [[ "${confirm:-N}" =~ ^[Yy]$ ]]; then
     "$PYTHON" "$DAILY_SCAN"
@@ -40,7 +45,7 @@ if [[ "$LIVE" == true ]]; then
     echo "  Live scan skipped."
   fi
 else
-  echo "[3/3] Skipped live scan (pass --live to enable)"
+  echo "[4/4] Skipped live scan (pass --live to enable)"
 fi
 
 echo ""
