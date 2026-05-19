@@ -2,6 +2,9 @@
 """
 Nick Fundamentals — Finnhub: earnings calendar, EPS surprise, analyst consensus.
 
+Incremental refresh: skips tickers with data < 23h old.
+Earnings override:   always re-fetches if next_earnings is within 7 days.
+
 Writes:
   vault/Knowledge/nick-fundamentals.md   (human-readable)
   vault/Knowledge/nick-fundamentals.json (parsed by nick-kill-monitor.py)
@@ -26,6 +29,9 @@ FUND_MD       = ROOT / "vault/Knowledge/nick-fundamentals.md"
 FUND_JSON     = ROOT / "vault/Knowledge/nick-fundamentals.json"
 UNIVERSE_PATH = ROOT / "code/python/nick_trader/universe.py"
 
+STALE_HOURS       = 23   # refresh if data older than this
+EARNINGS_DAYS     = 7    # always refresh if earnings within this many days
+
 
 def _load_env() -> None:
     env_file = ROOT / ".secrets" / ".env"
@@ -47,6 +53,44 @@ def _load_tier1() -> list[str]:
     return list(mod.TIER1)
 
 
+def _load_stored() -> dict:
+    """Load existing per-ticker data from JSON. Returns {} on missing/corrupt."""
+    if not FUND_JSON.exists():
+        return {}
+    try:
+        return json.loads(FUND_JSON.read_text(encoding="utf-8")).get("tickers", {})
+    except Exception:
+        return {}
+
+
+def _should_refresh(ticker: str, stored: dict, now: datetime) -> tuple[bool, str]:
+    """Return (should_fetch, reason_str)."""
+    td = stored.get(ticker)
+    if td is None:
+        return True, "no prior data"
+
+    last_str = td.get("last_fetched")
+    if not last_str:
+        return True, "no timestamp"
+
+    age_h = (now - datetime.fromisoformat(last_str)).total_seconds() / 3600
+
+    # Earnings-proximity override — always fresh within EARNINGS_DAYS
+    next_date_str = td.get("next_date", "?")
+    if next_date_str != "?":
+        try:
+            days_to = (date.fromisoformat(next_date_str) - now.date()).days
+            if 0 <= days_to <= EARNINGS_DAYS:
+                return True, f"earnings in {days_to}d (override)"
+        except ValueError:
+            pass
+
+    if age_h >= STALE_HOURS:
+        return True, f"stale ({age_h:.0f}h)"
+
+    return False, f"fresh ({age_h:.0f}h old)"
+
+
 def _get_client():
     try:
         import finnhub
@@ -56,7 +100,7 @@ def _get_client():
     api_key = os.environ.get("FINNHUB_API_KEY", "").strip()
     if not api_key or api_key.startswith("<"):
         print("  [SKIP] FINNHUB_API_KEY not set")
-        print("         1. Get free key at finnhub.io (sign up → Dashboard → API key)")
+        print("         1. Get free key at finnhub.io → Dashboard → API key")
         print("         2. Add to .secrets/.env: FINNHUB_API_KEY=<your_key>")
         return None
     return finnhub.Client(api_key=api_key)
@@ -71,94 +115,79 @@ def _call(fn, *args, **kwargs):
         return None
 
 
-def _next_earnings(client, ticker: str) -> dict:
-    today  = date.today().isoformat()
-    future = (date.today() + timedelta(days=120)).isoformat()
+def _fetch_ticker(client, ticker: str, now: datetime) -> dict:
+    """Fetch all 3 Finnhub dimensions for one ticker."""
+    # 1. Next earnings
+    today  = now.date().isoformat()
+    future = (now.date() + timedelta(days=120)).isoformat()
     data   = _call(client.earnings_calendar, symbol=ticker, _from=today, to=future)
-    if data is None:
-        return {"date": "?", "eps_est": None}
-    items = (data or {}).get("earningsCalendar", [])
-    if not items:
-        return {"date": "?", "eps_est": None}
-    it = items[0]
-    return {"date": it.get("date", "?"), "eps_est": it.get("epsEstimate")}
-
-
-def _last_surprise(client, ticker: str) -> dict:
-    data = _call(client.company_earnings, ticker, limit=2)
-    if not data:
-        return {"pct": None, "label": "?", "period": "?"}
-    last     = data[0]
-    actual   = last.get("actual")
-    estimate = last.get("estimate")
-    period   = last.get("period", "?")
-    if actual is not None and estimate is not None and estimate != 0:
-        pct   = (actual - estimate) / abs(estimate) * 100
-        return {"pct": round(pct, 1), "label": "BEAT" if pct > 0 else "MISS", "period": period}
-    return {"pct": None, "label": "?", "period": period}
-
-
-def _analyst_consensus(client, ticker: str) -> dict:
-    data = _call(client.recommendation_trends, ticker)
-    if not data:
-        return {"label": "?", "bull": 0, "hold": 0, "bear": 0, "detail": "no data"}
-    latest = data[0]
-    bull   = latest.get("strongBuy", 0) + latest.get("buy", 0)
-    hold   = latest.get("hold", 0)
-    bear   = latest.get("sell", 0) + latest.get("strongSell", 0)
-    total  = bull + hold + bear
-    if total == 0:
-        return {"label": "?", "bull": 0, "hold": 0, "bear": 0, "detail": "no data"}
-    if bull / total >= 0.60:
-        label = "BULL"
-    elif bear / total >= 0.40:
-        label = "BEAR"
+    items  = (data or {}).get("earningsCalendar", [])
+    if items:
+        it       = items[0]
+        next_date = it.get("date", "?")
+        eps_est   = it.get("epsEstimate")
     else:
-        label = "MIXED"
-    return {"label": label, "bull": bull, "hold": hold, "bear": bear, "detail": f"{bull}B/{hold}H/{bear}S"}
+        next_date, eps_est = "?", None
+
+    # 2. Last EPS surprise
+    surp = _call(client.company_earnings, ticker, limit=2)
+    if surp:
+        last     = surp[0]
+        actual   = last.get("actual")
+        estimate = last.get("estimate")
+        period   = last.get("period", "?")
+        if actual is not None and estimate is not None and estimate != 0:
+            pct        = round((actual - estimate) / abs(estimate) * 100, 1)
+            surp_label = "BEAT" if pct > 0 else "MISS"
+        else:
+            pct, surp_label, period = None, "?", period
+    else:
+        pct, surp_label, period = None, "?", "?"
+
+    # 3. Analyst consensus
+    recs  = _call(client.recommendation_trends, ticker)
+    if recs:
+        latest = recs[0]
+        bull   = latest.get("strongBuy", 0) + latest.get("buy", 0)
+        hold   = latest.get("hold", 0)
+        bear   = latest.get("sell", 0) + latest.get("strongSell", 0)
+        total  = bull + hold + bear
+        if total > 0:
+            if bull / total >= 0.60:
+                cons_label = "BULL"
+            elif bear / total >= 0.40:
+                cons_label = "BEAR"
+            else:
+                cons_label = "MIXED"
+            cons_detail = f"{bull}B/{hold}H/{bear}S"
+        else:
+            bull = hold = bear = 0
+            cons_label, cons_detail = "?", "no data"
+    else:
+        bull = hold = bear = 0
+        cons_label, cons_detail = "?", "no data"
+
+    return {
+        "ticker":      ticker,
+        "next_date":   next_date,
+        "eps_est":     eps_est,
+        "surp_pct":    pct,
+        "surp_label":  surp_label,
+        "surp_period": period,
+        "cons_label":  cons_label,
+        "cons_bull":   bull,
+        "cons_hold":   hold,
+        "cons_bear":   bear,
+        "cons_detail": cons_detail,
+        "last_fetched": now.isoformat(),
+    }
 
 
-def main() -> None:
-    _load_env()
-    client = _get_client()
-    if client is None:
-        sys.exit(0)
-
-    tickers = _load_tier1()
-    est_sec = len(tickers) * 3 * 1.1
-    print(f"  Fetching Finnhub data for {len(tickers)} Tier1 tickers (~{est_sec:.0f}s)...")
-
-    rows: list[dict] = []
-    for i, ticker in enumerate(tickers, 1):
-        earnings  = _next_earnings(client, ticker)
-        surprise  = _last_surprise(client, ticker)
-        consensus = _analyst_consensus(client, ticker)
-        row = {
-            "ticker":      ticker,
-            "next_date":   earnings["date"],
-            "eps_est":     earnings["eps_est"],
-            "surp_pct":    surprise["pct"],
-            "surp_label":  surprise["label"],
-            "surp_period": surprise["period"],
-            "cons_label":  consensus["label"],
-            "cons_bull":   consensus["bull"],
-            "cons_hold":   consensus["hold"],
-            "cons_bear":   consensus["bear"],
-            "cons_detail": consensus["detail"],
-        }
-        rows.append(row)
-        print(f"  [{i:02d}/{len(tickers)}] {ticker}: next={row['next_date']} "
-              f"surp={row['surp_label']} cons={row['cons_label']}")
-
-    # JSON side-file (parsed by nick-kill-monitor.py)
-    payload = {"updated": datetime.now().isoformat(), "tickers": {r["ticker"]: r for r in rows}}
-    FUND_JSON.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-    # Markdown table
-    now   = datetime.now().strftime("%Y-%m-%d %H:%M")
+def _build_markdown(rows: list[dict], now: datetime) -> str:
+    ts    = now.strftime("%Y-%m-%d %H:%M")
     lines = [
         "# Nick Fundamentals",
-        f"*Updated: {now} via Finnhub | Tier1 universe*",
+        f"*Updated: {ts} via Finnhub | Tier1 universe*",
         "",
         "| Ticker | Next Earnings | EPS Est | Last Surprise | Analyst |",
         "|--------|--------------|---------|---------------|---------|",
@@ -167,18 +196,68 @@ def main() -> None:
         eps_s  = f"${r['eps_est']:.2f}" if r["eps_est"] is not None else "?"
         surp_s = (f"{r['surp_pct']:+.1f}% {r['surp_label']} ({r['surp_period']})"
                   if r["surp_pct"] is not None else f"? {r['surp_label']} ({r['surp_period']})")
-        lines.append(f"| {r['ticker']} | {r['next_date']} | {eps_s} | {surp_s} | {r['cons_label']} {r['cons_detail']} |")
+        lines.append(
+            f"| {r['ticker']} | {r['next_date']} | {eps_s} "
+            f"| {surp_s} | {r['cons_label']} {r['cons_detail']} |"
+        )
 
-    bear_list = [r["ticker"] for r in rows if r["cons_label"] == "BEAR"]
+    bear_list = [r for r in rows if r["cons_label"] == "BEAR"]
     if bear_list:
         lines += ["", "## BEAR Consensus Flags", ""]
-        for t in bear_list:
-            r = next(x for x in rows if x["ticker"] == t)
-            lines.append(f"- **{t}** — {r['cons_detail']} → verify kill conditions")
+        for r in bear_list:
+            lines.append(f"- **{r['ticker']}** — {r['cons_detail']} → verify kill conditions")
 
-    FUND_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"  Wrote nick-fundamentals.md + .json ({len(rows)} tickers)")
-    print(f"  BEAR flags: {bear_list if bear_list else 'none'}")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    _load_env()
+    client = _get_client()
+    if client is None:
+        sys.exit(0)
+
+    now     = datetime.now()
+    tickers = _load_tier1()
+    stored  = _load_stored()
+
+    # Decide per-ticker: fetch or skip
+    to_fetch: list[tuple[str, str]] = []
+    to_skip:  list[str]             = []
+    for t in tickers:
+        should, reason = _should_refresh(t, stored, now)
+        if should:
+            to_fetch.append((t, reason))
+        else:
+            to_skip.append(t)
+
+    est_sec = len(to_fetch) * 3 * 1.1
+    print(f"  {len(to_fetch)} fetch / {len(to_skip)} skip  (~{est_sec:.0f}s)")
+    if to_skip:
+        print(f"  Skipping (fresh): {', '.join(to_skip)}")
+
+    # Fetch stale/new tickers
+    updated: dict[str, dict] = dict(stored)  # start with all stored data
+    for i, (ticker, reason) in enumerate(to_fetch, 1):
+        row = _fetch_ticker(client, ticker, now)
+        updated[ticker] = row
+        print(f"  [{i:02d}/{len(to_fetch)}] {ticker} ({reason}): "
+              f"next={row['next_date']} surp={row['surp_label']} cons={row['cons_label']}")
+
+    # Preserve original TIER1 order for output
+    rows = [updated[t] for t in tickers if t in updated]
+
+    # Write JSON
+    FUND_JSON.write_text(
+        json.dumps({"updated": now.isoformat(), "tickers": updated}, indent=2),
+        encoding="utf-8",
+    )
+
+    # Write markdown
+    FUND_MD.write_text(_build_markdown(rows, now), encoding="utf-8")
+
+    fetched_bear = [r["ticker"] for r in rows if r["cons_label"] == "BEAR" and r["ticker"] in {t for t, _ in to_fetch}]
+    print(f"  Wrote nick-fundamentals.md + .json ({len(rows)} tickers, {len(to_fetch)} refreshed)")
+    print(f"  BEAR flags: {[r['ticker'] for r in rows if r['cons_label'] == 'BEAR'] or 'none'}")
 
 
 if __name__ == "__main__":

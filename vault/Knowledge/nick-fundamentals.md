@@ -1,5 +1,5 @@
 # Nick Fundamentals
-*Updated: 2026-05-19 07:09 via Finnhub | Tier1 universe*
+*Updated: 2026-05-19 07:20 via Finnhub | Tier1 universe*
 
 | Ticker | Next Earnings | EPS Est | Last Surprise | Analyst |
 |--------|--------------|---------|---------------|---------|

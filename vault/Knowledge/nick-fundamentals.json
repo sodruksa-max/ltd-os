@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-19T07:09:40.178893",
+  "updated": "2026-05-19T07:20:11.537312",
   "tickers": {
     "NVDA": {
       "ticker": "NVDA",
@@ -12,7 +12,8 @@
       "cons_bull": 66,
       "cons_hold": 4,
       "cons_bear": 1,
-      "cons_detail": "66B/4H/1S"
+      "cons_detail": "66B/4H/1S",
+      "last_fetched": "2026-05-19T07:20:11.537312"
     },
     "AMD": {
       "ticker": "AMD",
@@ -25,7 +26,8 @@
       "cons_bull": 45,
       "cons_hold": 13,
       "cons_bear": 1,
-      "cons_detail": "45B/13H/1S"
+      "cons_detail": "45B/13H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "AVGO": {
       "ticker": "AVGO",
@@ -38,7 +40,8 @@
       "cons_bull": 53,
       "cons_hold": 4,
       "cons_bear": 0,
-      "cons_detail": "53B/4H/0S"
+      "cons_detail": "53B/4H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "SMCI": {
       "ticker": "SMCI",
@@ -51,7 +54,8 @@
       "cons_bull": 11,
       "cons_hold": 10,
       "cons_bear": 5,
-      "cons_detail": "11B/10H/5S"
+      "cons_detail": "11B/10H/5S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "MU": {
       "ticker": "MU",
@@ -64,7 +68,8 @@
       "cons_bull": 49,
       "cons_hold": 3,
       "cons_bear": 1,
-      "cons_detail": "49B/3H/1S"
+      "cons_detail": "49B/3H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "MRVL": {
       "ticker": "MRVL",
@@ -77,7 +82,8 @@
       "cons_bull": 42,
       "cons_hold": 8,
       "cons_bear": 0,
-      "cons_detail": "42B/8H/0S"
+      "cons_detail": "42B/8H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "LRCX": {
       "ticker": "LRCX",
@@ -90,7 +96,8 @@
       "cons_bull": 32,
       "cons_hold": 9,
       "cons_bear": 0,
-      "cons_detail": "32B/9H/0S"
+      "cons_detail": "32B/9H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "MOD": {
       "ticker": "MOD",
@@ -103,7 +110,8 @@
       "cons_bull": 13,
       "cons_hold": 1,
       "cons_bear": 0,
-      "cons_detail": "13B/1H/0S"
+      "cons_detail": "13B/1H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "DELL": {
       "ticker": "DELL",
@@ -116,7 +124,8 @@
       "cons_bull": 25,
       "cons_hold": 8,
       "cons_bear": 1,
-      "cons_detail": "25B/8H/1S"
+      "cons_detail": "25B/8H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "HPE": {
       "ticker": "HPE",
@@ -129,7 +138,8 @@
       "cons_bull": 13,
       "cons_hold": 13,
       "cons_bear": 0,
-      "cons_detail": "13B/13H/0S"
+      "cons_detail": "13B/13H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ASML": {
       "ticker": "ASML",
@@ -142,7 +152,8 @@
       "cons_bull": 34,
       "cons_hold": 6,
       "cons_bear": 2,
-      "cons_detail": "34B/6H/2S"
+      "cons_detail": "34B/6H/2S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ARM": {
       "ticker": "ARM",
@@ -155,7 +166,8 @@
       "cons_bull": 29,
       "cons_hold": 14,
       "cons_bear": 2,
-      "cons_detail": "29B/14H/2S"
+      "cons_detail": "29B/14H/2S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "CRDO": {
       "ticker": "CRDO",
@@ -168,7 +180,8 @@
       "cons_bull": 23,
       "cons_hold": 2,
       "cons_bear": 0,
-      "cons_detail": "23B/2H/0S"
+      "cons_detail": "23B/2H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "AEIS": {
       "ticker": "AEIS",
@@ -181,7 +194,8 @@
       "cons_bull": 14,
       "cons_hold": 4,
       "cons_bear": 0,
-      "cons_detail": "14B/4H/0S"
+      "cons_detail": "14B/4H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "UCTT": {
       "ticker": "UCTT",
@@ -194,7 +208,8 @@
       "cons_bull": 9,
       "cons_hold": 1,
       "cons_bear": 0,
-      "cons_detail": "9B/1H/0S"
+      "cons_detail": "9B/1H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "WDC": {
       "ticker": "WDC",
@@ -207,7 +222,8 @@
       "cons_bull": 26,
       "cons_hold": 4,
       "cons_bear": 0,
-      "cons_detail": "26B/4H/0S"
+      "cons_detail": "26B/4H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ONTO": {
       "ticker": "ONTO",
@@ -220,7 +236,8 @@
       "cons_bull": 12,
       "cons_hold": 2,
       "cons_bear": 0,
-      "cons_detail": "12B/2H/0S"
+      "cons_detail": "12B/2H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "RKLB": {
       "ticker": "RKLB",
@@ -233,7 +250,8 @@
       "cons_bull": 21,
       "cons_hold": 6,
       "cons_bear": 0,
-      "cons_detail": "21B/6H/0S"
+      "cons_detail": "21B/6H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ASTS": {
       "ticker": "ASTS",
@@ -246,7 +264,8 @@
       "cons_bull": 9,
       "cons_hold": 7,
       "cons_bear": 2,
-      "cons_detail": "9B/7H/2S"
+      "cons_detail": "9B/7H/2S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "LUNR": {
       "ticker": "LUNR",
@@ -259,7 +278,8 @@
       "cons_bull": 13,
       "cons_hold": 2,
       "cons_bear": 1,
-      "cons_detail": "13B/2H/1S"
+      "cons_detail": "13B/2H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "KTOS": {
       "ticker": "KTOS",
@@ -272,7 +292,8 @@
       "cons_bull": 23,
       "cons_hold": 5,
       "cons_bear": 0,
-      "cons_detail": "23B/5H/0S"
+      "cons_detail": "23B/5H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "BBAI": {
       "ticker": "BBAI",
@@ -285,7 +306,8 @@
       "cons_bull": 6,
       "cons_hold": 3,
       "cons_bear": 0,
-      "cons_detail": "6B/3H/0S"
+      "cons_detail": "6B/3H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "PLTR": {
       "ticker": "PLTR",
@@ -298,7 +320,8 @@
       "cons_bull": 26,
       "cons_hold": 10,
       "cons_bear": 2,
-      "cons_detail": "26B/10H/2S"
+      "cons_detail": "26B/10H/2S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "CRM": {
       "ticker": "CRM",
@@ -311,7 +334,8 @@
       "cons_bull": 44,
       "cons_hold": 13,
       "cons_bear": 1,
-      "cons_detail": "44B/13H/1S"
+      "cons_detail": "44B/13H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "SNOW": {
       "ticker": "SNOW",
@@ -324,7 +348,8 @@
       "cons_bull": 50,
       "cons_hold": 7,
       "cons_bear": 1,
-      "cons_detail": "50B/7H/1S"
+      "cons_detail": "50B/7H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "IONQ": {
       "ticker": "IONQ",
@@ -337,7 +362,8 @@
       "cons_bull": 16,
       "cons_hold": 4,
       "cons_bear": 0,
-      "cons_detail": "16B/4H/0S"
+      "cons_detail": "16B/4H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "RGTI": {
       "ticker": "RGTI",
@@ -350,7 +376,8 @@
       "cons_bull": 14,
       "cons_hold": 3,
       "cons_bear": 1,
-      "cons_detail": "14B/3H/1S"
+      "cons_detail": "14B/3H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "QBTS": {
       "ticker": "QBTS",
@@ -363,7 +390,8 @@
       "cons_bull": 19,
       "cons_hold": 3,
       "cons_bear": 0,
-      "cons_detail": "19B/3H/0S"
+      "cons_detail": "19B/3H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "QUBT": {
       "ticker": "QUBT",
@@ -376,7 +404,8 @@
       "cons_bull": 8,
       "cons_hold": 3,
       "cons_bear": 0,
-      "cons_detail": "8B/3H/0S"
+      "cons_detail": "8B/3H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ISRG": {
       "ticker": "ISRG",
@@ -389,7 +418,8 @@
       "cons_bull": 29,
       "cons_hold": 11,
       "cons_bear": 1,
-      "cons_detail": "29B/11H/1S"
+      "cons_detail": "29B/11H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "TER": {
       "ticker": "TER",
@@ -402,7 +432,8 @@
       "cons_bull": 16,
       "cons_hold": 6,
       "cons_bear": 1,
-      "cons_detail": "16B/6H/1S"
+      "cons_detail": "16B/6H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "CGNX": {
       "ticker": "CGNX",
@@ -415,7 +446,8 @@
       "cons_bull": 21,
       "cons_hold": 8,
       "cons_bear": 0,
-      "cons_detail": "21B/8H/0S"
+      "cons_detail": "21B/8H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "ROK": {
       "ticker": "ROK",
@@ -428,7 +460,8 @@
       "cons_bull": 18,
       "cons_hold": 16,
       "cons_bear": 0,
-      "cons_detail": "18B/16H/0S"
+      "cons_detail": "18B/16H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "SYM": {
       "ticker": "SYM",
@@ -441,7 +474,8 @@
       "cons_bull": 13,
       "cons_hold": 9,
       "cons_bear": 3,
-      "cons_detail": "13B/9H/3S"
+      "cons_detail": "13B/9H/3S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "PATH": {
       "ticker": "PATH",
@@ -454,7 +488,8 @@
       "cons_bull": 10,
       "cons_hold": 17,
       "cons_bear": 1,
-      "cons_detail": "10B/17H/1S"
+      "cons_detail": "10B/17H/1S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     },
     "AVAV": {
       "ticker": "AVAV",
@@ -467,7 +502,8 @@
       "cons_bull": 21,
       "cons_hold": 4,
       "cons_bear": 0,
-      "cons_detail": "21B/4H/0S"
+      "cons_detail": "21B/4H/0S",
+      "last_fetched": "2026-05-19T07:17:32.964614"
     }
   }
 }
